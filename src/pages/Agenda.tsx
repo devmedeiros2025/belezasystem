@@ -4,7 +4,13 @@ import { agendamentos, profissionais } from "@/data/mockData";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { toast } from "sonner";
 
-const dias = ["Seg", "Ter", "Qua", "Qui", "Sex"];
+const diasSemana = [
+  { nome: "Seg", num: 3 },
+  { nome: "Ter", num: 4 },
+  { nome: "Qua", num: 5 },
+  { nome: "Qui", num: 6 },
+  { nome: "Sex", num: 7 },
+];
 const horarios = ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00"];
 const views = ["Dia", "Semana", "Mês"] as const;
 
