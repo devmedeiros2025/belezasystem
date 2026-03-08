@@ -365,9 +365,9 @@ export default function Financeiro() {
                 <button onClick={() => exportarCaixa("pdf")} className="flex items-center gap-1.5 rounded-lg bg-surface2 px-3 py-1.5 text-xs font-medium text-text2 hover:text-foreground hover:bg-primary/10"><Download className="h-3.5 w-3.5" />PDF</button>
                 <button onClick={() => exportarCaixa("excel")} className="flex items-center gap-1.5 rounded-lg bg-surface2 px-3 py-1.5 text-xs font-medium text-text2 hover:text-foreground hover:bg-primary/10"><FileSpreadsheet className="h-3.5 w-3.5" />Excel</button>
                 <button onClick={() => setShowMovModal(true)} className="flex items-center gap-2 rounded-lg gold-gradient px-4 py-2 text-sm font-semibold text-primary-foreground">
-                <Plus className="h-4 w-4" /> Nova Movimentação
-              </button>
-            </div>
+                  <Plus className="h-4 w-4" /> Nova Movimentação
+                </button>
+              </div>
             <table className="w-full text-sm">
               <thead><tr className="border-b border-border text-xs text-text3"><th className="p-4 text-left">Data</th><th className="p-4 text-left">Descrição</th><th className="p-4 text-left hidden md:table-cell">Categoria</th><th className="p-4 text-left">Tipo</th><th className="p-4 text-left">Valor</th></tr></thead>
               <tbody>
