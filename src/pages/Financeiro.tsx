@@ -6,7 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { AnimatePresence } from "framer-motion";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
-  PieChart, Pie, Cell, Legend, AreaChart, Area,
+  PieChart, Pie, Cell, Legend, AreaChart, Area, LineChart, Line,
 } from "recharts";
 import {
   TrendingUp, TrendingDown, DollarSign, Plus, ArrowUpCircle, ArrowDownCircle,
