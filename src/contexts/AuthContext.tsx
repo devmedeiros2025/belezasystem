@@ -94,32 +94,54 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let isMounted = true;
 
-    // Restore session from storage first
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
+    const syncUserFromSession = async (session: Session | null) => {
       if (!isMounted) return;
-      if (session?.user) {
+
+      if (!session?.user) {
+        setUsuarioLogado(null);
+        return;
+      }
+
+      try {
         const userData = await fetchUserData(session.user);
         if (isMounted) setUsuarioLogado(userData);
+      } catch {
+        if (!isMounted) return;
+        setUsuarioLogado({
+          id: session.user.id,
+          nome: session.user.email || "Usuário",
+          email: session.user.email || "",
+          perfil: "Colaborador",
+          ativo: true,
+        });
       }
-      if (isMounted) setLoading(false);
+    };
+
+    // Listen first to avoid missing OAuth/session restoration events
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!isMounted) return;
+
+      if (event === "SIGNED_OUT") {
+        setUsuarioLogado(null);
+        return;
+      }
+
+      if (session?.user) {
+        // Fire-and-forget to avoid blocking auth event processing
+        setTimeout(() => {
+          void syncUserFromSession(session);
+        }, 0);
+      }
     });
 
-    // Then listen for subsequent auth changes (login/logout)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        if (!isMounted) return;
-        if (event === 'SIGNED_IN' && session?.user) {
-          // Use setTimeout to avoid deadlock with Supabase client internals
-          setTimeout(async () => {
-            if (!isMounted) return;
-            const userData = await fetchUserData(session.user);
-            if (isMounted) setUsuarioLogado(userData);
-          }, 0);
-        } else if (event === 'SIGNED_OUT') {
-          setUsuarioLogado(null);
-        }
-      }
-    );
+    // Then restore session from storage
+    supabase.auth.getSession()
+      .then(({ data: { session } }) => {
+        void syncUserFromSession(session);
+      })
+      .finally(() => {
+        if (isMounted) setLoading(false);
+      });
 
     return () => {
       isMounted = false;
