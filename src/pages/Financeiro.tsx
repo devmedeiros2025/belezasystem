@@ -32,6 +32,7 @@ import {
   fluxoCaixaDiario, topServicosReceita, categoriasDespesa, dreData,
   type Movimentacao, type ContaPagar, type ContaReceber, type Despesa,
   type Fornecedor, type Adiantamento, type ProdutoVendido, type FechamentoCaixa,
+  despesasMensalTrend, contasPagarMensalTrend,
 } from "@/data/financeiroData";
 
 const COLORS = ["hsl(35 50% 50%)", "hsl(183 50% 40%)", "hsl(350 55% 57%)", "hsl(270 40% 55%)", "hsl(150 50% 40%)", "hsl(200 50% 50%)", "hsl(60 50% 45%)", "hsl(310 40% 50%)"];
