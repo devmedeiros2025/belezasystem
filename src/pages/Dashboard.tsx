@@ -62,6 +62,134 @@ function DashboardCompleto() {
         ))}
       </div>
 
+      {/* Tendência Mensal & Comparativo */}
+      {(() => {
+        const tendenciaMensal = [
+          { mes: "Out", receita: 14200, clientes: 32, agendamentos: 185, ticketMedio: 195 },
+          { mes: "Nov", receita: 15800, clientes: 38, agendamentos: 210, ticketMedio: 210 },
+          { mes: "Dez", receita: 19500, clientes: 45, agendamentos: 248, ticketMedio: 228 },
+          { mes: "Jan", receita: 16300, clientes: 35, agendamentos: 198, ticketMedio: 215 },
+          { mes: "Fev", receita: 17100, clientes: 41, agendamentos: 220, ticketMedio: 232 },
+          { mes: "Mar", receita: 18420, clientes: 47, agendamentos: 237, ticketMedio: 245 },
+        ];
+
+        const comparativo = [
+          { label: "Receita", mesAtual: 18420, mesAnterior: 17100, variacao: 7.7 },
+          { label: "Clientes Novos", mesAtual: 47, mesAnterior: 41, variacao: 14.6 },
+          { label: "Agendamentos", mesAtual: 237, mesAnterior: 220, variacao: 7.7 },
+          { label: "Ticket Médio", mesAtual: 245, mesAnterior: 232, variacao: 5.6 },
+          { label: "Avaliação Média", mesAtual: 4.9, mesAnterior: 4.7, variacao: 4.3 },
+          { label: "Taxa de Retorno", mesAtual: 72, mesAnterior: 68, variacao: 5.9 },
+        ];
+
+        const categoriaPie = [
+          { name: "Cabelo", value: 45, color: "hsl(35 50% 50%)" },
+          { name: "Unhas", value: 22, color: "hsl(183 50% 40%)" },
+          { name: "Estética", value: 18, color: "hsl(340 60% 55%)" },
+          { name: "Barba", value: 10, color: "hsl(260 40% 55%)" },
+          { name: "Spa", value: 5, color: "hsl(160 50% 42%)" },
+        ];
+
+        return (
+          <>
+            <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+              {/* Line Chart - Receita */}
+              <div className="col-span-1 xl:col-span-2 rounded-xl border border-border bg-card p-5 card-hover">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-display text-lg font-semibold text-foreground">Tendência de Receita</h3>
+                  <span className="text-xs text-text3 bg-surface2 rounded-full px-3 py-1">Últimos 6 meses</span>
+                </div>
+                <ResponsiveContainer width="100%" height={260}>
+                  <AreaChart data={tendenciaMensal}>
+                    <defs>
+                      <linearGradient id="gradReceita" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="hsl(35 50% 50%)" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="hsl(35 50% 50%)" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(280 20% 90%)" />
+                    <XAxis dataKey="mes" tick={{ fill: "hsl(280 15% 60%)", fontSize: 12 }} axisLine={false} />
+                    <YAxis tick={{ fill: "hsl(280 15% 60%)", fontSize: 11 }} axisLine={false} />
+                    <Tooltip contentStyle={{ backgroundColor: "hsl(0 0% 100%)", border: "1px solid hsl(280 20% 90%)", borderRadius: 8 }} />
+                    <Area type="monotone" dataKey="receita" name="Receita" stroke="hsl(35 50% 50%)" strokeWidth={2.5} fill="url(#gradReceita)" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+
+              {/* Pie - Categoria de Serviços */}
+              <div className="rounded-xl border border-border bg-card p-5 card-hover">
+                <h3 className="font-display text-lg font-semibold text-foreground mb-4">Receita por Categoria</h3>
+                <ResponsiveContainer width="100%" height={180}>
+                  <PieChart>
+                    <Pie data={categoriaPie} cx="50%" cy="50%" innerRadius={45} outerRadius={75} dataKey="value" paddingAngle={3}>
+                      {categoriaPie.map((entry, i) => (
+                        <Cell key={i} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip contentStyle={{ backgroundColor: "hsl(0 0% 100%)", border: "1px solid hsl(280 20% 90%)", borderRadius: 8 }} />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="flex flex-wrap gap-2 mt-2 justify-center">
+                  {categoriaPie.map((c) => (
+                    <div key={c.name} className="flex items-center gap-1.5 text-xs text-text2">
+                      <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: c.color }} />
+                      {c.name} ({c.value}%)
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Tendência Clientes + Agendamentos */}
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+              <div className="rounded-xl border border-border bg-card p-5 card-hover">
+                <h3 className="font-display text-base font-semibold text-foreground mb-4">Clientes & Agendamentos</h3>
+                <ResponsiveContainer width="100%" height={200}>
+                  <LineChart data={tendenciaMensal}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(280 20% 90%)" />
+                    <XAxis dataKey="mes" tick={{ fill: "hsl(280 15% 60%)", fontSize: 12 }} axisLine={false} />
+                    <YAxis yAxisId="left" tick={{ fill: "hsl(280 15% 60%)", fontSize: 11 }} axisLine={false} />
+                    <YAxis yAxisId="right" orientation="right" tick={{ fill: "hsl(280 15% 60%)", fontSize: 11 }} axisLine={false} />
+                    <Tooltip contentStyle={{ backgroundColor: "hsl(0 0% 100%)", border: "1px solid hsl(280 20% 90%)", borderRadius: 8 }} />
+                    <Legend iconType="circle" wrapperStyle={{ fontSize: 12 }} />
+                    <Line yAxisId="left" type="monotone" dataKey="clientes" name="Novos Clientes" stroke="hsl(340 60% 55%)" strokeWidth={2} dot={{ r: 4 }} />
+                    <Line yAxisId="right" type="monotone" dataKey="agendamentos" name="Agendamentos" stroke="hsl(183 50% 40%)" strokeWidth={2} dot={{ r: 4 }} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+
+              {/* Comparativo Mês Atual vs Anterior */}
+              <div className="rounded-xl border border-border bg-card p-5 card-hover">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-display text-base font-semibold text-foreground">Mar vs Fev</h3>
+                  <span className="text-xs text-text3 bg-surface2 rounded-full px-3 py-1">Comparativo</span>
+                </div>
+                <div className="space-y-3">
+                  {comparativo.map((item) => {
+                    const isPositive = item.variacao > 0;
+                    return (
+                      <div key={item.label} className="flex items-center justify-between rounded-lg bg-surface2 p-3">
+                        <div>
+                          <p className="text-sm font-medium text-foreground">{item.label}</p>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            <span className="text-xs text-text3">Fev: {item.mesAnterior.toLocaleString("pt-BR")}</span>
+                            <span className="text-text3">→</span>
+                            <span className="text-xs font-semibold text-foreground">Mar: {item.mesAtual.toLocaleString("pt-BR")}</span>
+                          </div>
+                        </div>
+                        <span className={`rounded-full px-2.5 py-1 text-xs font-bold ${isPositive ? "bg-green-custom/15 text-green-custom" : "bg-destructive/15 text-destructive"}`}>
+                          {isPositive ? "+" : ""}{item.variacao}%
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          </>
+        );
+      })()}
+
       {/* Agenda + Clientes */}
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
         {/* Weekly Schedule */}
