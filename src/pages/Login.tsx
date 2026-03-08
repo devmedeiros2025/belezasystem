@@ -44,11 +44,12 @@ export default function Login() {
       });
       if (error) {
         toast.error(error.message);
+      } else if (data.session) {
+        // Auto-confirm is enabled, user is already logged in
+        toast.success("Conta criada com sucesso!");
+        navigate("/dashboard");
       } else if (data.user) {
-        await supabase.from("user_roles").insert({ user_id: data.user.id, role: "admin" as any });
-        toast.success("Conta criada! Fazendo login...");
-        const success = await login(email, senha);
-        if (success) navigate("/dashboard");
+        toast.success("Conta criada! Verifique seu e-mail para confirmar.");
       }
     } else {
       const success = await login(email, senha);
