@@ -61,7 +61,7 @@ export default function Login() {
       const success = await login(email, senha);
       if (success) {
         toast.success("Login realizado com sucesso!");
-        navigate("/dashboard");
+        // Navigation handled by useEffect watching usuarioLogado
       } else {
         toast.error("E-mail ou senha inválidos");
       }
