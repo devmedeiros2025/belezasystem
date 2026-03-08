@@ -259,7 +259,7 @@ function DashboardColaborador() {
           <div className="grid grid-cols-2 gap-4">
             <div className="rounded-xl border border-border bg-card p-5 card-hover">
               <div className="flex items-center gap-3">
-                <div className="rounded-lg bg-green-custom/12 p-2.5 text-green-custom">
+                <div className="rounded-lg p-2.5" style={{ backgroundColor: "hsl(160 50% 42% / 0.12)", color: "hsl(160 50% 42%)" }}>
                   <CheckCircle className="h-5 w-5" />
                 </div>
                 <div>
