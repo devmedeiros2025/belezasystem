@@ -145,5 +145,8 @@ export default function Agenda() {
         </div>
       )}
     </div>
+
+    <KanbanBoard />
+    </div>
   );
 }

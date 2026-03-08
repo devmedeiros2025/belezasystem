@@ -382,7 +382,8 @@ export default function Admin() {
             </button>
           </DialogFooter>
         </DialogContent>
-      </Dialog>
+    </Dialog>
+    <KanbanBoard />
     </div>
   );
 }
