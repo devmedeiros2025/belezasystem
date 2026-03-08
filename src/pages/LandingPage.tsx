@@ -172,7 +172,7 @@ export default function LandingPage() {
               onClick={() => navigate("/login")}
               className="gold-gradient px-8 py-4 rounded-full text-[hsl(0,0%,100%)] font-semibold text-lg shadow-xl hover:shadow-2xl hover:scale-105 transition-all flex items-center gap-2"
             >
-              Começar Grátis por 14 Dias
+              Começar Grátis por 3 Dias
               <ArrowRight className="w-5 h-5" />
             </button>
             <p className="text-sm text-[hsl(280,15%,60%)]">
