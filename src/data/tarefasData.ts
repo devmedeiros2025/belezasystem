@@ -1,4 +1,4 @@
-export type TarefaStatus = "fazendo" | "feito" | "aguardando" | "concluido";
+export type TarefaStatus = "afazer" | "fazendo" | "feito" | "aguardando" | "concluido";
 
 export interface Tarefa {
   id: number;

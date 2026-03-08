@@ -112,7 +112,7 @@ export default function KanbanBoard() {
       </div>
 
       {/* Kanban columns */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-5">
         {colunas.map((col) => {
           const items = visibleTarefas.filter(t => t.status === col.key);
           const isOver = dragOverCol === col.key;
