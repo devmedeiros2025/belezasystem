@@ -1,4 +1,5 @@
 import { useState } from "react";
+import KanbanBoard from "@/components/KanbanBoard";
 import { useAuth, Usuario, Perfil } from "@/contexts/AuthContext";
 import { profissionais } from "@/data/mockData";
 import { toast } from "sonner";
