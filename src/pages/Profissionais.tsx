@@ -1,4 +1,5 @@
 import { profissionais } from "@/data/mockData";
+import KanbanBoard from "@/components/KanbanBoard";
 import { Star } from "lucide-react";
 import { useCurrency } from "@/hooks/useCurrency";
 
@@ -82,6 +83,7 @@ export default function Profissionais() {
           </tbody>
         </table>
       </div>
+      <KanbanBoard />
     </div>
   );
 }

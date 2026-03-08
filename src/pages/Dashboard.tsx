@@ -4,6 +4,7 @@ import { agendamentos, clientes, profissionais, servicos, receitaSemanal, avalia
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCurrency } from "@/hooks/useCurrency";
+import KanbanBoard from "@/components/KanbanBoard";
 
 const dias = ["Seg", "Ter", "Qua", "Qui", "Sex"];
 const horarios = ["09:00", "10:00", "11:00", "14:00", "15:00"];
@@ -198,6 +199,9 @@ function DashboardCompleto() {
           </div>
         </div>
       </div>
+
+      {/* Kanban */}
+      <KanbanBoard />
     </div>
   );
 }
@@ -256,7 +260,7 @@ function DashboardColaborador() {
           <div className="grid grid-cols-2 gap-4">
             <div className="rounded-xl border border-border bg-card p-5 card-hover">
               <div className="flex items-center gap-3">
-                <div className="rounded-lg bg-green-custom/12 p-2.5 text-green-custom">
+                <div className="rounded-lg p-2.5" style={{ backgroundColor: "hsl(160 50% 42% / 0.12)", color: "hsl(160 50% 42%)" }}>
                   <CheckCircle className="h-5 w-5" />
                 </div>
                 <div>
@@ -267,7 +271,7 @@ function DashboardColaborador() {
             </div>
             <div className="rounded-xl border border-border bg-card p-5 card-hover">
               <div className="flex items-center gap-3">
-                <div className="rounded-lg bg-primary/12 p-2.5 text-primary">
+                <div className="rounded-lg p-2.5" style={{ backgroundColor: "hsl(var(--primary) / 0.12)", color: "hsl(var(--primary))" }}>
                   <Clock className="h-5 w-5" />
                 </div>
                 <div>
@@ -287,7 +291,7 @@ function DashboardColaborador() {
             <div className="space-y-3">
               {minhasAvaliacoes.length > 0 ? minhasAvaliacoes.map((av) => (
                 <div key={av.id} className="flex items-start gap-3 rounded-lg bg-surface2 p-3">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/12 text-xs font-bold text-primary">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold text-primary" style={{ backgroundColor: "hsl(var(--primary) / 0.12)" }}>
                     {av.avatar}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -345,6 +349,9 @@ function DashboardColaborador() {
           </div>
         </div>
       </div>
+
+      {/* Kanban */}
+      <KanbanBoard />
     </div>
   );
 }

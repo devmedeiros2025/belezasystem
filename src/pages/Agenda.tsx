@@ -1,4 +1,5 @@
 import { useState } from "react";
+import KanbanBoard from "@/components/KanbanBoard";
 import { agendamentos, profissionais } from "@/data/mockData";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { toast } from "sonner";
@@ -143,6 +144,7 @@ export default function Agenda() {
           </div>
         </div>
       )}
+      <KanbanBoard />
     </div>
   );
 }
