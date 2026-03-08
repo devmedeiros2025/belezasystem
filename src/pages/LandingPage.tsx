@@ -2,6 +2,9 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Check, Star, Crown, Gem, Sparkles, ArrowRight, Shield, Zap, Users, BarChart3, Calendar, MessageSquare } from "lucide-react";
+import salonHero from "@/assets/salon-hero.jpg";
+import barberSection from "@/assets/barber-section.jpg";
+import spaSection from "@/assets/spa-section.jpg";
 
 const plans = [
   {
@@ -128,6 +131,8 @@ export default function LandingPage() {
       {/* Hero */}
       <section className="pt-32 pb-20 px-6 relative">
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <img src={salonHero} alt="" className="absolute inset-0 w-full h-full object-cover opacity-[0.07]" />
+          <div className="absolute inset-0 bg-gradient-to-b from-[hsl(30,20%,97%)] via-transparent to-[hsl(30,20%,97%)]" />
           <div className="absolute -top-40 -right-40 w-[600px] h-[600px] rounded-full bg-[hsl(35,50%,50%)/0.08] blur-3xl" />
           <div className="absolute -bottom-20 -left-40 w-[500px] h-[500px] rounded-full bg-[hsl(270,40%,55%)/0.06] blur-3xl" />
         </div>
@@ -244,8 +249,10 @@ export default function LandingPage() {
       </section>
 
       {/* Social Proof Banner */}
-      <section className="py-12 px-6 gold-gradient">
-        <div className="max-w-4xl mx-auto text-center text-[hsl(0,0%,100%)]">
+      <section className="py-12 px-6 relative overflow-hidden">
+        <img src={barberSection} alt="" className="absolute inset-0 w-full h-full object-cover" />
+        <div className="absolute inset-0 bg-[hsl(35,50%,35%)/0.85]" />
+        <div className="max-w-4xl mx-auto text-center text-[hsl(0,0%,100%)] relative z-10">
           <p className="font-display text-2xl md:text-3xl font-bold mb-2">
             "Cada dia sem sistema, é dinheiro que escapa pelas suas mãos."
           </p>
@@ -392,8 +399,10 @@ export default function LandingPage() {
       </section>
 
       {/* Final CTA */}
-      <section className="py-20 px-6">
-        <div className="max-w-3xl mx-auto text-center">
+      <section className="py-20 px-6 relative overflow-hidden">
+        <img src={spaSection} alt="" className="absolute inset-0 w-full h-full object-cover opacity-[0.06]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[hsl(30,20%,97%)] via-[hsl(30,20%,97%)/0.9] to-[hsl(30,20%,97%)]" />
+        <div className="max-w-3xl mx-auto text-center relative z-10">
           <motion.div
             initial="hidden"
             whileInView="visible"
@@ -403,7 +412,7 @@ export default function LandingPage() {
               Pronto para elevar o seu salão ao <span className="text-primary">próximo nível</span>?
             </motion.h2>
             <motion.p variants={fadeUp} custom={1} className="text-[hsl(280,15%,45%)] mb-8 text-lg">
-              Comece agora com 143ias grátis. Sem compromisso, sem cartão de crédito.
+              Comece agora com 3 dias grátis. Sem compromisso, sem cartão de crédito.
             </motion.p>
             <motion.div variants={fadeUp} custom={2}>
               <button
