@@ -19,22 +19,36 @@ export function Modal({ open, onClose, title, children, size = "md" }: {
         initial={{ opacity: 0 }} 
         animate={{ opacity: 1 }} 
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/30 p-4" 
+        transition={{ duration: 0.2 }}
+        className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/30 backdrop-blur-sm p-4" 
         onClick={onClose}
       >
         <motion.div 
-          initial={{ opacity: 0, scale: 0.95, y: 20 }}
+          initial={{ opacity: 0, scale: 0.9, y: 30 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          transition={{ type: "spring", duration: 0.3 }}
-          className={`w-full ${sizeClass} max-h-[90vh] overflow-y-auto rounded-xl border border-border bg-card p-6 space-y-4 shadow-xl`} 
+          exit={{ opacity: 0, scale: 0.9, y: 30 }}
+          transition={{ type: "spring", damping: 25, stiffness: 350, mass: 0.8 }}
+          className={`w-full ${sizeClass} max-h-[90vh] overflow-y-auto rounded-xl border border-border bg-card p-6 space-y-4 shadow-2xl`} 
           onClick={e => e.stopPropagation()}
         >
           <div className="flex items-center justify-between">
-            <h2 className="font-display text-lg font-bold text-foreground">{title}</h2>
+            <motion.h2 
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.1, duration: 0.2 }}
+              className="font-display text-lg font-bold text-foreground"
+            >
+              {title}
+            </motion.h2>
             <button onClick={onClose} className="text-text3 hover:text-foreground transition-colors"><X className="h-5 w-5" /></button>
           </div>
-          {children}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15, duration: 0.25 }}
+          >
+            {children}
+          </motion.div>
         </motion.div>
       </motion.div>
     </AnimatePresence>
@@ -85,22 +99,32 @@ export function ConfirmDialog({
 }
 
 // ===== KPI CARD =====
-export function KpiCard({ label, value, icon: Icon, color, variacao, trend }: { 
+export function KpiCard({ label, value, icon: Icon, color, variacao, trend, index = 0 }: { 
   label: string; 
   value: string; 
   icon: any; 
   color: string; 
   variacao?: { valor: string; positivo: boolean };
   trend?: number[];
+  index?: number;
 }) {
   return (
     <motion.div 
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
+      initial={{ opacity: 0, y: 20, scale: 0.95 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ delay: index * 0.07, duration: 0.35, ease: "easeOut" }}
+      whileHover={{ y: -2, transition: { duration: 0.15 } }}
       className="rounded-xl border border-border bg-card p-5 card-hover"
     >
       <div className="flex items-center gap-3">
-        <div className={`rounded-lg p-2.5 ${color}`}><Icon className="h-5 w-5" /></div>
+        <motion.div 
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ delay: index * 0.07 + 0.15, type: "spring", stiffness: 400, damping: 15 }}
+          className={`rounded-lg p-2.5 ${color}`}
+        >
+          <Icon className="h-5 w-5" />
+        </motion.div>
         <div className="flex-1 min-w-0">
           <p className="text-xs text-text3 truncate">{label}</p>
           <p className="font-display text-2xl font-bold text-foreground truncate">{value}</p>
@@ -438,10 +462,10 @@ export function TabContent({ children, tabKey }: { children: React.ReactNode; ta
   return (
     <motion.div
       key={tabKey}
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -10 }}
-      transition={{ duration: 0.2 }}
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: -20 }}
+      transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
       className="space-y-6"
     >
       {children}
