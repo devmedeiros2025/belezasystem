@@ -1,5 +1,6 @@
 import { clientes } from "@/data/mockData";
 import { Award, Gift, Trophy, Crown, Gem } from "lucide-react";
+import { useCurrency } from "@/hooks/useCurrency";
 
 const ranking = [...clientes].sort((a, b) => b.pontos - a.pontos);
 
@@ -22,6 +23,8 @@ const aniversariantes = [
 ];
 
 export default function Fidelidade() {
+  const { symbol } = useCurrency();
+
   return (
     <div className="space-y-6">
       {/* Programa */}
@@ -29,7 +32,7 @@ export default function Fidelidade() {
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <h3 className="font-display text-xl font-semibold text-foreground mb-1">Programa de Pontos</h3>
-            <p className="text-sm text-text2">R$ 1 = 1 ponto · 100 pts = R$ 10 desconto</p>
+            <p className="text-sm text-text2">{symbol} 1 = 1 ponto · 100 pts = {symbol} 10 desconto</p>
           </div>
           <div className="flex items-center gap-3">
             <span className="text-sm text-green-custom font-medium">Ativo</span>
