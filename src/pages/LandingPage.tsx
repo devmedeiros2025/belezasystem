@@ -278,7 +278,7 @@ export default function LandingPage() {
               Invista no crescimento do seu <span className="text-primary">negócio</span>
             </motion.h2>
             <motion.p variants={fadeUp} custom={2} className="text-[hsl(280,15%,45%)] max-w-xl mx-auto">
-              Escolha o plano ideal para o tamanho do seu salão. Todos incluem 133as grátis.
+              Escolha o plano ideal para o tamanho do seu salão. Todos incluem 3 dias grátis.
             </motion.p>
           </motion.div>
 
