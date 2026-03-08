@@ -1,5 +1,5 @@
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
-import { TrendingUp, Calendar, Users, Star, CheckCircle, Clock } from "lucide-react";
+import { TrendingUp, Calendar, Users, Star, CheckCircle, Clock, DollarSign, ArrowUpCircle, ArrowDownCircle, Receipt } from "lucide-react";
 import { agendamentos, clientes, profissionais, servicos, receitaSemanal, avaliacoes } from "@/data/mockData";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
