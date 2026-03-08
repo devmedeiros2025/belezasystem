@@ -72,7 +72,7 @@ export default function KanbanBoard() {
         ...form,
         id: Date.now(),
         responsavelNome: responsavel?.nome || "",
-        criadoPorId: usuarioLogado?.id || 1,
+        criadoPorId: Number(usuarioLogado?.id) || 1,
         criadoPorNome: usuarioLogado?.nome || "",
       };
       setTarefas(prev => [...prev, nova]);
