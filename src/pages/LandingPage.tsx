@@ -131,6 +131,8 @@ export default function LandingPage() {
       {/* Hero */}
       <section className="pt-32 pb-20 px-6 relative">
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <img src={salonHero} alt="" className="absolute inset-0 w-full h-full object-cover opacity-[0.07]" />
+          <div className="absolute inset-0 bg-gradient-to-b from-[hsl(30,20%,97%)] via-transparent to-[hsl(30,20%,97%)]" />
           <div className="absolute -top-40 -right-40 w-[600px] h-[600px] rounded-full bg-[hsl(35,50%,50%)/0.08] blur-3xl" />
           <div className="absolute -bottom-20 -left-40 w-[500px] h-[500px] rounded-full bg-[hsl(270,40%,55%)/0.06] blur-3xl" />
         </div>
