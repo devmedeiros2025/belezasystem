@@ -1,6 +1,7 @@
 import { useParams, Link } from "react-router-dom";
 import { clientes } from "@/data/mockData";
 import { ArrowLeft, Calendar, MessageSquare, Edit, Award, AlertTriangle } from "lucide-react";
+import { useCurrency } from "@/hooks/useCurrency";
 
 const historico = [
   { data: "28 Fev", servico: "Coloração", profissional: "Élise", duracao: "2h", valor: 180, avaliacao: 5, status: "Realizado" },
@@ -11,6 +12,7 @@ const historico = [
 
 export default function ClientePerfil() {
   const { id } = useParams();
+  const { format } = useCurrency();
   const cliente = clientes.find((c) => c.id === Number(id));
 
   if (!cliente) {
@@ -23,9 +25,9 @@ export default function ClientePerfil() {
   }
 
   const metricas = [
-    { label: "Total gasto", value: `R$ ${cliente.totalGasto.toLocaleString()}` },
+    { label: "Total gasto", value: format(cliente.totalGasto) },
     { label: "Visitas", value: cliente.visitas.toString() },
-    { label: "Ticket médio", value: `R$ ${Math.round(cliente.totalGasto / cliente.visitas)}` },
+    { label: "Ticket médio", value: format(Math.round(cliente.totalGasto / cliente.visitas)) },
     { label: "Última visita", value: cliente.ultimaVisita },
   ];
 
@@ -46,8 +48,8 @@ export default function ClientePerfil() {
             <p className="text-sm text-text2 mt-1">{cliente.telefone} · {cliente.email}</p>
             <div className="mt-3 flex flex-wrap gap-2">
               {cliente.status === "VIP" && <span className="badge-vip rounded-full px-3 py-1 text-xs font-medium">⭐ VIP</span>}
-              {cliente.visitas >= 10 && <span className="rounded-full bg-teal-custom/20 border border-teal-custom/30 px-3 py-1 text-xs text-teal-custom font-medium">Cliente Frequente</span>}
-              <span className="rounded-full bg-rose-custom/20 border border-rose-custom/30 px-3 py-1 text-xs text-rose-custom font-medium">🎂 {cliente.aniversario}</span>
+              {cliente.visitas >= 10 && <span className="rounded-full bg-teal-custom/12 border border-teal-custom/20 px-3 py-1 text-xs text-teal-custom font-medium">Cliente Frequente</span>}
+              <span className="rounded-full bg-rose-custom/12 border border-rose-custom/20 px-3 py-1 text-xs text-rose-custom font-medium">🎂 {cliente.aniversario}</span>
             </div>
           </div>
           <div className="flex gap-2">
@@ -80,7 +82,7 @@ export default function ClientePerfil() {
             </tr></thead>
             <tbody>
               {historico.map((h, i) => (
-                <tr key={i} className="border-b border-border/50 hover:bg-surface2/50"><td className="p-4 text-text3">{h.data}</td><td className="p-4 text-foreground">{h.servico}</td><td className="p-4 text-text2 hidden md:table-cell">{h.profissional}</td><td className="p-4 font-medium text-foreground">R$ {h.valor}</td><td className="p-4 text-primary hidden md:table-cell">{"★".repeat(h.avaliacao)}</td></tr>
+                <tr key={i} className="border-b border-border/50 hover:bg-surface2/50"><td className="p-4 text-text3">{h.data}</td><td className="p-4 text-foreground">{h.servico}</td><td className="p-4 text-text2 hidden md:table-cell">{h.profissional}</td><td className="p-4 font-medium text-foreground">{format(h.valor)}</td><td className="p-4 text-primary hidden md:table-cell">{"★".repeat(h.avaliacao)}</td></tr>
               ))}
             </tbody>
           </table>

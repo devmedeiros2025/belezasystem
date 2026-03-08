@@ -1,5 +1,6 @@
 import { profissionais } from "@/data/mockData";
-import { Star, Calendar, Clock } from "lucide-react";
+import { Star } from "lucide-react";
+import { useCurrency } from "@/hooks/useCurrency";
 
 const statusStyle: Record<string, string> = {
   "Disponível": "badge-active",
@@ -15,6 +16,8 @@ const escala = [
 ];
 
 export default function Profissionais() {
+  const { format } = useCurrency();
+
   return (
     <div className="space-y-6">
       {/* Cards */}
@@ -30,7 +33,7 @@ export default function Profissionais() {
             </div>
             <span className={`inline-block rounded-full px-2.5 py-1 text-[11px] font-medium mb-4 ${statusStyle[p.status]}`}>{p.status}</span>
             <div className="grid grid-cols-3 gap-3 text-center mb-4">
-              <div><p className="text-lg font-bold text-primary font-display">R$ {(p.receita / 1000).toFixed(1)}k</p><p className="text-[10px] text-text3">Receita</p></div>
+              <div><p className="text-lg font-bold text-primary font-display">{format(p.receita)}</p><p className="text-[10px] text-text3">Receita</p></div>
               <div><p className="text-lg font-bold text-foreground font-display">{p.atendimentos}</p><p className="text-[10px] text-text3">Atend.</p></div>
               <div><p className="text-lg font-bold text-primary font-display flex items-center justify-center gap-0.5"><Star className="h-3 w-3" />{p.avaliacao}</p><p className="text-[10px] text-text3">Nota</p></div>
             </div>
@@ -51,9 +54,9 @@ export default function Profissionais() {
               <tr key={p.id} className="border-b border-border/50 hover:bg-surface2/50">
                 <td className="p-4 font-medium text-foreground">{p.nome}</td>
                 <td className="p-4 text-text2">{p.atendimentos}</td>
-                <td className="p-4 text-foreground">R$ {p.receita.toLocaleString()}</td>
+                <td className="p-4 text-foreground">{format(p.receita)}</td>
                 <td className="p-4 text-text2">40%</td>
-                <td className="p-4 font-semibold text-green-custom">R$ {(p.receita * 0.4).toLocaleString()}</td>
+                <td className="p-4 font-semibold text-green-custom">{format(p.receita * 0.4)}</td>
               </tr>
             ))}
           </tbody>
@@ -71,7 +74,7 @@ export default function Profissionais() {
                 <td className="p-4 font-medium text-foreground">{e.prof}</td>
                 {[e.seg, e.ter, e.qua, e.qui, e.sex].map((d, i) => (
                   <td key={i} className="p-4 text-center">
-                    <span className={`inline-block rounded-full px-2.5 py-1 text-[11px] font-medium ${d === "Folga" ? "bg-rose-custom/20 text-rose-custom" : "bg-green-custom/10 text-green-custom"}`}>{d}</span>
+                    <span className={`inline-block rounded-full px-2.5 py-1 text-[11px] font-medium ${d === "Folga" ? "bg-rose-custom/12 text-rose-custom" : "bg-green-custom/10 text-green-custom"}`}>{d}</span>
                   </td>
                 ))}
               </tr>
