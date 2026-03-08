@@ -270,7 +270,7 @@ function DashboardColaborador() {
             </div>
             <div className="rounded-xl border border-border bg-card p-5 card-hover">
               <div className="flex items-center gap-3">
-                <div className="rounded-lg bg-primary/12 p-2.5 text-primary">
+                <div className="rounded-lg p-2.5" style={{ backgroundColor: "hsl(var(--primary) / 0.12)", color: "hsl(var(--primary))" }}>
                   <Clock className="h-5 w-5" />
                 </div>
                 <div>
