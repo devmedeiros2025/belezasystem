@@ -166,7 +166,7 @@ export default function Agenda() {
                   <span className={`block text-[11px] uppercase tracking-wider font-medium ${d.isToday ? "text-primary" : "text-text3"}`}>
                     {d.nome}
                   </span>
-                  <span className={`mt-1 inline-flex h-9 w-9 items-center justify-center rounded-full text-lg font-bold ${isToday ? "gold-gradient text-primary-foreground" : "text-foreground"}`}>
+                  <span className={`mt-1 inline-flex h-9 w-9 items-center justify-center rounded-full text-lg font-bold ${d.isToday ? "gold-gradient text-primary-foreground" : "text-foreground"}`}>
                     {d.num}
                   </span>
                 </div>
