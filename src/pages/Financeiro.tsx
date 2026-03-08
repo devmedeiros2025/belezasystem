@@ -148,9 +148,6 @@ export default function Financeiro() {
   const { format } = useCurrency();
   const { toast } = useToast();
 
-  // Redirect non-authorized
-  if (perfil === "Colaborador") return <Navigate to="/dashboard" replace />;
-
   const [tab, setTab] = useState<TabKey>("visao-geral");
 
   // State for all tabs
