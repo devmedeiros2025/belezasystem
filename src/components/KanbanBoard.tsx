@@ -1,5 +1,5 @@
 import { useState, useRef, DragEvent } from "react";
-import { Plus, Clock, Eye, CheckCircle2, Loader2, ClipboardCheck, X, MessageSquare, CalendarDays, User } from "lucide-react";
+import { Plus, Clock, Eye, CheckCircle2, Loader2, ClipboardCheck, X, MessageSquare, CalendarDays, User, ListTodo } from "lucide-react";
 import { Tarefa, TarefaStatus, tarefasMock } from "@/data/tarefasData";
 import { useAuth, usuarios } from "@/contexts/AuthContext";
 import { profissionais } from "@/data/mockData";
@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const colunas: { key: TarefaStatus; label: string; icon: React.ElementType; colorClass: string; bgClass: string }[] = [
+  { key: "afazer", label: "A Fazer", icon: ListTodo, colorClass: "text-slate-600", bgClass: "bg-slate-50 border-slate-200" },
   { key: "fazendo", label: "Fazendo", icon: Loader2, colorClass: "text-blue-600", bgClass: "bg-blue-50 border-blue-200" },
   { key: "feito", label: "Feito", icon: ClipboardCheck, colorClass: "text-amber-600", bgClass: "bg-amber-50 border-amber-200" },
   { key: "aguardando", label: "Aguardando Aprovação", icon: Eye, colorClass: "text-purple-600", bgClass: "bg-purple-50 border-purple-200" },
@@ -20,7 +21,7 @@ const emptyTarefa = (): Omit<Tarefa, "id" | "criadoPorId" | "criadoPorNome"> => 
   descricao: "",
   responsavelId: 0,
   responsavelNome: "",
-  status: "fazendo",
+  status: "afazer",
   dataInicio: new Date().toISOString().split("T")[0],
   horaInicio: "09:00",
   dataConclusao: new Date().toISOString().split("T")[0],
@@ -111,7 +112,7 @@ export default function KanbanBoard() {
       </div>
 
       {/* Kanban columns */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-5">
         {colunas.map((col) => {
           const items = visibleTarefas.filter(t => t.status === col.key);
           const isOver = dragOverCol === col.key;
