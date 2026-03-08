@@ -14,7 +14,198 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      agendamentos: {
+        Row: {
+          canal: string | null
+          cliente_id: string | null
+          cliente_nome: string
+          created_at: string
+          data: string
+          duracao: number
+          hora: string
+          id: string
+          observacoes: string | null
+          profissional_id: string | null
+          profissional_nome: string
+          servico: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          canal?: string | null
+          cliente_id?: string | null
+          cliente_nome: string
+          created_at?: string
+          data: string
+          duracao: number
+          hora: string
+          id?: string
+          observacoes?: string | null
+          profissional_id?: string | null
+          profissional_nome: string
+          servico: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          canal?: string | null
+          cliente_id?: string | null
+          cliente_nome?: string
+          created_at?: string
+          data?: string
+          duracao?: number
+          hora?: string
+          id?: string
+          observacoes?: string | null
+          profissional_id?: string | null
+          profissional_nome?: string
+          servico?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agendamentos_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agendamentos_profissional_id_fkey"
+            columns: ["profissional_id"]
+            isOneToOne: false
+            referencedRelation: "profissionais"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      clientes: {
+        Row: {
+          bi: string | null
+          created_at: string
+          data_nascimento: string | null
+          email: string | null
+          genero: string | null
+          id: string
+          nome_completo: string
+          observacoes: string | null
+          pontos: number | null
+          profissao: string | null
+          status: string
+          telefone: string | null
+          total_gasto: number | null
+          updated_at: string
+          visitas: number | null
+        }
+        Insert: {
+          bi?: string | null
+          created_at?: string
+          data_nascimento?: string | null
+          email?: string | null
+          genero?: string | null
+          id?: string
+          nome_completo: string
+          observacoes?: string | null
+          pontos?: number | null
+          profissao?: string | null
+          status?: string
+          telefone?: string | null
+          total_gasto?: number | null
+          updated_at?: string
+          visitas?: number | null
+        }
+        Update: {
+          bi?: string | null
+          created_at?: string
+          data_nascimento?: string | null
+          email?: string | null
+          genero?: string | null
+          id?: string
+          nome_completo?: string
+          observacoes?: string | null
+          pontos?: number | null
+          profissao?: string | null
+          status?: string
+          telefone?: string | null
+          total_gasto?: number | null
+          updated_at?: string
+          visitas?: number | null
+        }
+        Relationships: []
+      }
+      profissionais: {
+        Row: {
+          cargo: string | null
+          cor: string | null
+          created_at: string
+          emoji: string | null
+          foto_url: string | null
+          id: string
+          nome: string
+          servicos: string[] | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          cargo?: string | null
+          cor?: string | null
+          created_at?: string
+          emoji?: string | null
+          foto_url?: string | null
+          id?: string
+          nome: string
+          servicos?: string[] | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          cargo?: string | null
+          cor?: string | null
+          created_at?: string
+          emoji?: string | null
+          foto_url?: string | null
+          id?: string
+          nome?: string
+          servicos?: string[] | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      servicos: {
+        Row: {
+          ativo: boolean
+          categoria: string
+          created_at: string
+          duracao: number
+          id: string
+          nome: string
+          preco: number
+          updated_at: string
+        }
+        Insert: {
+          ativo?: boolean
+          categoria: string
+          created_at?: string
+          duracao: number
+          id?: string
+          nome: string
+          preco: number
+          updated_at?: string
+        }
+        Update: {
+          ativo?: boolean
+          categoria?: string
+          created_at?: string
+          duracao?: number
+          id?: string
+          nome?: string
+          preco?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
