@@ -273,5 +273,20 @@ export function useDashboardData(): DashboardData {
 
   useEffect(() => { fetchAll(); }, [fetchAll]);
 
+  // Realtime subscriptions - refetch on any change to key tables
+  useEffect(() => {
+    const channel = supabase
+      .channel('dashboard-realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'movimentacoes' }, () => fetchAll())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'agendamentos' }, () => fetchAll())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'clientes' }, () => fetchAll())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'despesas' }, () => fetchAll())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'contas_pagar' }, () => fetchAll())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'contas_receber' }, () => fetchAll())
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [fetchAll]);
+
   return data;
 }
