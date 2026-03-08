@@ -750,7 +750,46 @@ export default function Financeiro() {
               </div>
             </div>
 
-            <TableWrapper
+            {/* Gráficos de Tendência Mensal de Despesas */}
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+              <div className="rounded-xl border border-border bg-card p-5 card-hover">
+                <h3 className="font-display text-sm font-semibold text-foreground mb-3">Evolução Total de Despesas — 6 meses</h3>
+                <ResponsiveContainer width="100%" height={220}>
+                  <AreaChart data={despesasMensalTrend}>
+                    <defs>
+                      <linearGradient id="despTotalGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="hsl(350 55% 57%)" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="hsl(350 55% 57%)" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(280 20% 90%)" />
+                    <XAxis dataKey="mes" tick={{ fill: "hsl(280 15% 60%)", fontSize: 11 }} axisLine={false} />
+                    <YAxis hide />
+                    <Tooltip contentStyle={tooltipStyle} formatter={(value: number) => format(value)} />
+                    <Area type="monotone" dataKey="total" name="Total Despesas" stroke="hsl(350 55% 57%)" fill="url(#despTotalGrad)" strokeWidth={2.5} dot={{ r: 4, fill: "hsl(350 55% 57%)" }} />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="rounded-xl border border-border bg-card p-5 card-hover">
+                <h3 className="font-display text-sm font-semibold text-foreground mb-3">Despesas por Categoria — Comparativo Mensal</h3>
+                <ResponsiveContainer width="100%" height={220}>
+                  <BarChart data={despesasMensalTrend}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(280 20% 90%)" />
+                    <XAxis dataKey="mes" tick={{ fill: "hsl(280 15% 60%)", fontSize: 11 }} axisLine={false} />
+                    <YAxis hide />
+                    <Tooltip contentStyle={tooltipStyle} formatter={(value: number) => format(value)} />
+                    <Legend />
+                    <Bar dataKey="aluguel" name="Aluguel" fill="hsl(35 50% 50%)" radius={[2,2,0,0]} stackId="a" />
+                    <Bar dataKey="produtos" name="Produtos" fill="hsl(183 50% 40%)" radius={[0,0,0,0]} stackId="a" />
+                    <Bar dataKey="utilidades" name="Utilidades" fill="hsl(270 40% 55%)" radius={[0,0,0,0]} stackId="a" />
+                    <Bar dataKey="marketing" name="Marketing" fill="hsl(150 50% 40%)" radius={[0,0,0,0]} stackId="a" />
+                    <Bar dataKey="outros" name="Outros" fill="hsl(200 50% 50%)" radius={[2,2,0,0]} stackId="a" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+
               exportProps={{
                 title: "Despesas", fileName: "despesas",
                 columns: [{ header: "Data", key: "data" }, { header: "Descrição", key: "descricao" }, { header: "Categoria", key: "categoria" }, { header: "Valor", key: "valorFmt" }, { header: "Forma Pgto", key: "formaPgto" }],
