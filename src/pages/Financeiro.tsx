@@ -290,7 +290,13 @@ export default function Financeiro() {
 
           {/* Extrato */}
           <div className="rounded-xl border border-border bg-card overflow-x-auto">
-            <div className="p-5 border-b border-border"><h3 className="font-display text-lg font-semibold text-foreground">Extrato</h3></div>
+            <div className="p-5 border-b border-border flex items-center justify-between">
+              <h3 className="font-display text-lg font-semibold text-foreground">Extrato</h3>
+              <div className="flex gap-2">
+                <button onClick={() => exportarExtrato("pdf")} className="flex items-center gap-1.5 rounded-lg bg-surface2 px-3 py-1.5 text-xs font-medium text-text2 hover:text-foreground hover:bg-primary/10"><Download className="h-3.5 w-3.5" />PDF</button>
+                <button onClick={() => exportarExtrato("excel")} className="flex items-center gap-1.5 rounded-lg bg-surface2 px-3 py-1.5 text-xs font-medium text-text2 hover:text-foreground hover:bg-primary/10"><FileSpreadsheet className="h-3.5 w-3.5" />Excel</button>
+              </div>
+            </div>
             <table className="w-full text-sm">
               <thead><tr className="border-b border-border text-xs text-text3"><th className="p-4 text-left">Data</th><th className="p-4 text-left">Cliente</th><th className="p-4 text-left hidden md:table-cell">Serviço</th><th className="p-4 text-left hidden md:table-cell">Profissional</th><th className="p-4 text-left">Valor</th><th className="p-4 text-left">Pagamento</th></tr></thead>
               <tbody>
