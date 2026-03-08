@@ -21,7 +21,7 @@ const emptyTarefa = (): Omit<Tarefa, "id" | "criadoPorId" | "criadoPorNome"> => 
   descricao: "",
   responsavelId: 0,
   responsavelNome: "",
-  status: "fazendo",
+  status: "afazer",
   dataInicio: new Date().toISOString().split("T")[0],
   horaInicio: "09:00",
   dataConclusao: new Date().toISOString().split("T")[0],
