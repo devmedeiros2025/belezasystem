@@ -964,18 +964,12 @@ export default function Financeiro() {
           <div className="rounded-xl border border-border bg-card p-5 card-hover">
             <h3 className="font-display text-base font-semibold text-foreground mb-4">Top 8 Produtos por Receita</h3>
             <ResponsiveContainer width="100%" height={280}>
-              <BarChart data={[...produtosVendidos].sort((a, b) => (b.preco * b.unidades) - (a.preco * a.unidades)).slice(0, 8)} layout="vertical">
+              <BarChart data={[...produtosVendidos].map(p => ({ ...p, receita: p.preco * p.unidades })).sort((a, b) => b.receita - a.receita).slice(0, 8)} layout="vertical">
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(280 20% 90%)" />
                 <XAxis type="number" tick={{ fill: "hsl(280 15% 60%)", fontSize: 12 }} axisLine={false} />
                 <YAxis dataKey="nome" type="category" width={180} tick={{ fill: "hsl(280 15% 60%)", fontSize: 11 }} axisLine={false} />
                 <Tooltip contentStyle={tooltipStyle} />
-                <Bar dataKey="receita" fill="hsl(35 50% 50%)" radius={[0,4,4,0]} name="Receita (Kz)">
-                  {produtosVendidos.map((p, i) => {
-                    // Add computed receita field
-                    (p as any).receita = p.preco * p.unidades;
-                    return null;
-                  })}
-                </Bar>
+                <Bar dataKey="receita" fill="hsl(35 50% 50%)" radius={[0,4,4,0]} name="Receita (Kz)" />
               </BarChart>
             </ResponsiveContainer>
           </div>
