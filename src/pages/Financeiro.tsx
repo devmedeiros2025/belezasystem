@@ -125,6 +125,76 @@ export default function Financeiro() {
     toast({ title: "Status atualizado" });
   };
 
+  const exportarExtrato = (formato: "pdf" | "excel") => {
+    const opts = {
+      title: "Extrato Financeiro",
+      fileName: "extrato-financeiro",
+      columns: [
+        { header: "Data", key: "data" },
+        { header: "Cliente", key: "cliente" },
+        { header: "Serviço", key: "servico" },
+        { header: "Profissional", key: "profissional" },
+        { header: "Valor", key: "valorFmt" },
+        { header: "Pagamento", key: "pagamento" },
+      ],
+      data: extrato.map(e => ({ ...e, valorFmt: format(e.valor) })),
+    };
+    formato === "pdf" ? exportToPDF(opts) : exportToExcel(opts);
+    toast({ title: `Extrato exportado em ${formato.toUpperCase()}` });
+  };
+
+  const exportarCaixa = (formato: "pdf" | "excel") => {
+    const opts = {
+      title: "Fluxo de Caixa",
+      fileName: "fluxo-de-caixa",
+      columns: [
+        { header: "Data", key: "data" },
+        { header: "Descrição", key: "descricao" },
+        { header: "Categoria", key: "categoria" },
+        { header: "Tipo", key: "tipo" },
+        { header: "Valor", key: "valorFmt" },
+      ],
+      data: movimentos.map(m => ({ ...m, valorFmt: `${m.tipo === "entrada" ? "+" : "-"}${format(m.valor)}` })),
+    };
+    formato === "pdf" ? exportToPDF(opts) : exportToExcel(opts);
+    toast({ title: `Fluxo de caixa exportado em ${formato.toUpperCase()}` });
+  };
+
+  const exportarFolha = (formato: "pdf" | "excel") => {
+    const opts = {
+      title: "Folha de Pagamento",
+      fileName: "folha-pagamento",
+      columns: [
+        { header: "Data", key: "data" },
+        { header: "Profissional", key: "profissional" },
+        { header: "Tipo", key: "tipo" },
+        { header: "Descrição", key: "descricao" },
+        { header: "Valor", key: "valorFmt" },
+        { header: "Status", key: "status" },
+      ],
+      data: folha.map(f => ({ ...f, valorFmt: format(f.valor) })),
+    };
+    formato === "pdf" ? exportToPDF(opts) : exportToExcel(opts);
+    toast({ title: `Folha exportada em ${formato.toUpperCase()}` });
+  };
+
+  const exportarServicosTop = (formato: "pdf" | "excel") => {
+    const opts = {
+      title: "Serviços Mais Solicitados",
+      fileName: "servicos-ranking",
+      columns: [
+        { header: "#", key: "pos" },
+        { header: "Serviço", key: "nome" },
+        { header: "Atendimentos", key: "qtd" },
+        { header: "Receita Total", key: "receitaFmt" },
+        { header: "Ticket Médio", key: "ticketFmt" },
+      ],
+      data: servicosMaisSolicitados.map((s, i) => ({ ...s, pos: i + 1, receitaFmt: format(s.receita), ticketFmt: format(Math.round(s.receita / s.qtd)) })),
+    };
+    formato === "pdf" ? exportToPDF(opts) : exportToExcel(opts);
+    toast({ title: `Ranking exportado em ${formato.toUpperCase()}` });
+  };
+
   const kpis = [
     { label: "Receita Bruta", value: format(18420), icon: TrendingUp, color: "text-green-custom" },
     { label: "Despesas", value: format(8900), icon: TrendingDown, color: "text-destructive" },
