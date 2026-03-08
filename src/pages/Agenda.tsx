@@ -160,11 +160,10 @@ export default function Agenda() {
         <div className="min-w-[700px]">
           <div className="grid" style={{ gridTemplateColumns: "70px repeat(5, 1fr)" }}>
             <div className="border-b border-border p-3" />
-            {diasSemana.map((d, i) => {
-              const isToday = i === 0;
+            {diasSemana.map((d) => {
               return (
-                <div key={d.nome} className={`border-b border-l border-border px-3 py-3 text-center ${isToday ? "bg-primary/8" : ""}`}>
-                  <span className={`block text-[11px] uppercase tracking-wider font-medium ${isToday ? "text-primary" : "text-text3"}`}>
+                <div key={d.nome} className={`border-b border-l border-border px-3 py-3 text-center ${d.isToday ? "bg-primary/8" : ""}`}>
+                  <span className={`block text-[11px] uppercase tracking-wider font-medium ${d.isToday ? "text-primary" : "text-text3"}`}>
                     {d.nome}
                   </span>
                   <span className={`mt-1 inline-flex h-9 w-9 items-center justify-center rounded-full text-lg font-bold ${isToday ? "gold-gradient text-primary-foreground" : "text-foreground"}`}>
