@@ -1,7 +1,15 @@
 import { useState, useRef, DragEvent } from "react";
 import { Plus, Clock, Eye, CheckCircle2, Loader2, ClipboardCheck, X, MessageSquare, CalendarDays, User, ListTodo } from "lucide-react";
 import { Tarefa, TarefaStatus, tarefasMock } from "@/data/tarefasData";
-import { useAuth, usuarios } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/AuthContext";
+
+// Temporary mock users for Kanban until fully migrated to Supabase
+const mockUsuarios = [
+  { id: "1", nome: "Élise Monteiro", perfil: "Administrador" as const, ativo: true },
+  { id: "2", nome: "Rodrigo Alves", perfil: "Colaborador" as const, ativo: true },
+  { id: "3", nome: "Patrícia Nunes", perfil: "Colaborador" as const, ativo: true },
+  { id: "4", nome: "Carlos Menezes", perfil: "Financeiro" as const, ativo: true },
+];
 import { profissionais } from "@/data/mockData";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
