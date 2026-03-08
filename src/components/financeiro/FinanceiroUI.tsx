@@ -99,22 +99,32 @@ export function ConfirmDialog({
 }
 
 // ===== KPI CARD =====
-export function KpiCard({ label, value, icon: Icon, color, variacao, trend }: { 
+export function KpiCard({ label, value, icon: Icon, color, variacao, trend, index = 0 }: { 
   label: string; 
   value: string; 
   icon: any; 
   color: string; 
   variacao?: { valor: string; positivo: boolean };
   trend?: number[];
+  index?: number;
 }) {
   return (
     <motion.div 
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
+      initial={{ opacity: 0, y: 20, scale: 0.95 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ delay: index * 0.07, duration: 0.35, ease: "easeOut" }}
+      whileHover={{ y: -2, transition: { duration: 0.15 } }}
       className="rounded-xl border border-border bg-card p-5 card-hover"
     >
       <div className="flex items-center gap-3">
-        <div className={`rounded-lg p-2.5 ${color}`}><Icon className="h-5 w-5" /></div>
+        <motion.div 
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ delay: index * 0.07 + 0.15, type: "spring", stiffness: 400, damping: 15 }}
+          className={`rounded-lg p-2.5 ${color}`}
+        >
+          <Icon className="h-5 w-5" />
+        </motion.div>
         <div className="flex-1 min-w-0">
           <p className="text-xs text-text3 truncate">{label}</p>
           <p className="font-display text-2xl font-bold text-foreground truncate">{value}</p>
