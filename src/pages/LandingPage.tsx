@@ -399,8 +399,10 @@ export default function LandingPage() {
       </section>
 
       {/* Final CTA */}
-      <section className="py-20 px-6">
-        <div className="max-w-3xl mx-auto text-center">
+      <section className="py-20 px-6 relative overflow-hidden">
+        <img src={spaSection} alt="" className="absolute inset-0 w-full h-full object-cover opacity-[0.06]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[hsl(30,20%,97%)] via-[hsl(30,20%,97%)/0.9] to-[hsl(30,20%,97%)]" />
+        <div className="max-w-3xl mx-auto text-center relative z-10">
           <motion.div
             initial="hidden"
             whileInView="visible"
@@ -410,7 +412,7 @@ export default function LandingPage() {
               Pronto para elevar o seu salão ao <span className="text-primary">próximo nível</span>?
             </motion.h2>
             <motion.p variants={fadeUp} custom={1} className="text-[hsl(280,15%,45%)] mb-8 text-lg">
-              Comece agora com 143ias grátis. Sem compromisso, sem cartão de crédito.
+              Comece agora com 3 dias grátis. Sem compromisso, sem cartão de crédito.
             </motion.p>
             <motion.div variants={fadeUp} custom={2}>
               <button
