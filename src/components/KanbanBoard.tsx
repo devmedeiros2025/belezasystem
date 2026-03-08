@@ -98,7 +98,7 @@ export default function KanbanBoard() {
 
   // Filter tasks: collaborators see only their own tasks
   const visibleTarefas = perfil === "Colaborador"
-    ? tarefas.filter(t => t.responsavelId === usuarioLogado?.profissionalId || t.responsavelId === usuarioLogado?.id)
+    ? tarefas.filter(t => String(t.responsavelId) === usuarioLogado?.profissionalId || String(t.responsavelId) === usuarioLogado?.id)
     : tarefas;
 
   return (
