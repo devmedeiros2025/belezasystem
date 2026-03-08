@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { profissionais as profInit } from "@/data/mockData";
 import KanbanBoard from "@/components/KanbanBoard";
-import { Star, Plus, X, Trash2, Edit } from "lucide-react";
+import { Star, Plus, X, Trash2, Edit, Camera } from "lucide-react";
 import { useCurrency } from "@/hooks/useCurrency";
 import { useToast } from "@/hooks/use-toast";
 
@@ -25,6 +25,7 @@ interface Prof {
   nome: string;
   cargo: string;
   emoji: string;
+  foto: string;
   receita: number;
   atendimentos: number;
   avaliacao: number;
@@ -46,19 +47,31 @@ export default function Profissionais() {
   const [profList, setProfList] = useState<Prof[]>(profInit);
   const [showModal, setShowModal] = useState(false);
   const [editId, setEditId] = useState<number | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const emptyForm = { nome: "", cargo: "", emoji: "💆", servicos: [] as string[], status: "Disponível" as "Disponível" | "Em atendimento" | "Folga" };
+  const emptyForm = { nome: "", cargo: "", emoji: "💆", foto: "", servicos: [] as string[], status: "Disponível" as "Disponível" | "Em atendimento" | "Folga" };
   const [form, setForm] = useState(emptyForm);
 
   const openNew = () => { setEditId(null); setForm(emptyForm); setShowModal(true); };
   const openEdit = (p: Prof) => {
     setEditId(p.id);
-    setForm({ nome: p.nome, cargo: p.cargo, emoji: p.emoji, servicos: [...p.servicos], status: p.status });
+    setForm({ nome: p.nome, cargo: p.cargo, emoji: p.emoji, foto: p.foto, servicos: [...p.servicos], status: p.status });
     setShowModal(true);
   };
 
   const toggleHab = (h: string) => {
     setForm(f => ({ ...f, servicos: f.servicos.includes(h) ? f.servicos.filter(s => s !== h) : [...f.servicos, h] }));
+  };
+
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      setForm(f => ({ ...f, foto: reader.result as string }));
+    };
+    reader.readAsDataURL(file);
   };
 
   const save = () => {
@@ -95,7 +108,11 @@ export default function Profissionais() {
           <div key={p.id} className="rounded-xl border border-border bg-card p-5 card-hover">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
-                <span className="text-3xl">{p.emoji}</span>
+                {p.foto ? (
+                  <img src={p.foto} alt={p.nome} className="h-10 w-10 rounded-full object-cover" />
+                ) : (
+                  <span className="text-3xl">{p.emoji}</span>
+                )}
                 <div>
                   <h3 className="font-display text-base font-semibold text-foreground">{p.nome}</h3>
                   <p className="text-xs text-text3">{p.cargo}</p>
@@ -169,6 +186,33 @@ export default function Profissionais() {
               <button onClick={() => setShowModal(false)} className="text-text3 hover:text-foreground"><X className="h-5 w-5" /></button>
             </div>
             <div className="space-y-3">
+              {/* Photo upload */}
+              <div>
+                <label className="text-xs text-text3 mb-2 block">Foto do Profissional</label>
+                <div className="flex items-center gap-4">
+                  <div
+                    onClick={() => fileInputRef.current?.click()}
+                    className="relative h-20 w-20 rounded-full border-2 border-dashed border-border hover:border-primary/50 cursor-pointer flex items-center justify-center overflow-hidden transition-colors bg-surface2"
+                  >
+                    {form.foto ? (
+                      <img src={form.foto} alt="Preview" className="h-full w-full object-cover" />
+                    ) : (
+                      <Camera className="h-6 w-6 text-text3" />
+                    )}
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <button type="button" onClick={() => fileInputRef.current?.click()} className="text-xs text-primary hover:underline">
+                      {form.foto ? "Trocar foto" : "Enviar foto"}
+                    </button>
+                    {form.foto && (
+                      <button type="button" onClick={() => setForm(f => ({ ...f, foto: "" }))} className="text-xs text-destructive hover:underline">
+                        Remover
+                      </button>
+                    )}
+                  </div>
+                  <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} />
+                </div>
+              </div>
               <div>
                 <label className="text-xs text-text3 mb-1 block">Nome *</label>
                 <input value={form.nome} onChange={e => setForm(f => ({ ...f, nome: e.target.value }))} className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
@@ -178,7 +222,7 @@ export default function Profissionais() {
                 <input value={form.cargo} onChange={e => setForm(f => ({ ...f, cargo: e.target.value }))} placeholder="Ex: Colorista Sênior, Barbeiro" className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
               </div>
               <div>
-                <label className="text-xs text-text3 mb-1 block">Emoji / Avatar</label>
+                <label className="text-xs text-text3 mb-1 block">Emoji / Avatar (usado se não houver foto)</label>
                 <div className="flex gap-2 flex-wrap">
                   {emojis.map(e => (
                     <button key={e} onClick={() => setForm(f => ({ ...f, emoji: e }))} className={`text-2xl p-1.5 rounded-lg ${form.emoji === e ? "bg-primary/20 ring-2 ring-primary" : "hover:bg-surface2"}`}>{e}</button>
