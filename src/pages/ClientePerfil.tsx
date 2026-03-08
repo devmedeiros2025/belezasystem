@@ -1,7 +1,7 @@
 import { useParams, Link } from "react-router-dom";
-import { clientes } from "@/data/mockData";
 import { ArrowLeft, Calendar, MessageSquare, Edit, Award, AlertTriangle } from "lucide-react";
 import { useCurrency } from "@/hooks/useCurrency";
+import { useClientes } from "@/contexts/ClientesContext";
 
 const historico = [
   { data: "28 Fev", servico: "Coloração", profissional: "Élise", duracao: "2h", valor: 180, avaliacao: 5, status: "Realizado" },
@@ -13,7 +13,8 @@ const historico = [
 export default function ClientePerfil() {
   const { id } = useParams();
   const { format } = useCurrency();
-  const cliente = clientes.find((c) => c.id === Number(id));
+  const { getCliente } = useClientes();
+  const cliente = getCliente(Number(id));
 
   if (!cliente) {
     return (
@@ -27,7 +28,7 @@ export default function ClientePerfil() {
   const metricas = [
     { label: "Total gasto", value: format(cliente.totalGasto) },
     { label: "Visitas", value: cliente.visitas.toString() },
-    { label: "Ticket médio", value: format(Math.round(cliente.totalGasto / cliente.visitas)) },
+    { label: "Ticket médio", value: format(cliente.visitas > 0 ? Math.round(cliente.totalGasto / cliente.visitas) : 0) },
     { label: "Última visita", value: cliente.ultimaVisita },
   ];
 
@@ -46,6 +47,11 @@ export default function ClientePerfil() {
           <div className="flex-1 min-w-0">
             <h2 className="font-display text-2xl font-bold text-foreground">{cliente.nome}</h2>
             <p className="text-sm text-text2 mt-1">{cliente.telefone} · {cliente.email}</p>
+            {(cliente.genero || cliente.profissao || cliente.bi) && (
+              <p className="text-xs text-text3 mt-1">
+                {[cliente.genero, cliente.profissao, cliente.bi ? `B.I: ${cliente.bi}` : null].filter(Boolean).join(" · ")}
+              </p>
+            )}
             <div className="mt-3 flex flex-wrap gap-2">
               {cliente.status === "VIP" && <span className="badge-vip rounded-full px-3 py-1 text-xs font-medium">⭐ VIP</span>}
               {cliente.visitas >= 10 && <span className="rounded-full bg-teal-custom/12 border border-teal-custom/20 px-3 py-1 text-xs text-teal-custom font-medium">Cliente Frequente</span>}
@@ -99,7 +105,12 @@ export default function ClientePerfil() {
                 <div className="flex items-center gap-2 text-destructive mb-1"><AlertTriangle className="h-4 w-4" /><span className="font-medium text-xs">Alergias</span></div>
                 <p className="text-xs text-destructive/80">Sensibilidade a amônia — usar coloração sem amônia</p>
               </div>
-              <div><p className="text-text3 mb-1">Observações</p><p className="text-text2">Prefere horários matutinos. Gosta de café durante o atendimento.</p></div>
+              {cliente.observacoes && (
+                <div><p className="text-text3 mb-1">Observações</p><p className="text-text2">{cliente.observacoes}</p></div>
+              )}
+              {!cliente.observacoes && (
+                <div><p className="text-text3 mb-1">Observações</p><p className="text-text2">Prefere horários matutinos. Gosta de café durante o atendimento.</p></div>
+              )}
             </div>
           </div>
 
