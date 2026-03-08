@@ -290,7 +290,7 @@ function DashboardColaborador() {
             <div className="space-y-3">
               {minhasAvaliacoes.length > 0 ? minhasAvaliacoes.map((av) => (
                 <div key={av.id} className="flex items-start gap-3 rounded-lg bg-surface2 p-3">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/12 text-xs font-bold text-primary">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold text-primary" style={{ backgroundColor: "hsl(var(--primary) / 0.12)" }}>
                     {av.avatar}
                   </div>
                   <div className="flex-1 min-w-0">
