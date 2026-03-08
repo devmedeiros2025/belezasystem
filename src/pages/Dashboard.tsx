@@ -340,7 +340,7 @@ function DashboardColaborador() {
   // Get today's appointments for this professional
   const meusAgendamentos = agendamentos.filter(a => a.dia === "Seg"); // Simulating "today"
   const minhasAvaliacoes = avaliacoes.filter(a => {
-    const prof = profissionais.find(p => p.id === usuarioLogado?.profissionalId);
+    const prof = profissionais.find(p => String(p.id) === usuarioLogado?.profissionalId);
     return prof ? a.profissional === prof.nome : false;
   }).slice(0, 3);
 
