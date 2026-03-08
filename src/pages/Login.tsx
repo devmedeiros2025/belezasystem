@@ -52,9 +52,8 @@ export default function Login() {
       if (error) {
         toast.error(error.message);
       } else if (data.session) {
-        // Auto-confirm is enabled, user is already logged in
         toast.success("Conta criada com sucesso!");
-        navigate("/dashboard");
+        // Navigation handled by useEffect watching usuarioLogado
       } else if (data.user) {
         toast.success("Conta criada! Verifique seu e-mail para confirmar.");
       }
