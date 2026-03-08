@@ -137,9 +137,11 @@ export default function Agenda() {
           ))}
         </div>
         <div className="flex items-center gap-3">
-          <button className="rounded-lg p-2 text-text3 hover:bg-surface2"><ChevronLeft className="h-4 w-4" /></button>
-          <span className="text-sm font-medium text-foreground">3 – 7 Mar 2025</span>
-          <button className="rounded-lg p-2 text-text3 hover:bg-surface2"><ChevronRight className="h-4 w-4" /></button>
+          <button onClick={goToPrevWeek} className="rounded-lg p-2 text-text3 hover:bg-surface2 transition-colors"><ChevronLeft className="h-4 w-4" /></button>
+          <button onClick={goToCurrentWeek} className="text-sm font-medium text-foreground hover:text-primary transition-colors min-w-[160px] text-center">
+            {weekLabel}
+          </button>
+          <button onClick={goToNextWeek} className="rounded-lg p-2 text-text3 hover:bg-surface2 transition-colors"><ChevronRight className="h-4 w-4" /></button>
         </div>
       </div>
 
