@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, PieChart, Pie, Cell, LineChart, Line, Legend } from "recharts";
 import { receitaMensal, extrato, profissionais } from "@/data/mockData";
-import { TrendingUp, TrendingDown, DollarSign, Plus, X, ArrowUpCircle, ArrowDownCircle, Wallet, CreditCard, Receipt, Users, Scissors, Calendar, FileText, AlertTriangle } from "lucide-react";
+import { TrendingUp, TrendingDown, DollarSign, Plus, X, ArrowUpCircle, ArrowDownCircle, Wallet, CreditCard, Receipt, Users, Scissors, Calendar, FileText, AlertTriangle, Download, FileSpreadsheet } from "lucide-react";
 import { useCurrency } from "@/hooks/useCurrency";
 import { useToast } from "@/hooks/use-toast";
+import { exportToPDF, exportToExcel } from "@/lib/exportUtils";
 
 const servicoBreakdown = [
   { name: "Coloração", value: 35 },
