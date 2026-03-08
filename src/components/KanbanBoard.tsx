@@ -64,7 +64,7 @@ export default function KanbanBoard() {
 
   const saveTarefa = () => {
     if (!form.titulo.trim() || !form.responsavelId) return;
-    const responsavel = usuarios.find(u => u.id === form.responsavelId);
+    const responsavel = mockUsuarios.find(u => u.id === String(form.responsavelId));
     if (editingId) {
       setTarefas(prev => prev.map(t => t.id === editingId ? { ...t, ...form, responsavelNome: responsavel?.nome || "" } : t));
     } else {
