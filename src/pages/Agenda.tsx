@@ -4,7 +4,13 @@ import { agendamentos, profissionais } from "@/data/mockData";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { toast } from "sonner";
 
-const dias = ["Seg", "Ter", "Qua", "Qui", "Sex"];
+const diasSemana = [
+  { nome: "Seg", num: 3 },
+  { nome: "Ter", num: 4 },
+  { nome: "Qua", num: 5 },
+  { nome: "Qui", num: 6 },
+  { nome: "Sex", num: 7 },
+];
 const horarios = ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00"];
 const views = ["Dia", "Semana", "Mês"] as const;
 
@@ -65,20 +71,28 @@ export default function Agenda() {
         <div className="min-w-[700px]">
           <div className="grid" style={{ gridTemplateColumns: "70px repeat(5, 1fr)" }}>
             <div className="border-b border-border p-3" />
-            {dias.map((d, i) => (
-              <div key={d} className={`border-b border-l border-border p-3 text-center text-sm font-semibold ${i === 0 ? "text-primary bg-primary/5" : "text-text2"}`}>
-                {d}
-              </div>
-            ))}
+            {diasSemana.map((d, i) => {
+              const isToday = i === 0;
+              return (
+                <div key={d.nome} className={`border-b border-l border-border px-3 py-3 text-center ${isToday ? "bg-primary/8" : ""}`}>
+                  <span className={`block text-[11px] uppercase tracking-wider font-medium ${isToday ? "text-primary" : "text-text3"}`}>
+                    {d.nome}
+                  </span>
+                  <span className={`mt-1 inline-flex h-9 w-9 items-center justify-center rounded-full text-lg font-bold ${isToday ? "gold-gradient text-primary-foreground" : "text-foreground"}`}>
+                    {d.num}
+                  </span>
+                </div>
+              );
+            })}
 
             {horarios.map((h) => (
               <>
                 <div key={h} className="border-b border-border p-2 text-right text-xs text-text3 pr-3 pt-3">{h}</div>
-                {dias.map((d) => {
-                  const ag = agendamentos.find(a => a.dia === d && a.hora === h);
+                {diasSemana.map((d) => {
+                  const ag = agendamentos.find(a => a.dia === d.nome && a.hora === h);
                   return (
-                    <div key={`${d}-${h}`} className="border-b border-l border-border p-1.5 min-h-[52px] relative">
-                      {h === "10:00" && d === "Seg" && (
+                    <div key={`${d.nome}-${h}`} className="border-b border-l border-border p-1.5 min-h-[52px] relative">
+                      {h === "10:00" && d.nome === "Seg" && (
                         <div className="absolute left-0 right-0 top-1/2 border-t border-destructive/60 z-10">
                           <span className="absolute -top-2.5 left-1 text-[9px] text-destructive font-medium">Agora</span>
                         </div>
