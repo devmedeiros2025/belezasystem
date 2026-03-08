@@ -47,7 +47,7 @@ export default function Profissionais() {
   const [showModal, setShowModal] = useState(false);
   const [editId, setEditId] = useState<number | null>(null);
 
-  const emptyForm = { nome: "", cargo: "", emoji: "💆", servicos: [] as string[], status: "Disponível" as const };
+  const emptyForm = { nome: "", cargo: "", emoji: "💆", servicos: [] as string[], status: "Disponível" as "Disponível" | "Em atendimento" | "Folga" };
   const [form, setForm] = useState(emptyForm);
 
   const openNew = () => { setEditId(null); setForm(emptyForm); setShowModal(true); };
