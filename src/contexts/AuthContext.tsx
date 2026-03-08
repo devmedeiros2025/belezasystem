@@ -117,6 +117,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     };
 
+    const hasOAuthCallbackParams = () => {
+      if (typeof window === "undefined") return false;
+      return (
+        window.location.hash.includes("access_token=") ||
+        window.location.hash.includes("type=recovery") ||
+        window.location.search.includes("code=")
+      );
+    };
+
     // Listen first to avoid missing OAuth/session restoration events
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (!isMounted) return;
@@ -134,14 +143,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     });
 
-    // Then restore session from storage
-    supabase.auth.getSession()
-      .then(({ data: { session } }) => {
-        void syncUserFromSession(session);
-      })
-      .finally(() => {
-        if (isMounted) setLoading(false);
-      });
+    const restoreInitialSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      await syncUserFromSession(session);
+
+      if (!session && hasOAuthCallbackParams()) {
+        await new Promise((resolve) => setTimeout(resolve, 400));
+        const { data: { session: retrySession } } = await supabase.auth.getSession();
+        await syncUserFromSession(retrySession);
+      }
+
+      if (isMounted) setLoading(false);
+    };
+
+    void restoreInitialSession();
 
     return () => {
       isMounted = false;
