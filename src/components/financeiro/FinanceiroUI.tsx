@@ -19,22 +19,36 @@ export function Modal({ open, onClose, title, children, size = "md" }: {
         initial={{ opacity: 0 }} 
         animate={{ opacity: 1 }} 
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/30 p-4" 
+        transition={{ duration: 0.2 }}
+        className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/30 backdrop-blur-sm p-4" 
         onClick={onClose}
       >
         <motion.div 
-          initial={{ opacity: 0, scale: 0.95, y: 20 }}
+          initial={{ opacity: 0, scale: 0.9, y: 30 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          transition={{ type: "spring", duration: 0.3 }}
-          className={`w-full ${sizeClass} max-h-[90vh] overflow-y-auto rounded-xl border border-border bg-card p-6 space-y-4 shadow-xl`} 
+          exit={{ opacity: 0, scale: 0.9, y: 30 }}
+          transition={{ type: "spring", damping: 25, stiffness: 350, mass: 0.8 }}
+          className={`w-full ${sizeClass} max-h-[90vh] overflow-y-auto rounded-xl border border-border bg-card p-6 space-y-4 shadow-2xl`} 
           onClick={e => e.stopPropagation()}
         >
           <div className="flex items-center justify-between">
-            <h2 className="font-display text-lg font-bold text-foreground">{title}</h2>
+            <motion.h2 
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.1, duration: 0.2 }}
+              className="font-display text-lg font-bold text-foreground"
+            >
+              {title}
+            </motion.h2>
             <button onClick={onClose} className="text-text3 hover:text-foreground transition-colors"><X className="h-5 w-5" /></button>
           </div>
-          {children}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15, duration: 0.25 }}
+          >
+            {children}
+          </motion.div>
         </motion.div>
       </motion.div>
     </AnimatePresence>
