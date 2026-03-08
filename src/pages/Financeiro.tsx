@@ -789,7 +789,7 @@ export default function Financeiro() {
               </div>
             </div>
 
-
+            <TableWrapper
               exportProps={{
                 title: "Despesas", fileName: "despesas",
                 columns: [{ header: "Data", key: "data" }, { header: "Descrição", key: "descricao" }, { header: "Categoria", key: "categoria" }, { header: "Valor", key: "valorFmt" }, { header: "Forma Pgto", key: "formaPgto" }],
