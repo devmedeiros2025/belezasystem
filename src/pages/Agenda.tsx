@@ -60,6 +60,14 @@ export default function Agenda() {
   const [items, setItems] = useState([...agendamentosInit]);
   const [dragId, setDragId] = useState<number | null>(null);
   const [dropTarget, setDropTarget] = useState<{ dia: string; hora: string } | null>(null);
+  const [weekBase, setWeekBase] = useState(new Date());
+
+  const diasSemana = useMemo(() => getWeekDays(weekBase), [weekBase]);
+  const weekLabel = useMemo(() => formatWeekRange(diasSemana), [diasSemana]);
+
+  const goToPrevWeek = useCallback(() => setWeekBase(prev => subWeeks(prev, 1)), []);
+  const goToNextWeek = useCallback(() => setWeekBase(prev => addWeeks(prev, 1)), []);
+  const goToCurrentWeek = useCallback(() => setWeekBase(new Date()), []);
 
   const handleDragStart = useCallback((e: React.DragEvent, id: number) => {
     setDragId(id);
