@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -15,8 +15,15 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [isSignup, setIsSignup] = useState(false);
   const [isForgot, setIsForgot] = useState(false);
-  const { login } = useAuth();
+  const { login, usuarioLogado, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+
+  // Redirect if already logged in (e.g. after Google OAuth)
+  useEffect(() => {
+    if (!authLoading && usuarioLogado) {
+      navigate("/dashboard", { replace: true });
+    }
+  }, [authLoading, usuarioLogado, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,11 +51,12 @@ export default function Login() {
       });
       if (error) {
         toast.error(error.message);
+      } else if (data.session) {
+        // Auto-confirm is enabled, user is already logged in
+        toast.success("Conta criada com sucesso!");
+        navigate("/dashboard");
       } else if (data.user) {
-        await supabase.from("user_roles").insert({ user_id: data.user.id, role: "admin" as any });
-        toast.success("Conta criada! Fazendo login...");
-        const success = await login(email, senha);
-        if (success) navigate("/dashboard");
+        toast.success("Conta criada! Verifique seu e-mail para confirmar.");
       }
     } else {
       const success = await login(email, senha);
