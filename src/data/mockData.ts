@@ -29,16 +29,16 @@ export const servicos = [
 ];
 
 export const agendamentos = [
-  { id: 1, clienteId: 1, clienteNome: "Ana Paula", servico: "Coloração", profissionalId: 1, profissional: "Élise", dia: "Seg", hora: "09:00", duracao: 120, status: "Confirmado" as const, cor: "gold" },
-  { id: 2, clienteId: 3, clienteNome: "Júlia", servico: "Escova", profissionalId: 2, profissional: "Rodrigo", dia: "Seg", hora: "10:00", duracao: 50, status: "Confirmado" as const, cor: "teal" },
-  { id: 3, clienteId: 5, clienteNome: "Camila", servico: "Manicure", profissionalId: 3, profissional: "Camile", dia: "Seg", hora: "14:00", duracao: 90, status: "Pendente" as const, cor: "rose" },
-  { id: 4, clienteId: 2, clienteNome: "Mariana", servico: "Progressiva", profissionalId: 1, profissional: "Élise", dia: "Ter", hora: "09:00", duracao: 150, status: "Confirmado" as const, cor: "gold" },
-  { id: 5, clienteId: 4, clienteNome: "Fernanda", servico: "Hidratação", profissionalId: 4, profissional: "Patrícia", dia: "Ter", hora: "11:00", duracao: 60, status: "Confirmado" as const, cor: "purple" },
-  { id: 6, clienteId: 7, clienteNome: "Sofia", servico: "Botox Capilar", profissionalId: 1, profissional: "Élise", dia: "Qua", hora: "09:00", duracao: 150, status: "Pendente" as const, cor: "gold" },
-  { id: 7, clienteId: 6, clienteNome: "Beatriz", servico: "Manicure", profissionalId: 3, profissional: "Camile", dia: "Qua", hora: "14:00", duracao: 90, status: "Confirmado" as const, cor: "rose" },
-  { id: 8, clienteId: 1, clienteNome: "Ana Paula", servico: "Escova", profissionalId: 2, profissional: "Rodrigo", dia: "Qui", hora: "10:00", duracao: 50, status: "Confirmado" as const, cor: "teal" },
-  { id: 9, clienteId: 5, clienteNome: "Camila", servico: "Corte Feminino", profissionalId: 2, profissional: "Rodrigo", dia: "Qui", hora: "15:00", duracao: 45, status: "Pendente" as const, cor: "teal" },
-  { id: 10, clienteId: 3, clienteNome: "Júlia", servico: "Hidratação", profissionalId: 4, profissional: "Patrícia", dia: "Sex", hora: "09:00", duracao: 60, status: "Confirmado" as const, cor: "purple" },
+  { id: 1, clienteId: 1, clienteNome: "Ana Paula", servico: "Coloração", profissionalId: 1, profissional: "Élise", dia: "Seg", hora: "09:00", duracao: 120, status: "Confirmado" as const, cor: "gold", canal: "WhatsApp" as const },
+  { id: 2, clienteId: 3, clienteNome: "Júlia", servico: "Escova", profissionalId: 2, profissional: "Rodrigo", dia: "Seg", hora: "10:00", duracao: 50, status: "Confirmado" as const, cor: "teal", canal: "Instagram" as const },
+  { id: 3, clienteId: 5, clienteNome: "Camila", servico: "Manicure", profissionalId: 3, profissional: "Camile", dia: "Seg", hora: "14:00", duracao: 90, status: "Pendente" as const, cor: "rose", canal: "Telefone" as const },
+  { id: 4, clienteId: 2, clienteNome: "Mariana", servico: "Progressiva", profissionalId: 1, profissional: "Élise", dia: "Ter", hora: "09:00", duracao: 150, status: "Confirmado" as const, cor: "gold", canal: "WhatsApp" as const },
+  { id: 5, clienteId: 4, clienteNome: "Fernanda", servico: "Hidratação", profissionalId: 4, profissional: "Patrícia", dia: "Ter", hora: "11:00", duracao: 60, status: "Confirmado" as const, cor: "purple", canal: "Walk-in" as const },
+  { id: 6, clienteId: 7, clienteNome: "Sofia", servico: "Botox Capilar", profissionalId: 1, profissional: "Élise", dia: "Qua", hora: "09:00", duracao: 150, status: "Pendente" as const, cor: "gold", canal: "Instagram" as const },
+  { id: 7, clienteId: 6, clienteNome: "Beatriz", servico: "Manicure", profissionalId: 3, profissional: "Camile", dia: "Qua", hora: "14:00", duracao: 90, status: "Confirmado" as const, cor: "rose", canal: "App" as const },
+  { id: 8, clienteId: 1, clienteNome: "Ana Paula", servico: "Escova", profissionalId: 2, profissional: "Rodrigo", dia: "Qui", hora: "10:00", duracao: 50, status: "Confirmado" as const, cor: "teal", canal: "WhatsApp" as const },
+  { id: 9, clienteId: 5, clienteNome: "Camila", servico: "Corte Feminino", profissionalId: 2, profissional: "Rodrigo", dia: "Qui", hora: "15:00", duracao: 45, status: "Pendente" as const, cor: "teal", canal: "Telefone" as const },
+  { id: 10, clienteId: 3, clienteNome: "Júlia", servico: "Hidratação", profissionalId: 4, profissional: "Patrícia", dia: "Sex", hora: "09:00", duracao: 60, status: "Confirmado" as const, cor: "purple", canal: "Walk-in" as const },
 ];
 
 export const mensagens = [
