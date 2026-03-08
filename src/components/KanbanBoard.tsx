@@ -37,6 +37,8 @@ export default function KanbanBoard() {
   const [detailTask, setDetailTask] = useState<Tarefa | null>(null);
   const [form, setForm] = useState(emptyTarefa());
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [draggedId, setDraggedId] = useState<number | null>(null);
+  const [dragOverCol, setDragOverCol] = useState<TarefaStatus | null>(null);
 
   const openNew = () => {
     setForm(emptyTarefa());
