@@ -353,6 +353,7 @@ function DashboardColaborador() {
       <KanbanBoard />
     </div>
   );
+}
 
 export default function Dashboard() {
   const { perfil } = useAuth();
