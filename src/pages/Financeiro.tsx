@@ -501,6 +501,48 @@ export default function Financeiro() {
               <KpiCard label="Pagas este mês" value={String(contasPagar.filter(c => c.status === "Paga" || c.status === "Paga com atraso").length)} icon={Check} color="bg-green-custom/10 text-green-custom" />
             </div>
 
+            {/* Gráfico de Tendência Mensal */}
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+              <div className="rounded-xl border border-border bg-card p-5 card-hover">
+                <h3 className="font-display text-sm font-semibold text-foreground mb-3">Evolução Mensal — Contas a Pagar</h3>
+                <ResponsiveContainer width="100%" height={220}>
+                  <AreaChart data={contasPagarMensalTrend}>
+                    <defs>
+                      <linearGradient id="cpTotalGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="hsl(35 50% 50%)" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="hsl(35 50% 50%)" stopOpacity={0} />
+                      </linearGradient>
+                      <linearGradient id="cpPagasGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="hsl(150 50% 40%)" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="hsl(150 50% 40%)" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(280 20% 90%)" />
+                    <XAxis dataKey="mes" tick={{ fill: "hsl(280 15% 60%)", fontSize: 11 }} axisLine={false} />
+                    <YAxis hide />
+                    <Tooltip contentStyle={tooltipStyle} formatter={(value: number) => format(value)} />
+                    <Legend />
+                    <Area type="monotone" dataKey="total" name="Total" stroke="hsl(35 50% 50%)" fill="url(#cpTotalGrad)" strokeWidth={2} />
+                    <Area type="monotone" dataKey="pagas" name="Pagas" stroke="hsl(150 50% 40%)" fill="url(#cpPagasGrad)" strokeWidth={2} />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="rounded-xl border border-border bg-card p-5 card-hover">
+                <h3 className="font-display text-sm font-semibold text-foreground mb-3">Vencidas vs Pendentes — Tendência</h3>
+                <ResponsiveContainer width="100%" height={220}>
+                  <BarChart data={contasPagarMensalTrend}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(280 20% 90%)" />
+                    <XAxis dataKey="mes" tick={{ fill: "hsl(280 15% 60%)", fontSize: 11 }} axisLine={false} />
+                    <YAxis hide />
+                    <Tooltip contentStyle={tooltipStyle} formatter={(value: number) => format(value)} />
+                    <Legend />
+                    <Bar dataKey="vencidas" name="Vencidas" fill="hsl(350 55% 57%)" radius={[4,4,0,0]} />
+                    <Bar dataKey="pendentes" name="Pendentes" fill="hsl(35 50% 50%)" radius={[4,4,0,0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
             <div className="flex flex-wrap gap-3 items-center">
               <button onClick={() => setModalContaPagar(true)} className="flex items-center gap-2 rounded-lg gold-gradient px-4 py-2.5 text-sm font-semibold text-primary-foreground">
                 <Plus className="h-4 w-4" /> Nova Conta a Pagar
