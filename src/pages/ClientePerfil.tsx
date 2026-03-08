@@ -14,7 +14,7 @@ export default function ClientePerfil() {
   const { id } = useParams();
   const { format } = useCurrency();
   const { getCliente } = useClientes();
-  const cliente = getCliente(Number(id));
+  const cliente = getCliente(id || "");
 
   if (!cliente) {
     return (
