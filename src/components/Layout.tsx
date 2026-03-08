@@ -118,10 +118,22 @@ export default function Layout({ children }: LayoutProps) {
 
   return (
     <div className="flex min-h-screen bg-background font-body">
+      {/* Mobile overlay */}
+      {isMobile && sidebarOpen && (
+        <div
+          className="fixed inset-0 z-30 bg-foreground/30 backdrop-blur-sm transition-opacity"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
       <aside
         className={`fixed top-0 left-0 z-40 h-screen border-r border-border bg-sidebar transition-all duration-300 ${
-          sidebarOpen ? "w-60" : "w-0 -translate-x-full lg:w-16 lg:translate-x-0"
+          sidebarOpen
+            ? "w-60 translate-x-0"
+            : isMobile
+              ? "w-60 -translate-x-full"
+              : "w-16 translate-x-0"
         }`}
       >
         <div className="flex h-full flex-col overflow-hidden">
