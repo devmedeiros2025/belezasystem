@@ -237,7 +237,7 @@ export default function Layout({ children }: LayoutProps) {
               onClick={() => setSidebarOpen(!sidebarOpen)}
               className="rounded-lg p-2 text-text2 hover:bg-surface2 hover:text-foreground"
             >
-              {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              {sidebarOpen && !isMobile ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </button>
             <h2 className="font-display text-lg font-semibold text-foreground">{currentPage}</h2>
           </div>
