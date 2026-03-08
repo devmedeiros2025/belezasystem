@@ -104,11 +104,15 @@
   }
 
   .badge-vip {
-    @apply bg-primary/12 text-primary border border-primary/20;
+    background-color: hsl(var(--gold) / 0.12);
+    color: hsl(var(--gold));
+    border: 1px solid hsl(var(--gold) / 0.2);
   }
 
   .badge-active {
-    @apply bg-green-custom/12 text-green-custom border border-green-custom/20;
+    background-color: hsl(var(--green) / 0.12);
+    color: hsl(var(--green));
+    border: 1px solid hsl(var(--green) / 0.2);
   }
 
   .badge-inactive {
@@ -116,19 +120,27 @@
   }
 
   .badge-risk {
-    @apply bg-rose-custom/12 text-rose-custom border border-rose-custom/20;
+    background-color: hsl(var(--rose) / 0.12);
+    color: hsl(var(--rose));
+    border: 1px solid hsl(var(--rose) / 0.2);
   }
 
   .badge-admin {
-    @apply bg-primary/12 text-primary border border-primary/20;
+    background-color: hsl(var(--gold) / 0.12);
+    color: hsl(var(--gold));
+    border: 1px solid hsl(var(--gold) / 0.2);
   }
 
   .badge-financeiro {
-    @apply bg-green-custom/12 text-green-custom border border-green-custom/20;
+    background-color: hsl(var(--green) / 0.12);
+    color: hsl(var(--green));
+    border: 1px solid hsl(var(--green) / 0.2);
   }
 
   .badge-colaborador {
-    @apply bg-purple-custom/12 text-purple-custom border border-purple-custom/20;
+    background-color: hsl(var(--purple) / 0.12);
+    color: hsl(var(--purple));
+    border: 1px solid hsl(var(--purple) / 0.2);
   }
 }
 
