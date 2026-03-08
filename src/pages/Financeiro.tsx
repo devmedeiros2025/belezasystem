@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, PieChart, Pie, Cell, LineChart, Line, Legend } from "recharts";
 import { receitaMensal, extrato, profissionais } from "@/data/mockData";
-import { TrendingUp, TrendingDown, DollarSign, Plus, X, ArrowUpCircle, ArrowDownCircle, Wallet, CreditCard, Receipt, Users, Scissors, Calendar, FileText, AlertTriangle } from "lucide-react";
+import { TrendingUp, TrendingDown, DollarSign, Plus, X, ArrowUpCircle, ArrowDownCircle, Wallet, CreditCard, Receipt, Users, Scissors, Calendar, FileText, AlertTriangle, Download, FileSpreadsheet } from "lucide-react";
 import { useCurrency } from "@/hooks/useCurrency";
 import { useToast } from "@/hooks/use-toast";
+import { exportToPDF, exportToExcel } from "@/lib/exportUtils";
 
 const servicoBreakdown = [
   { name: "Coloração", value: 35 },
@@ -124,6 +125,76 @@ export default function Financeiro() {
     toast({ title: "Status atualizado" });
   };
 
+  const exportarExtrato = (formato: "pdf" | "excel") => {
+    const opts = {
+      title: "Extrato Financeiro",
+      fileName: "extrato-financeiro",
+      columns: [
+        { header: "Data", key: "data" },
+        { header: "Cliente", key: "cliente" },
+        { header: "Serviço", key: "servico" },
+        { header: "Profissional", key: "profissional" },
+        { header: "Valor", key: "valorFmt" },
+        { header: "Pagamento", key: "pagamento" },
+      ],
+      data: extrato.map(e => ({ ...e, valorFmt: format(e.valor) })),
+    };
+    formato === "pdf" ? exportToPDF(opts) : exportToExcel(opts);
+    toast({ title: `Extrato exportado em ${formato.toUpperCase()}` });
+  };
+
+  const exportarCaixa = (formato: "pdf" | "excel") => {
+    const opts = {
+      title: "Fluxo de Caixa",
+      fileName: "fluxo-de-caixa",
+      columns: [
+        { header: "Data", key: "data" },
+        { header: "Descrição", key: "descricao" },
+        { header: "Categoria", key: "categoria" },
+        { header: "Tipo", key: "tipo" },
+        { header: "Valor", key: "valorFmt" },
+      ],
+      data: movimentos.map(m => ({ ...m, valorFmt: `${m.tipo === "entrada" ? "+" : "-"}${format(m.valor)}` })),
+    };
+    formato === "pdf" ? exportToPDF(opts) : exportToExcel(opts);
+    toast({ title: `Fluxo de caixa exportado em ${formato.toUpperCase()}` });
+  };
+
+  const exportarFolha = (formato: "pdf" | "excel") => {
+    const opts = {
+      title: "Folha de Pagamento",
+      fileName: "folha-pagamento",
+      columns: [
+        { header: "Data", key: "data" },
+        { header: "Profissional", key: "profissional" },
+        { header: "Tipo", key: "tipo" },
+        { header: "Descrição", key: "descricao" },
+        { header: "Valor", key: "valorFmt" },
+        { header: "Status", key: "status" },
+      ],
+      data: folha.map(f => ({ ...f, valorFmt: format(f.valor) })),
+    };
+    formato === "pdf" ? exportToPDF(opts) : exportToExcel(opts);
+    toast({ title: `Folha exportada em ${formato.toUpperCase()}` });
+  };
+
+  const exportarServicosTop = (formato: "pdf" | "excel") => {
+    const opts = {
+      title: "Serviços Mais Solicitados",
+      fileName: "servicos-ranking",
+      columns: [
+        { header: "#", key: "pos" },
+        { header: "Serviço", key: "nome" },
+        { header: "Atendimentos", key: "qtd" },
+        { header: "Receita Total", key: "receitaFmt" },
+        { header: "Ticket Médio", key: "ticketFmt" },
+      ],
+      data: servicosMaisSolicitados.map((s, i) => ({ ...s, pos: i + 1, receitaFmt: format(s.receita), ticketFmt: format(Math.round(s.receita / s.qtd)) })),
+    };
+    formato === "pdf" ? exportToPDF(opts) : exportToExcel(opts);
+    toast({ title: `Ranking exportado em ${formato.toUpperCase()}` });
+  };
+
   const kpis = [
     { label: "Receita Bruta", value: format(18420), icon: TrendingUp, color: "text-green-custom" },
     { label: "Despesas", value: format(8900), icon: TrendingDown, color: "text-destructive" },
@@ -219,7 +290,13 @@ export default function Financeiro() {
 
           {/* Extrato */}
           <div className="rounded-xl border border-border bg-card overflow-x-auto">
-            <div className="p-5 border-b border-border"><h3 className="font-display text-lg font-semibold text-foreground">Extrato</h3></div>
+            <div className="p-5 border-b border-border flex items-center justify-between">
+              <h3 className="font-display text-lg font-semibold text-foreground">Extrato</h3>
+              <div className="flex gap-2">
+                <button onClick={() => exportarExtrato("pdf")} className="flex items-center gap-1.5 rounded-lg bg-surface2 px-3 py-1.5 text-xs font-medium text-text2 hover:text-foreground hover:bg-primary/10"><Download className="h-3.5 w-3.5" />PDF</button>
+                <button onClick={() => exportarExtrato("excel")} className="flex items-center gap-1.5 rounded-lg bg-surface2 px-3 py-1.5 text-xs font-medium text-text2 hover:text-foreground hover:bg-primary/10"><FileSpreadsheet className="h-3.5 w-3.5" />Excel</button>
+              </div>
+            </div>
             <table className="w-full text-sm">
               <thead><tr className="border-b border-border text-xs text-text3"><th className="p-4 text-left">Data</th><th className="p-4 text-left">Cliente</th><th className="p-4 text-left hidden md:table-cell">Serviço</th><th className="p-4 text-left hidden md:table-cell">Profissional</th><th className="p-4 text-left">Valor</th><th className="p-4 text-left">Pagamento</th></tr></thead>
               <tbody>
@@ -284,9 +361,13 @@ export default function Financeiro() {
           <div className="rounded-xl border border-border bg-card overflow-x-auto">
             <div className="p-5 border-b border-border flex items-center justify-between">
               <h3 className="font-display text-lg font-semibold text-foreground">Movimentações</h3>
-              <button onClick={() => setShowMovModal(true)} className="flex items-center gap-2 rounded-lg gold-gradient px-4 py-2 text-sm font-semibold text-primary-foreground">
-                <Plus className="h-4 w-4" /> Nova Movimentação
-              </button>
+              <div className="flex gap-2">
+                <button onClick={() => exportarCaixa("pdf")} className="flex items-center gap-1.5 rounded-lg bg-surface2 px-3 py-1.5 text-xs font-medium text-text2 hover:text-foreground hover:bg-primary/10"><Download className="h-3.5 w-3.5" />PDF</button>
+                <button onClick={() => exportarCaixa("excel")} className="flex items-center gap-1.5 rounded-lg bg-surface2 px-3 py-1.5 text-xs font-medium text-text2 hover:text-foreground hover:bg-primary/10"><FileSpreadsheet className="h-3.5 w-3.5" />Excel</button>
+                <button onClick={() => setShowMovModal(true)} className="flex items-center gap-2 rounded-lg gold-gradient px-4 py-2 text-sm font-semibold text-primary-foreground">
+                  <Plus className="h-4 w-4" /> Nova Movimentação
+                </button>
+              </div>
             </div>
             <table className="w-full text-sm">
               <thead><tr className="border-b border-border text-xs text-text3"><th className="p-4 text-left">Data</th><th className="p-4 text-left">Descrição</th><th className="p-4 text-left hidden md:table-cell">Categoria</th><th className="p-4 text-left">Tipo</th><th className="p-4 text-left">Valor</th></tr></thead>
@@ -370,9 +451,13 @@ export default function Financeiro() {
           <div className="rounded-xl border border-border bg-card overflow-x-auto">
             <div className="p-5 border-b border-border flex items-center justify-between">
               <h3 className="font-display text-lg font-semibold text-foreground">Lançamentos</h3>
-              <button onClick={() => setShowFolhaModal(true)} className="flex items-center gap-2 rounded-lg gold-gradient px-4 py-2 text-sm font-semibold text-primary-foreground">
-                <Plus className="h-4 w-4" /> Novo Lançamento
-              </button>
+              <div className="flex gap-2">
+                <button onClick={() => exportarFolha("pdf")} className="flex items-center gap-1.5 rounded-lg bg-surface2 px-3 py-1.5 text-xs font-medium text-text2 hover:text-foreground hover:bg-primary/10"><Download className="h-3.5 w-3.5" />PDF</button>
+                <button onClick={() => exportarFolha("excel")} className="flex items-center gap-1.5 rounded-lg bg-surface2 px-3 py-1.5 text-xs font-medium text-text2 hover:text-foreground hover:bg-primary/10"><FileSpreadsheet className="h-3.5 w-3.5" />Excel</button>
+                <button onClick={() => setShowFolhaModal(true)} className="flex items-center gap-2 rounded-lg gold-gradient px-4 py-2 text-sm font-semibold text-primary-foreground">
+                  <Plus className="h-4 w-4" /> Novo Lançamento
+                </button>
+              </div>
             </div>
             <table className="w-full text-sm">
               <thead><tr className="border-b border-border text-xs text-text3"><th className="p-4 text-left">Data</th><th className="p-4 text-left">Profissional</th><th className="p-4 text-left">Tipo</th><th className="p-4 text-left hidden md:table-cell">Descrição</th><th className="p-4 text-left">Valor</th><th className="p-4 text-left">Status</th><th className="p-4 text-left">Ação</th></tr></thead>
@@ -425,7 +510,13 @@ export default function Financeiro() {
           </div>
 
           <div className="rounded-xl border border-border bg-card overflow-x-auto">
-            <div className="p-5 border-b border-border"><h3 className="font-display text-lg font-semibold text-foreground">Ranking de Serviços</h3></div>
+            <div className="p-5 border-b border-border flex items-center justify-between">
+              <h3 className="font-display text-lg font-semibold text-foreground">Ranking de Serviços</h3>
+              <div className="flex gap-2">
+                <button onClick={() => exportarServicosTop("pdf")} className="flex items-center gap-1.5 rounded-lg bg-surface2 px-3 py-1.5 text-xs font-medium text-text2 hover:text-foreground hover:bg-primary/10"><Download className="h-3.5 w-3.5" />PDF</button>
+                <button onClick={() => exportarServicosTop("excel")} className="flex items-center gap-1.5 rounded-lg bg-surface2 px-3 py-1.5 text-xs font-medium text-text2 hover:text-foreground hover:bg-primary/10"><FileSpreadsheet className="h-3.5 w-3.5" />Excel</button>
+              </div>
+            </div>
             <table className="w-full text-sm">
               <thead><tr className="border-b border-border text-xs text-text3"><th className="p-4 text-left">#</th><th className="p-4 text-left">Serviço</th><th className="p-4 text-left">Atendimentos</th><th className="p-4 text-left">Receita Total</th><th className="p-4 text-left">Ticket Médio</th></tr></thead>
               <tbody>
