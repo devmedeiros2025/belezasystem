@@ -4,6 +4,7 @@ import { agendamentos, clientes, profissionais, servicos, receitaSemanal, avalia
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCurrency } from "@/hooks/useCurrency";
+import KanbanBoard from "@/components/KanbanBoard";
 
 const dias = ["Seg", "Ter", "Qua", "Qui", "Sex"];
 const horarios = ["09:00", "10:00", "11:00", "14:00", "15:00"];
