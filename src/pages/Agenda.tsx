@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import KanbanBoard from "@/components/KanbanBoard";
-import { agendamentos, profissionais } from "@/data/mockData";
-import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import { agendamentos as agendamentosInit, profissionais } from "@/data/mockData";
+import { ChevronLeft, ChevronRight, X, GripVertical } from "lucide-react";
 import { toast } from "sonner";
 
 const diasSemana = [
@@ -30,7 +30,60 @@ const dotMap: Record<string, string> = {
 
 export default function Agenda() {
   const [view, setView] = useState<typeof views[number]>("Semana");
-  const [selected, setSelected] = useState<typeof agendamentos[0] | null>(null);
+  const [selected, setSelected] = useState<typeof agendamentosInit[0] | null>(null);
+  const [items, setItems] = useState([...agendamentosInit]);
+  const [dragId, setDragId] = useState<number | null>(null);
+  const [dropTarget, setDropTarget] = useState<{ dia: string; hora: string } | null>(null);
+
+  const handleDragStart = useCallback((e: React.DragEvent, id: number) => {
+    setDragId(id);
+    e.dataTransfer.effectAllowed = "move";
+    // Make drag image semi-transparent
+    const el = e.currentTarget as HTMLElement;
+    setTimeout(() => el.style.opacity = "0.4", 0);
+  }, []);
+
+  const handleDragEnd = useCallback((e: React.DragEvent) => {
+    (e.currentTarget as HTMLElement).style.opacity = "1";
+    setDragId(null);
+    setDropTarget(null);
+  }, []);
+
+  const handleDragOver = useCallback((e: React.DragEvent, dia: string, hora: string) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    setDropTarget({ dia, hora });
+  }, []);
+
+  const handleDragLeave = useCallback(() => {
+    setDropTarget(null);
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent, dia: string, hora: string) => {
+    e.preventDefault();
+    setDropTarget(null);
+    if (dragId === null) return;
+
+    // Check if slot is occupied by another item
+    const occupied = items.find(a => a.dia === dia && a.hora === hora && a.id !== dragId);
+    if (occupied) {
+      toast.error("Este horário já está ocupado!");
+      setDragId(null);
+      return;
+    }
+
+    setItems(prev => prev.map(item => {
+      if (item.id === dragId) {
+        const changed = item.dia !== dia || item.hora !== hora;
+        if (changed) {
+          toast.success(`${item.clienteNome} movido para ${dia} às ${hora}`);
+        }
+        return { ...item, dia, hora };
+      }
+      return item;
+    }));
+    setDragId(null);
+  }, [dragId, items]);
 
   return (
     <div className="space-y-5">
@@ -89,24 +142,45 @@ export default function Agenda() {
               <>
                 <div key={h} className="border-b border-border p-2 text-right text-xs text-text3 pr-3 pt-3">{h}</div>
                 {diasSemana.map((d) => {
-                  const ag = agendamentos.find(a => a.dia === d.nome && a.hora === h);
+                  const ag = items.find(a => a.dia === d.nome && a.hora === h);
+                  const isOver = dropTarget?.dia === d.nome && dropTarget?.hora === h;
+                  const isDraggingThis = ag && dragId === ag.id;
+
                   return (
-                    <div key={`${d.nome}-${h}`} className="border-b border-l border-border p-1.5 min-h-[52px] relative">
+                    <div
+                      key={`${d.nome}-${h}`}
+                      className={`border-b border-l border-border p-1.5 min-h-[52px] relative transition-colors duration-150 ${
+                        isOver && !ag ? "bg-primary/10 ring-2 ring-inset ring-primary/30 rounded-md" : ""
+                      } ${isOver && ag && dragId !== ag.id ? "bg-destructive/10 ring-2 ring-inset ring-destructive/30 rounded-md" : ""}`}
+                      onDragOver={(e) => handleDragOver(e, d.nome, h)}
+                      onDragLeave={handleDragLeave}
+                      onDrop={(e) => handleDrop(e, d.nome, h)}
+                    >
                       {h === "10:00" && d.nome === "Seg" && (
                         <div className="absolute left-0 right-0 top-1/2 border-t border-destructive/60 z-10">
                           <span className="absolute -top-2.5 left-1 text-[9px] text-destructive font-medium">Agora</span>
                         </div>
                       )}
                       {ag ? (
-                        <button
+                        <div
+                          draggable
+                          onDragStart={(e) => handleDragStart(e, ag.id)}
+                          onDragEnd={handleDragEnd}
                           onClick={() => setSelected(ag)}
-                          className={`w-full rounded-lg border-l-[3px] px-2 py-1.5 text-left text-xs transition-all hover:scale-[1.02] ${corMap[ag.cor]}`}
+                          className={`w-full rounded-lg border-l-[3px] px-2 py-1.5 text-left text-xs transition-all hover:scale-[1.02] cursor-grab active:cursor-grabbing ${corMap[ag.cor]} ${isDraggingThis ? "opacity-40" : ""}`}
                         >
-                          <p className="font-medium text-foreground">{ag.clienteNome}</p>
-                          <p className="text-text3">{ag.servico}</p>
-                        </button>
+                          <div className="flex items-start gap-1">
+                            <GripVertical className="h-3 w-3 mt-0.5 text-text3/50 shrink-0" />
+                            <div className="min-w-0">
+                              <p className="font-medium text-foreground truncate">{ag.clienteNome}</p>
+                              <p className="text-text3 truncate">{ag.servico}</p>
+                            </div>
+                          </div>
+                        </div>
                       ) : (
-                        <div className="h-full w-full rounded-lg border border-dashed border-transparent hover:border-primary/20 cursor-pointer transition-colors" />
+                        <div className={`h-full w-full rounded-lg border border-dashed transition-colors ${
+                          isOver ? "border-primary/40" : "border-transparent hover:border-primary/20"
+                        } cursor-pointer`} />
                       )}
                     </div>
                   );
