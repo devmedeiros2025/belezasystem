@@ -3,6 +3,7 @@ import { Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCurrency } from "@/hooks/useCurrency";
 import { useToast } from "@/hooks/use-toast";
+import { useFinanceiroData } from "@/hooks/useFinanceiroData";
 import { AnimatePresence } from "framer-motion";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
@@ -12,7 +13,7 @@ import {
   TrendingUp, TrendingDown, DollarSign, Plus, ArrowUpCircle, ArrowDownCircle,
   Wallet, CreditCard, Receipt, Users, AlertTriangle, Bell, Eye, Pencil, Trash2,
   Check, ShoppingBag, Truck, Calendar, ClipboardList, Building2, FileText,
-  BarChart3, Package, ChevronDown, ChevronUp, Download, Filter,
+  BarChart3, Package, ChevronDown, ChevronUp, Download, Filter, Loader2,
 } from "lucide-react";
 import {
   Modal, ConfirmDialog, KpiCard, StatusBadge, SearchInput,
@@ -26,12 +27,8 @@ import {
   FormAdiantamento, FormPagarSalario,
 } from "@/components/financeiro/FinanceiroForms";
 import {
-  movimentacoesInit, contasAPagarInit, contasAReceberInit, despesasInit,
-  fornecedoresInit, salariosConfig, adiantamentosInit, produtosVendidosInit,
-  fechamentoCaixaInit, receitaDespesasMensal, formaPagamentoData,
+  receitaDespesasMensal, formaPagamentoData,
   fluxoCaixaDiario, topServicosReceita, categoriasDespesa, dreData,
-  type Movimentacao, type ContaPagar, type ContaReceber, type Despesa,
-  type Fornecedor, type Adiantamento, type ProdutoVendido, type FechamentoCaixa,
   despesasMensalTrend, contasPagarMensalTrend,
 } from "@/data/financeiroData";
 
@@ -47,43 +44,44 @@ export default function Financeiro() {
   const { toast } = useToast();
   const userName = usuarioLogado?.nome || "Usuário";
 
+  const fin = useFinanceiroData();
+  const {
+    loading, movimentacoes, contasPagar, contasReceber, despesas,
+    fornecedores, salariosConfig, adiantamentos, produtosVendidos, fechamento,
+    addMovimentacao, deleteMovimentacao,
+    addContaPagar, updateContaPagar, deleteContaPagar,
+    addContaReceber, registrarPagamentoCR, deleteContaReceber,
+    addDespesa, deleteDespesa,
+    addFornecedor, registrarCompraFornecedor, deleteFornecedor,
+    addAdiantamento, updateAdiantamentoStatus,
+    fecharCaixa,
+  } = fin;
+
   const [tab, setTab] = useState<TabKey>("visao-geral");
-
-  // Global period filter
   const [periodoGlobal, setPeriodoGlobal] = useState<PeriodoFilter>("mes");
-
-  // Data states
-  const [movimentacoes, setMovimentacoes] = useState<Movimentacao[]>(movimentacoesInit);
-  const [contasPagar, setContasPagar] = useState<ContaPagar[]>(contasAPagarInit);
-  const [contasReceber, setContasReceber] = useState<ContaReceber[]>(contasAReceberInit);
-  const [despesas, setDespesas] = useState<Despesa[]>(despesasInit);
-  const [fornecedores, setFornecedores] = useState<Fornecedor[]>(fornecedoresInit);
-  const [adiantamentos, setAdiantamentos] = useState<Adiantamento[]>(adiantamentosInit);
-  const [produtosVendidos] = useState<ProdutoVendido[]>(produtosVendidosInit);
-  const [fechamento, setFechamento] = useState<FechamentoCaixa>(fechamentoCaixaInit);
 
   // Modal states
   const [modalEntrada, setModalEntrada] = useState(false);
   const [modalSaida, setModalSaida] = useState(false);
   const [modalContaPagar, setModalContaPagar] = useState(false);
   const [modalFiado, setModalFiado] = useState(false);
-  const [modalPagamento, setModalPagamento] = useState<number | null>(null);
+  const [modalPagamento, setModalPagamento] = useState<string | null>(null);
   const [modalDespesa, setModalDespesa] = useState(false);
   const [modalFornecedor, setModalFornecedor] = useState(false);
   const [modalCompraFornecedor, setModalCompraFornecedor] = useState(false);
   const [modalSalario, setModalSalario] = useState<string | null>(null);
   const [modalAdiantamento, setModalAdiantamento] = useState(false);
-  const [modalPagarConta, setModalPagarConta] = useState<number | null>(null);
-  const [modalViewMov, setModalViewMov] = useState<Movimentacao | null>(null);
+  const [modalPagarConta, setModalPagarConta] = useState<string | null>(null);
+  const [modalViewMov, setModalViewMov] = useState<typeof movimentacoes[0] | null>(null);
 
   // Confirm dialog
-  const [confirmDelete, setConfirmDelete] = useState<{ type: string; id: number } | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<{ type: string; id: string } | null>(null);
 
   // Sub-tab & filters
   const [subTabSalario, setSubTabSalario] = useState<SubTabSalario>("salarios");
   const [catDespesaFilter, setCatDespesaFilter] = useState<string | null>(null);
-  const [expandedFornecedor, setExpandedFornecedor] = useState<number | null>(null);
-  const [fechamentoData, setFechamentoData] = useState("2025-03-04");
+  const [expandedFornecedor, setExpandedFornecedor] = useState<string | null>(null);
+  const [fechamentoData, setFechamentoData] = useState(new Date().toISOString().slice(0, 10));
   const [dreMes, setDreMes] = useState("Março 2025");
 
   // Search states
@@ -98,7 +96,6 @@ export default function Financeiro() {
   const [statusCR, setStatusCR] = useState<string | null>(null);
   const [tipoMov, setTipoMov] = useState<string | null>(null);
 
-  // Fluxo de caixa period
   const [periodoFluxo, setPeriodoFluxo] = useState<PeriodoFilter>("mes");
 
   // ===== COMPUTED =====
@@ -108,7 +105,9 @@ export default function Financeiro() {
   const saldoCaixa = lucroLiquido + 150000;
 
   const contasVencidasCount = contasPagar.filter(c => c.status === "Vencida").length;
-  const contasVenceBreve = contasPagar.filter(c => c.status === "Pendente" && c.vencimento <= "2025-03-07").length;
+  const today = new Date().toISOString().slice(0, 10);
+  const weekAhead = new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10);
+  const contasVenceBreve = contasPagar.filter(c => c.status === "Pendente" && c.vencimento <= weekAhead).length;
   const comissoesPendentes = salariosConfig.filter(s => s.comissaoPct > 0).length;
   const adiantNaoDescontado = adiantamentos.filter(a => a.status === "Aprovado — aguardando desconto").length;
   const contasReceberVencidas = contasReceber.filter(c => c.status === "Vencido").length;
@@ -156,14 +155,14 @@ export default function Financeiro() {
   // Helper
   const saved = (msg: string) => toast({ title: msg });
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!confirmDelete) return;
     const { type, id } = confirmDelete;
-    if (type === "mov") { setMovimentacoes(prev => prev.filter(x => x.id !== id)); saved("Movimentação excluída"); }
-    if (type === "cp") { setContasPagar(prev => prev.filter(x => x.id !== id)); saved("Conta excluída"); }
-    if (type === "cr") { setContasReceber(prev => prev.filter(x => x.id !== id)); saved("Conta a receber excluída"); }
-    if (type === "desp") { setDespesas(prev => prev.filter(x => x.id !== id)); saved("Despesa excluída"); }
-    if (type === "forn") { setFornecedores(prev => prev.filter(x => x.id !== id)); saved("Fornecedor excluído"); }
+    if (type === "mov") { await deleteMovimentacao(id); saved("Movimentação excluída"); }
+    if (type === "cp") { await deleteContaPagar(id); saved("Conta excluída"); }
+    if (type === "cr") { await deleteContaReceber(id); saved("Conta a receber excluída"); }
+    if (type === "desp") { await deleteDespesa(id); saved("Despesa excluída"); }
+    if (type === "forn") { await deleteFornecedor(id); saved("Fornecedor excluído"); }
   };
 
   // Export columns
@@ -185,16 +184,19 @@ export default function Financeiro() {
     { key: "produtos", label: "Produtos Vendidos", icon: Package },
   ];
 
-  // Fechamento computed
-  const fcReceitaServicos = fechamento.atendimentos.reduce((a, at) => a + at.valor, 0);
+  // Fechamento - use movimentacoes from today for the daily closing
+  const todayMov = movimentacoes.filter(m => m.data === today);
+  const fcAtendimentos = todayMov.filter(m => m.tipo === "Entrada");
+  const fcSaidas = todayMov.filter(m => m.tipo === "Saída");
+  const fcReceitaServicos = fcAtendimentos.reduce((a, m) => a + m.valor, 0);
   const fcReceitaProdutos = fechamento.receitaProdutos;
   const fcDescontos = fechamento.descontos;
   const fcReceitaLiquida = fcReceitaServicos + fcReceitaProdutos - fcDescontos;
-  const fcDespesasDia = fechamento.saidasDia.reduce((a, s) => a + s.valor, 0);
+  const fcDespesasDia = fcSaidas.reduce((a, m) => a + m.valor, 0);
   const fcSaldoDia = fcReceitaLiquida - fcDespesasDia;
-  const fcDinheiro = fechamento.atendimentos.filter(a => a.formaPgto === "Dinheiro").reduce((a, at) => a + at.valor, 0);
-  const fcTransferencia = fechamento.atendimentos.filter(a => a.formaPgto === "Transferência").reduce((a, at) => a + at.valor, 0);
-  const fcTPA = fechamento.atendimentos.filter(a => a.formaPgto === "TPA").reduce((a, at) => a + at.valor, 0);
+  const fcDinheiro = fcAtendimentos.filter(a => a.formaPgto === "Dinheiro").reduce((a, m) => a + m.valor, 0);
+  const fcTransferencia = fcAtendimentos.filter(a => a.formaPgto === "Transferência").reduce((a, m) => a + m.valor, 0);
+  const fcTPA = fcAtendimentos.filter(a => a.formaPgto === "TPA").reduce((a, m) => a + m.valor, 0);
   const fcTotal = fcDinheiro + fcTransferencia + fcTPA;
 
   // DRE computed
@@ -218,6 +220,14 @@ export default function Financeiro() {
   // Redirect non-authorized
   if (perfil === "Colaborador") return <Navigate to="/dashboard" replace />;
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* ALERTAS GLOBAIS */}
@@ -229,7 +239,7 @@ export default function Financeiro() {
         )}
         {contasVenceBreve > 0 && (
           <div className="flex items-center gap-2 rounded-lg bg-primary/10 px-4 py-2.5 text-sm text-primary cursor-pointer hover:bg-primary/15 transition-colors" onClick={() => { setTab("contas-pagar"); setStatusCP("Pendente"); }}>
-            <Bell className="h-4 w-4" /> 🟡 {contasVenceBreve} conta(s) vencem nos próximos 3 dias
+            <Bell className="h-4 w-4" /> 🟡 {contasVenceBreve} conta(s) vencem nos próximos 7 dias
           </div>
         )}
         {comissoesPendentes > 0 && (
@@ -282,9 +292,9 @@ export default function Financeiro() {
         {tab === "visao-geral" && (
           <TabContent tabKey="visao-geral">
             <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-              <KpiCard label="Receita do Mês" value={format(468000)} icon={TrendingUp} color="bg-green-custom/10 text-green-custom" variacao={{ valor: "+2,6%", positivo: true }} />
-              <KpiCard label="Despesas do Mês" value={format(385500)} icon={TrendingDown} color="bg-destructive/10 text-destructive" variacao={{ valor: "+21%", positivo: false }} />
-              <KpiCard label="Lucro Líquido" value={format(82500)} icon={DollarSign} color={82500 >= 0 ? "bg-green-custom/10 text-green-custom" : "bg-destructive/10 text-destructive"} />
+              <KpiCard label="Receita do Mês" value={format(totalEntradas)} icon={TrendingUp} color="bg-green-custom/10 text-green-custom" />
+              <KpiCard label="Despesas do Mês" value={format(totalSaidas)} icon={TrendingDown} color="bg-destructive/10 text-destructive" />
+              <KpiCard label="Lucro Líquido" value={format(lucroLiquido)} icon={DollarSign} color={lucroLiquido >= 0 ? "bg-green-custom/10 text-green-custom" : "bg-destructive/10 text-destructive"} />
               <KpiCard label="Saldo em Caixa" value={format(saldoCaixa)} icon={Wallet} color="bg-primary/10 text-primary" />
             </div>
 
@@ -396,7 +406,6 @@ export default function Financeiro() {
                     </tr>); }); })()}
                 </tbody>
               </table>
-              {/* Mobile cards */}
               <div className="md:hidden space-y-2 p-3">
                 {(() => { let saldo = 0; return movPag.paginated.map(m => { saldo += m.tipo === "Entrada" ? m.valor : -m.valor; return (
                   <MobileCard key={m.id}>
@@ -469,7 +478,6 @@ export default function Financeiro() {
                   ))}
                 </tbody>
               </table>
-              {/* Mobile */}
               <div className="md:hidden space-y-2 p-3">
                 {movPag.paginated.map(m => (
                   <MobileCard key={m.id}>
@@ -495,27 +503,20 @@ export default function Financeiro() {
         {tab === "contas-pagar" && (
           <TabContent tabKey="contas-pagar">
             <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-              <KpiCard label="A vencer hoje" value={String(contasPagar.filter(c => c.vencimento === "2025-03-04" && c.status === "Pendente").length)} icon={Calendar} color="bg-primary/10 text-primary" />
-              <KpiCard label="A vencer esta semana" value={String(contasPagar.filter(c => c.status === "Pendente" && c.vencimento <= "2025-03-10").length)} icon={AlertTriangle} color="bg-gold/10 text-primary" />
+              <KpiCard label="A vencer hoje" value={String(contasPagar.filter(c => c.vencimento === today && c.status === "Pendente").length)} icon={Calendar} color="bg-primary/10 text-primary" />
+              <KpiCard label="A vencer esta semana" value={String(contasPagar.filter(c => c.status === "Pendente" && c.vencimento <= weekAhead).length)} icon={AlertTriangle} color="bg-gold/10 text-primary" />
               <KpiCard label="Vencidas" value={String(contasVencidasCount)} icon={Bell} color="bg-destructive/10 text-destructive" />
               <KpiCard label="Pagas este mês" value={String(contasPagar.filter(c => c.status === "Paga" || c.status === "Paga com atraso").length)} icon={Check} color="bg-green-custom/10 text-green-custom" />
             </div>
 
-            {/* Gráfico de Tendência Mensal */}
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
               <div className="rounded-xl border border-border bg-card p-5 card-hover">
                 <h3 className="font-display text-sm font-semibold text-foreground mb-3">Evolução Mensal — Contas a Pagar</h3>
                 <ResponsiveContainer width="100%" height={220}>
                   <AreaChart data={contasPagarMensalTrend}>
                     <defs>
-                      <linearGradient id="cpTotalGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="hsl(35 50% 50%)" stopOpacity={0.3} />
-                        <stop offset="95%" stopColor="hsl(35 50% 50%)" stopOpacity={0} />
-                      </linearGradient>
-                      <linearGradient id="cpPagasGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="hsl(150 50% 40%)" stopOpacity={0.3} />
-                        <stop offset="95%" stopColor="hsl(150 50% 40%)" stopOpacity={0} />
-                      </linearGradient>
+                      <linearGradient id="cpTotalGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="hsl(35 50% 50%)" stopOpacity={0.3} /><stop offset="95%" stopColor="hsl(35 50% 50%)" stopOpacity={0} /></linearGradient>
+                      <linearGradient id="cpPagasGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="hsl(150 50% 40%)" stopOpacity={0.3} /><stop offset="95%" stopColor="hsl(150 50% 40%)" stopOpacity={0} /></linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(280 20% 90%)" />
                     <XAxis dataKey="mes" tick={{ fill: "hsl(280 15% 60%)", fontSize: 11 }} axisLine={false} />
@@ -553,68 +554,56 @@ export default function Financeiro() {
             </div>
             
             <StatusFilter value={statusCP} onChange={setStatusCP} options={[
-              { value: "Pendente", label: "Pendentes" },
-              { value: "Vencida", label: "Vencidas" },
-              { value: "Paga", label: "Pagas" },
-              { value: "Paga com atraso", label: "Pagas com atraso" },
+              { value: "Pendente", label: "Pendentes" }, { value: "Vencida", label: "Vencidas" },
+              { value: "Paga", label: "Pagas" }, { value: "Paga com atraso", label: "Pagas com atraso" },
             ]} />
 
-            <TableWrapper
-              exportProps={{
-                title: "Contas a Pagar", fileName: "contas-pagar",
-                columns: [{ header: "Beneficiário", key: "fornecedorBeneficiario" }, { header: "Descrição", key: "descricao" }, { header: "Valor", key: "valorFmt" }, { header: "Vencimento", key: "vencimento" }, { header: "Status", key: "status" }],
-                data: cpFiltered.map(c => ({ ...c, valorFmt: format(c.valor) }))
-              }}
-            >
+            <TableWrapper exportProps={{
+              title: "Contas a Pagar", fileName: "contas-pagar",
+              columns: [{ header: "Beneficiário", key: "fornecedorBeneficiario" }, { header: "Descrição", key: "descricao" }, { header: "Valor", key: "valorFmt" }, { header: "Vencimento", key: "vencimento" }, { header: "Status", key: "status" }],
+              data: cpFiltered.map(c => ({ ...c, valorFmt: format(c.valor) }))
+            }}>
               <table className="w-full text-sm hidden md:table">
                 <thead><tr className="border-b border-border text-xs text-text3">
                   <th className="p-3 text-left">Fornecedor/Beneficiário</th><th className="p-3 text-left">Descrição</th>
-                  <th className="p-3 text-left">Categoria</th><th className="p-3 text-left">Valor</th>
-                  <th className="p-3 text-left">Vencimento</th><th className="p-3 text-left">Status</th><th className="p-3 text-left">Ações</th>
+                  <th className="p-3 text-left">Valor</th><th className="p-3 text-left">Vencimento</th><th className="p-3 text-left">Status</th>
+                  <th className="p-3 text-left">Recorrência</th><th className="p-3 text-left">Ações</th>
                 </tr></thead>
                 <tbody>
                   {cpPag.paginated.length === 0 ? (
                     <tr><td colSpan={7}><EmptyState icon={ArrowDownCircle} title="Nenhuma conta encontrada" /></td></tr>
-                  ) : cpPag.paginated.map(c => {
-                    const isVencida = c.status === "Vencida";
-                    const venceBreve = c.status === "Pendente" && c.vencimento <= "2025-03-07";
-                    return (
-                      <tr key={c.id} className={`border-b border-border/50 hover:bg-surface2/50 transition-colors ${isVencida ? "bg-destructive/5" : venceBreve ? "bg-primary/5" : ""}`}>
-                        <td className="p-3 text-foreground font-medium">{c.fornecedorBeneficiario} {isVencida && <Bell className="inline h-3.5 w-3.5 text-destructive ml-1" />}</td>
-                        <td className="p-3 text-text2">{c.descricao}</td>
-                        <td className="p-3 text-text3">{c.categoria}</td>
-                        <td className="p-3 font-semibold text-foreground">{format(c.valor)}</td>
-                        <td className="p-3 text-text3">{c.vencimento}</td>
-                        <td className="p-3"><StatusBadge status={c.status} /></td>
-                        <td className="p-3">
-                          <div className="flex gap-1">
-                            {(c.status === "Pendente" || c.status === "Vencida") && (
-                              <button onClick={() => setModalPagarConta(c.id)} className="rounded-lg bg-green-custom/10 px-2 py-1 text-xs text-green-custom hover:bg-green-custom/20 transition-colors">Pagar</button>
-                            )}
-                            <button onClick={() => setConfirmDelete({ type: "cp", id: c.id })} className="rounded p-1 hover:bg-destructive/10 transition-colors"><Trash2 className="h-3.5 w-3.5 text-destructive" /></button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
+                  ) : cpPag.paginated.map(c => (
+                    <tr key={c.id} className="border-b border-border/50 hover:bg-surface2/50 transition-colors">
+                      <td className="p-3 text-foreground">{c.fornecedorBeneficiario}</td>
+                      <td className="p-3 text-text2">{c.descricao}</td>
+                      <td className="p-3 font-semibold text-foreground">{format(c.valor)}</td>
+                      <td className="p-3 text-text3">{c.vencimento}</td>
+                      <td className="p-3"><StatusBadge status={c.status} /></td>
+                      <td className="p-3 text-text3">{c.recorrencia || "—"}</td>
+                      <td className="p-3">
+                        <div className="flex gap-1">
+                          {(c.status === "Pendente" || c.status === "Vencida") && (
+                            <button onClick={() => setModalPagarConta(c.id)} className="rounded px-2 py-1 text-[11px] bg-green-custom/10 text-green-custom hover:bg-green-custom/20 transition-colors">Pagar</button>
+                          )}
+                          <button onClick={() => setConfirmDelete({ type: "cp", id: c.id })} className="rounded p-1 hover:bg-destructive/10 transition-colors"><Trash2 className="h-3.5 w-3.5 text-destructive" /></button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
-              {/* Mobile */}
               <div className="md:hidden space-y-2 p-3">
                 {cpPag.paginated.map(c => (
-                  <MobileCard key={c.id} className={c.status === "Vencida" ? "border-destructive/30 bg-destructive/5" : ""}>
+                  <MobileCard key={c.id}>
                     <div className="flex justify-between items-start">
                       <div><p className="font-medium text-foreground text-sm">{c.fornecedorBeneficiario}</p><p className="text-xs text-text3">{c.descricao}</p></div>
                       <StatusBadge status={c.status} />
                     </div>
                     <MobileCardRow label="Valor" value={<span className="font-bold">{format(c.valor)}</span>} />
                     <MobileCardRow label="Vencimento" value={c.vencimento} />
-                    <div className="flex justify-end gap-2 pt-1">
-                      {(c.status === "Pendente" || c.status === "Vencida") && (
-                        <button onClick={() => setModalPagarConta(c.id)} className="text-xs text-green-custom font-medium">Pagar</button>
-                      )}
-                      <button onClick={() => setConfirmDelete({ type: "cp", id: c.id })} className="text-xs text-destructive">Excluir</button>
-                    </div>
+                    {(c.status === "Pendente" || c.status === "Vencida") && (
+                      <button onClick={() => setModalPagarConta(c.id)} className="w-full rounded-lg bg-green-custom/10 py-1.5 text-xs text-green-custom font-medium mt-1">Pagar</button>
+                    )}
                   </MobileCard>
                 ))}
               </div>
@@ -626,59 +615,45 @@ export default function Financeiro() {
         {/* ==================== ABA 5: CONTAS A RECEBER ==================== */}
         {tab === "contas-receber" && (
           <TabContent tabKey="contas-receber">
-            <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-              <KpiCard label="Total em Aberto" value={format(contasReceber.filter(c => c.status !== "Quitado").reduce((a, c) => a + (c.valorTotal - c.valorPago), 0))} icon={Receipt} color="bg-primary/10 text-primary" />
-              <KpiCard label="Recebido este mês" value={format(contasReceber.reduce((a, c) => a + c.valorPago, 0))} icon={ArrowUpCircle} color="bg-green-custom/10 text-green-custom" />
-              <KpiCard label="Vencido" value={format(contasReceber.filter(c => c.status === "Vencido").reduce((a, c) => a + (c.valorTotal - c.valorPago), 0))} icon={AlertTriangle} color="bg-destructive/10 text-destructive" />
-              <KpiCard label="A vencer" value={format(contasReceber.filter(c => c.status === "Em aberto" || c.status === "Parcialmente pago").reduce((a, c) => a + (c.valorTotal - c.valorPago), 0))} icon={Calendar} color="bg-teal-custom/10 text-teal-custom" />
-            </div>
-
             <div className="flex flex-wrap gap-3 items-center">
               <button onClick={() => setModalFiado(true)} className="flex items-center gap-2 rounded-lg gold-gradient px-4 py-2.5 text-sm font-semibold text-primary-foreground">
-                <Plus className="h-4 w-4" /> Registrar Fiado
+                <Plus className="h-4 w-4" /> Novo Fiado
               </button>
               <div className="flex-1 min-w-[200px]">
-                <SearchInput value={searchCR} onChange={setSearchCR} placeholder="Pesquisar cliente ou serviço..." />
+                <SearchInput value={searchCR} onChange={setSearchCR} placeholder="Pesquisar fiados..." />
               </div>
             </div>
-
             <StatusFilter value={statusCR} onChange={setStatusCR} options={[
-              { value: "Em aberto", label: "Em aberto" },
-              { value: "Parcialmente pago", label: "Parcial" },
-              { value: "Quitado", label: "Quitado" },
-              { value: "Vencido", label: "Vencido" },
+              { value: "Em aberto", label: "Em aberto" }, { value: "Parcialmente pago", label: "Parcial" },
+              { value: "Quitado", label: "Quitado" }, { value: "Vencido", label: "Vencido" },
             ]} />
-
-            <TableWrapper
-              exportProps={{
-                title: "Contas a Receber", fileName: "contas-receber",
-                columns: [{ header: "Cliente", key: "cliente" }, { header: "Serviço", key: "servico" }, { header: "Valor Total", key: "totalFmt" }, { header: "Pago", key: "pagoFmt" }, { header: "Status", key: "status" }],
-                data: crFiltered.map(c => ({ ...c, totalFmt: format(c.valorTotal), pagoFmt: format(c.valorPago) }))
-              }}
-            >
+            <TableWrapper exportProps={{
+              title: "Contas a Receber", fileName: "contas-receber",
+              columns: [{ header: "Cliente", key: "cliente" }, { header: "Serviço", key: "servico" }, { header: "Total", key: "totalFmt" }, { header: "Pago", key: "pagoFmt" }, { header: "Status", key: "status" }],
+              data: crFiltered.map(c => ({ ...c, totalFmt: format(c.valorTotal), pagoFmt: format(c.valorPago) }))
+            }}>
               <table className="w-full text-sm hidden md:table">
                 <thead><tr className="border-b border-border text-xs text-text3">
-                  <th className="p-3 text-left">Cliente</th><th className="p-3 text-left">Serviço/Descrição</th>
-                  <th className="p-3 text-left">Valor Total</th><th className="p-3 text-left">Valor Pago</th>
-                  <th className="p-3 text-left">Saldo Devedor</th><th className="p-3 text-left">Vencimento</th>
-                  <th className="p-3 text-left">Status</th><th className="p-3 text-left">Ações</th>
+                  <th className="p-3 text-left">Cliente</th><th className="p-3 text-left">Serviço</th>
+                  <th className="p-3 text-left">Valor Total</th><th className="p-3 text-left">Pago</th><th className="p-3 text-left">Saldo</th>
+                  <th className="p-3 text-left">Vencimento</th><th className="p-3 text-left">Status</th><th className="p-3 text-left">Ações</th>
                 </tr></thead>
                 <tbody>
                   {crPag.paginated.length === 0 ? (
-                    <tr><td colSpan={8}><EmptyState icon={Receipt} title="Nenhuma conta a receber encontrada" /></td></tr>
+                    <tr><td colSpan={8}><EmptyState icon={Receipt} title="Nenhuma conta a receber" /></td></tr>
                   ) : crPag.paginated.map(c => (
-                    <tr key={c.id} className={`border-b border-border/50 hover:bg-surface2/50 transition-colors ${c.status === "Vencido" ? "bg-destructive/5" : ""}`}>
-                      <td className="p-3 text-foreground font-medium">{c.cliente}</td>
+                    <tr key={c.id} className="border-b border-border/50 hover:bg-surface2/50 transition-colors">
+                      <td className="p-3 text-foreground">{c.cliente}</td>
                       <td className="p-3 text-text2">{c.servico}</td>
-                      <td className="p-3 text-foreground">{format(c.valorTotal)}</td>
+                      <td className="p-3 font-medium text-foreground">{format(c.valorTotal)}</td>
                       <td className="p-3 text-green-custom">{format(c.valorPago)}</td>
-                      <td className="p-3 font-semibold text-destructive">{format(c.valorTotal - c.valorPago)}</td>
+                      <td className="p-3 text-destructive font-bold">{format(c.valorTotal - c.valorPago)}</td>
                       <td className="p-3 text-text3">{c.vencimento}</td>
                       <td className="p-3"><StatusBadge status={c.status} /></td>
                       <td className="p-3">
                         <div className="flex gap-1">
                           {c.status !== "Quitado" && (
-                            <button onClick={() => setModalPagamento(c.id)} className="rounded-lg bg-green-custom/10 px-2 py-1 text-xs text-green-custom hover:bg-green-custom/20 transition-colors">Receber</button>
+                            <button onClick={() => setModalPagamento(c.id)} className="rounded px-2 py-1 text-[11px] bg-green-custom/10 text-green-custom hover:bg-green-custom/20 transition-colors">Receber</button>
                           )}
                           <button onClick={() => setConfirmDelete({ type: "cr", id: c.id })} className="rounded p-1 hover:bg-destructive/10 transition-colors"><Trash2 className="h-3.5 w-3.5 text-destructive" /></button>
                         </div>
@@ -687,10 +662,9 @@ export default function Financeiro() {
                   ))}
                 </tbody>
               </table>
-              {/* Mobile */}
               <div className="md:hidden space-y-2 p-3">
                 {crPag.paginated.map(c => (
-                  <MobileCard key={c.id} className={c.status === "Vencido" ? "border-destructive/30 bg-destructive/5" : ""}>
+                  <MobileCard key={c.id}>
                     <div className="flex justify-between items-start">
                       <div><p className="font-medium text-foreground text-sm">{c.cliente}</p><p className="text-xs text-text3">{c.servico}</p></div>
                       <StatusBadge status={c.status} />
@@ -723,7 +697,6 @@ export default function Financeiro() {
                     </button>
                   ))}
                 </div>
-
                 <div className="flex flex-wrap gap-3">
                   <button onClick={() => setModalDespesa(true)} className="flex items-center gap-2 rounded-lg gold-gradient px-4 py-2.5 text-sm font-semibold text-primary-foreground">
                     <Plus className="h-4 w-4" /> Nova Despesa
@@ -733,7 +706,6 @@ export default function Financeiro() {
                   </div>
                 </div>
               </div>
-
               <div className="rounded-xl border border-border bg-card p-5 card-hover">
                 <h3 className="font-display text-sm font-semibold text-foreground mb-3">Despesas por Categoria</h3>
                 <ResponsiveContainer width="100%" height={180}>
@@ -750,17 +722,13 @@ export default function Financeiro() {
               </div>
             </div>
 
-            {/* Gráficos de Tendência Mensal de Despesas */}
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
               <div className="rounded-xl border border-border bg-card p-5 card-hover">
                 <h3 className="font-display text-sm font-semibold text-foreground mb-3">Evolução Total de Despesas — 6 meses</h3>
                 <ResponsiveContainer width="100%" height={220}>
                   <AreaChart data={despesasMensalTrend}>
                     <defs>
-                      <linearGradient id="despTotalGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="hsl(350 55% 57%)" stopOpacity={0.3} />
-                        <stop offset="95%" stopColor="hsl(350 55% 57%)" stopOpacity={0} />
-                      </linearGradient>
+                      <linearGradient id="despTotalGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="hsl(350 55% 57%)" stopOpacity={0.3} /><stop offset="95%" stopColor="hsl(350 55% 57%)" stopOpacity={0} /></linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(280 20% 90%)" />
                     <XAxis dataKey="mes" tick={{ fill: "hsl(280 15% 60%)", fontSize: 11 }} axisLine={false} />
@@ -789,13 +757,11 @@ export default function Financeiro() {
               </div>
             </div>
 
-            <TableWrapper
-              exportProps={{
-                title: "Despesas", fileName: "despesas",
-                columns: [{ header: "Data", key: "data" }, { header: "Descrição", key: "descricao" }, { header: "Categoria", key: "categoria" }, { header: "Valor", key: "valorFmt" }, { header: "Forma Pgto", key: "formaPgto" }],
-                data: despFiltradas.map(d => ({ ...d, valorFmt: format(d.valor) }))
-              }}
-            >
+            <TableWrapper exportProps={{
+              title: "Despesas", fileName: "despesas",
+              columns: [{ header: "Data", key: "data" }, { header: "Descrição", key: "descricao" }, { header: "Categoria", key: "categoria" }, { header: "Valor", key: "valorFmt" }, { header: "Forma Pgto", key: "formaPgto" }],
+              data: despFiltradas.map(d => ({ ...d, valorFmt: format(d.valor) }))
+            }}>
               <table className="w-full text-sm hidden md:table">
                 <thead><tr className="border-b border-border text-xs text-text3">
                   <th className="p-3 text-left">Data</th><th className="p-3 text-left">Descrição</th><th className="p-3 text-left">Categoria</th>
@@ -805,29 +771,28 @@ export default function Financeiro() {
                 <tbody>
                   {dePag.paginated.length === 0 ? (
                     <tr><td colSpan={8}><EmptyState icon={CreditCard} title="Nenhuma despesa encontrada" /></td></tr>
-                  ) : dePag.paginated.map(d => (
-                    <tr key={d.id} className="border-b border-border/50 hover:bg-surface2/50 transition-colors">
-                      <td className="p-3 text-text3">{d.data}</td><td className="p-3 text-foreground">{d.descricao}</td>
-                      <td className="p-3 text-text2">{d.categoria}</td><td className="p-3 text-text3">{d.fornecedor || "—"}</td>
-                      <td className="p-3 font-semibold text-destructive">{format(d.valor)}</td><td className="p-3 text-text3">{d.formaPgto}</td>
-                      <td className="p-3 text-text3">{d.registradoPor}</td>
+                  ) : dePag.paginated.map(dItem => (
+                    <tr key={dItem.id} className="border-b border-border/50 hover:bg-surface2/50 transition-colors">
+                      <td className="p-3 text-text3">{dItem.data}</td><td className="p-3 text-foreground">{dItem.descricao}</td>
+                      <td className="p-3 text-text2">{dItem.categoria}</td><td className="p-3 text-text3">{dItem.fornecedor || "—"}</td>
+                      <td className="p-3 font-semibold text-destructive">{format(dItem.valor)}</td><td className="p-3 text-text3">{dItem.formaPgto}</td>
+                      <td className="p-3 text-text3">{dItem.registradoPor}</td>
                       <td className="p-3"><div className="flex gap-1">
-                        <button onClick={() => setConfirmDelete({ type: "desp", id: d.id })} className="rounded p-1 hover:bg-destructive/10 transition-colors"><Trash2 className="h-3.5 w-3.5 text-destructive" /></button>
+                        <button onClick={() => setConfirmDelete({ type: "desp", id: dItem.id })} className="rounded p-1 hover:bg-destructive/10 transition-colors"><Trash2 className="h-3.5 w-3.5 text-destructive" /></button>
                       </div></td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-              {/* Mobile */}
               <div className="md:hidden space-y-2 p-3">
-                {dePag.paginated.map(d => (
-                  <MobileCard key={d.id}>
+                {dePag.paginated.map(dItem => (
+                  <MobileCard key={dItem.id}>
                     <div className="flex justify-between items-start">
-                      <div><p className="font-medium text-foreground text-sm">{d.descricao}</p><p className="text-xs text-text3">{d.data} · {d.categoria}</p></div>
-                      <span className="font-bold text-destructive text-sm">{format(d.valor)}</span>
+                      <div><p className="font-medium text-foreground text-sm">{dItem.descricao}</p><p className="text-xs text-text3">{dItem.data} · {dItem.categoria}</p></div>
+                      <span className="font-bold text-destructive text-sm">{format(dItem.valor)}</span>
                     </div>
-                    <MobileCardRow label="Forma Pgto" value={d.formaPgto} />
-                    <MobileCardRow label="Registrado por" value={d.registradoPor} />
+                    <MobileCardRow label="Forma Pgto" value={dItem.formaPgto} />
+                    <MobileCardRow label="Registrado por" value={dItem.registradoPor} />
                   </MobileCard>
                 ))}
               </div>
@@ -860,37 +825,37 @@ export default function Financeiro() {
             <div className="space-y-3">
               {fornFiltered.length === 0 ? (
                 <EmptyState icon={Truck} title="Nenhum fornecedor encontrado" />
-              ) : fornFiltered.map(f => (
-                <div key={f.id} className="rounded-xl border border-border bg-card card-hover">
-                  <div className="p-5 flex items-center justify-between cursor-pointer" onClick={() => setExpandedFornecedor(expandedFornecedor === f.id ? null : f.id)}>
+              ) : fornFiltered.map(fItem => (
+                <div key={fItem.id} className="rounded-xl border border-border bg-card card-hover">
+                  <div className="p-5 flex items-center justify-between cursor-pointer" onClick={() => setExpandedFornecedor(expandedFornecedor === fItem.id ? null : fItem.id)}>
                     <div className="flex items-center gap-4">
                       <div className="rounded-lg bg-primary/10 p-2.5"><Building2 className="h-5 w-5 text-primary" /></div>
                       <div>
-                        <p className="font-medium text-foreground">{f.nome}</p>
-                        <p className="text-xs text-text3">{f.categoria} · {f.contato}</p>
+                        <p className="font-medium text-foreground">{fItem.nome}</p>
+                        <p className="text-xs text-text3">{fItem.categoria} · {fItem.contato}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-4">
                       <div className="text-right">
                         <p className="text-xs text-text3">Saldo devedor</p>
-                        <p className={`font-display text-lg font-bold ${f.saldoDevedor > 0 ? "text-destructive" : "text-green-custom"}`}>{format(f.saldoDevedor)}</p>
+                        <p className={`font-display text-lg font-bold ${fItem.saldoDevedor > 0 ? "text-destructive" : "text-green-custom"}`}>{format(fItem.saldoDevedor)}</p>
                       </div>
-                      {expandedFornecedor === f.id ? <ChevronUp className="h-4 w-4 text-text3" /> : <ChevronDown className="h-4 w-4 text-text3" />}
+                      {expandedFornecedor === fItem.id ? <ChevronUp className="h-4 w-4 text-text3" /> : <ChevronDown className="h-4 w-4 text-text3" />}
                     </div>
                   </div>
-                  {expandedFornecedor === f.id && (
+                  {expandedFornecedor === fItem.id && (
                     <div className="border-t border-border p-5 space-y-3">
                       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4 text-sm">
-                        <div><p className="text-xs text-text3">NIF</p><p className="text-foreground">{f.nif}</p></div>
-                        <div><p className="text-xs text-text3">E-mail</p><p className="text-foreground">{f.email || "—"}</p></div>
-                        <div><p className="text-xs text-text3">Endereço</p><p className="text-foreground">{f.endereco || "—"}</p></div>
-                        <div><p className="text-xs text-text3">Última compra</p><p className="text-foreground">{f.ultimaCompra}</p></div>
+                        <div><p className="text-xs text-text3">NIF</p><p className="text-foreground">{fItem.nif}</p></div>
+                        <div><p className="text-xs text-text3">E-mail</p><p className="text-foreground">{fItem.email || "—"}</p></div>
+                        <div><p className="text-xs text-text3">Endereço</p><p className="text-foreground">{fItem.endereco || "—"}</p></div>
+                        <div><p className="text-xs text-text3">Última compra</p><p className="text-foreground">{fItem.ultimaCompra}</p></div>
                       </div>
-                      {f.historicoCompras && f.historicoCompras.length > 0 && (
+                      {fItem.historicoCompras && fItem.historicoCompras.length > 0 && (
                         <div>
                           <p className="text-xs text-text3 mb-2 font-medium">Histórico de compras</p>
                           <div className="space-y-1">
-                            {f.historicoCompras.map((h, i) => (
+                            {fItem.historicoCompras.map((h, i) => (
                               <div key={i} className="flex items-center justify-between rounded-lg bg-surface2 px-3 py-2 text-xs">
                                 <span className="text-text3">{h.data}</span>
                                 <span className="text-foreground flex-1 ml-3">{h.descricao}</span>
@@ -902,7 +867,7 @@ export default function Financeiro() {
                         </div>
                       )}
                       <div className="flex justify-end">
-                        <button onClick={() => setConfirmDelete({ type: "forn", id: f.id })} className="text-xs text-destructive hover:underline">Excluir fornecedor</button>
+                        <button onClick={() => setConfirmDelete({ type: "forn", id: fItem.id })} className="text-xs text-destructive hover:underline">Excluir fornecedor</button>
                       </div>
                     </div>
                   )}
@@ -933,17 +898,15 @@ export default function Financeiro() {
                   <KpiCard label="Profissionais" value={String(salariosConfig.length)} icon={Users} color="bg-teal-custom/10 text-teal-custom" />
                 </div>
 
-                <TableWrapper
-                  exportProps={{
-                    title: "Folha de Pagamento", fileName: "folha-pagamento",
-                    columns: [{ header: "Profissional", key: "profissional" }, { header: "Tipo", key: "tipo" }, { header: "Base", key: "baseFmt" }, { header: "Comissão", key: "comFmt" }, { header: "Total", key: "totalFmt" }],
-                    data: salariosConfig.map(s => {
-                      const c = Math.round(s.receitaGeradaMes * s.comissaoPct / 100);
-                      const ad = adiantamentos.filter(a => a.profissional === s.profissional && a.status === "Aprovado — aguardando desconto").reduce((a, ad) => a + ad.valorAprovado, 0);
-                      return { profissional: s.profissional, tipo: s.tipo, baseFmt: format(s.fixo), comFmt: format(c), totalFmt: format(s.fixo + c - ad) };
-                    })
-                  }}
-                >
+                <TableWrapper exportProps={{
+                  title: "Folha de Pagamento", fileName: "folha-pagamento",
+                  columns: [{ header: "Profissional", key: "profissional" }, { header: "Tipo", key: "tipo" }, { header: "Base", key: "baseFmt" }, { header: "Comissão", key: "comFmt" }, { header: "Total", key: "totalFmt" }],
+                  data: salariosConfig.map(s => {
+                    const c = Math.round(s.receitaGeradaMes * s.comissaoPct / 100);
+                    const ad = adiantamentos.filter(a => a.profissional === s.profissional && a.status === "Aprovado — aguardando desconto").reduce((a, ad) => a + ad.valorAprovado, 0);
+                    return { profissional: s.profissional, tipo: s.tipo, baseFmt: format(s.fixo), comFmt: format(c), totalFmt: format(s.fixo + c - ad) };
+                  })
+                }}>
                   <table className="w-full text-sm hidden md:table">
                     <thead><tr className="border-b border-border text-xs text-text3">
                       <th className="p-3 text-left">Profissional</th><th className="p-3 text-left">Tipo Remuneração</th>
@@ -954,41 +917,39 @@ export default function Financeiro() {
                     <tbody>
                       {salariosConfig.map(s => {
                         const comissao = Math.round(s.receitaGeradaMes * s.comissaoPct / 100);
-                        const adiantDesc = adiantamentos.filter(a => a.profissional === s.profissional && a.status === "Aprovado — aguardando desconto").reduce((a, ad) => a + ad.valorAprovado, 0);
-                        const total = s.fixo + comissao - adiantDesc;
+                        const adDesc = adiantamentos.filter(a => a.profissional === s.profissional && a.status === "Aprovado — aguardando desconto").reduce((a, ad) => a + ad.valorAprovado, 0);
+                        const totalLiq = s.fixo + comissao - adDesc;
                         return (
-                          <tr key={s.profissionalId} className="border-b border-border/50 hover:bg-surface2/50 transition-colors">
+                          <tr key={s.id} className="border-b border-border/50 hover:bg-surface2/50 transition-colors">
                             <td className="p-3 font-medium text-foreground">{s.profissional}</td>
                             <td className="p-3"><StatusBadge status={s.tipo} /></td>
-                            <td className="p-3 text-foreground">{s.fixo > 0 ? format(s.fixo) : "—"}</td>
+                            <td className="p-3 text-foreground">{format(s.fixo)}</td>
                             <td className="p-3 text-text2">{s.comissaoPct}%</td>
                             <td className="p-3 text-green-custom">{format(comissao)}</td>
-                            <td className="p-3 text-destructive">{adiantDesc > 0 ? `-${format(adiantDesc)}` : "—"}</td>
-                            <td className="p-3 font-bold text-foreground">{format(total)}</td>
+                            <td className="p-3 text-destructive">{adDesc > 0 ? `-${format(adDesc)}` : "—"}</td>
+                            <td className="p-3 font-bold text-foreground">{format(totalLiq)}</td>
                             <td className="p-3">
-                              <button onClick={() => setModalSalario(s.profissional)} className="rounded-lg bg-green-custom/10 px-2.5 py-1 text-xs text-green-custom hover:bg-green-custom/20 transition-colors">Pagar</button>
+                              <button onClick={() => setModalSalario(s.profissional)} className="rounded px-2 py-1 text-[11px] gold-gradient text-primary-foreground font-medium">Pagar</button>
                             </td>
                           </tr>
                         );
                       })}
                     </tbody>
                   </table>
-                  {/* Mobile */}
                   <div className="md:hidden space-y-2 p-3">
                     {salariosConfig.map(s => {
                       const comissao = Math.round(s.receitaGeradaMes * s.comissaoPct / 100);
-                      const adiantDesc = adiantamentos.filter(a => a.profissional === s.profissional && a.status === "Aprovado — aguardando desconto").reduce((a, ad) => a + ad.valorAprovado, 0);
-                      const total = s.fixo + comissao - adiantDesc;
+                      const adDesc = adiantamentos.filter(a => a.profissional === s.profissional && a.status === "Aprovado — aguardando desconto").reduce((a, ad) => a + ad.valorAprovado, 0);
                       return (
-                        <MobileCard key={s.profissionalId}>
+                        <MobileCard key={s.id}>
                           <div className="flex justify-between items-start">
-                            <div><p className="font-medium text-foreground">{s.profissional}</p><StatusBadge status={s.tipo} /></div>
-                            <p className="font-bold text-foreground text-lg">{format(total)}</p>
+                            <p className="font-medium text-foreground">{s.profissional}</p>
+                            <StatusBadge status={s.tipo} />
                           </div>
-                          <MobileCardRow label="Base" value={s.fixo > 0 ? format(s.fixo) : "—"} />
-                          <MobileCardRow label={`Comissão (${s.comissaoPct}%)`} value={<span className="text-green-custom">{format(comissao)}</span>} />
-                          {adiantDesc > 0 && <MobileCardRow label="Adiantamento" value={<span className="text-destructive">-{format(adiantDesc)}</span>} />}
-                          <button onClick={() => setModalSalario(s.profissional)} className="w-full rounded-lg bg-green-custom/10 py-1.5 text-xs text-green-custom font-medium mt-1">Pagar Salário</button>
+                          <MobileCardRow label="Base" value={format(s.fixo)} />
+                          <MobileCardRow label="Comissão" value={<span className="text-green-custom">{format(comissao)}</span>} />
+                          <MobileCardRow label="Total" value={<span className="font-bold">{format(s.fixo + comissao - adDesc)}</span>} />
+                          <button onClick={() => setModalSalario(s.profissional)} className="w-full rounded-lg gold-gradient py-1.5 text-xs font-medium text-primary-foreground mt-1">Pagar</button>
                         </MobileCard>
                       );
                     })}
@@ -998,87 +959,54 @@ export default function Financeiro() {
             )}
 
             {subTabSalario === "comissoes" && (
-              <>
-                <button onClick={() => saved("Comissões recalculadas com base nos atendimentos do mês")} className="flex items-center gap-2 rounded-lg gold-gradient px-4 py-2.5 text-sm font-semibold text-primary-foreground mb-4">
-                  <BarChart3 className="h-4 w-4" /> Calcular comissões do mês
-                </button>
-                <TableWrapper>
-                  <table className="w-full text-sm">
-                    <thead><tr className="border-b border-border text-xs text-text3">
-                      <th className="p-3 text-left">Profissional</th><th className="p-3 text-left">Atendimentos</th>
-                      <th className="p-3 text-left">Receita Gerada</th><th className="p-3 text-left">% Comissão</th>
-                      <th className="p-3 text-left">Valor Comissão</th><th className="p-3 text-left">Status</th>
-                    </tr></thead>
-                    <tbody>
-                      {salariosConfig.filter(s => s.comissaoPct > 0).map(s => {
-                        const comissao = Math.round(s.receitaGeradaMes * s.comissaoPct / 100);
-                        return (
-                          <tr key={s.profissionalId} className="border-b border-border/50 hover:bg-surface2/50 transition-colors">
-                            <td className="p-3 font-medium text-foreground">{s.profissional}</td>
-                            <td className="p-3 text-text2">{s.atendimentosMes}</td>
-                            <td className="p-3 text-foreground">{format(s.receitaGeradaMes)}</td>
-                            <td className="p-3 text-text2">{s.comissaoPct}%</td>
-                            <td className="p-3 font-bold text-primary">{format(comissao)}</td>
-                            <td className="p-3"><StatusBadge status={s.tipo === "Fixo + comissão" ? "Incluída no salário" : "Pendente pagamento"} /></td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </TableWrapper>
-              </>
+              <TableWrapper title="Comissões do Mês">
+                <table className="w-full text-sm">
+                  <thead><tr className="border-b border-border text-xs text-text3">
+                    <th className="p-3 text-left">Profissional</th><th className="p-3 text-left">Atendimentos</th>
+                    <th className="p-3 text-left">Receita Gerada</th><th className="p-3 text-left">% Comissão</th><th className="p-3 text-left">Valor Comissão</th>
+                  </tr></thead>
+                  <tbody>
+                    {salariosConfig.filter(s => s.comissaoPct > 0).map(s => (
+                      <tr key={s.id} className="border-b border-border/50 hover:bg-surface2/50 transition-colors">
+                        <td className="p-3 font-medium text-foreground">{s.profissional}</td>
+                        <td className="p-3 text-text2">{s.atendimentosMes}</td>
+                        <td className="p-3 text-foreground">{format(s.receitaGeradaMes)}</td>
+                        <td className="p-3 text-text2">{s.comissaoPct}%</td>
+                        <td className="p-3 text-green-custom font-bold">{format(Math.round(s.receitaGeradaMes * s.comissaoPct / 100))}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </TableWrapper>
             )}
 
             {subTabSalario === "adiantamentos" && (
               <>
-                <button onClick={() => setModalAdiantamento(true)} className="flex items-center gap-2 rounded-lg gold-gradient px-4 py-2.5 text-sm font-semibold text-primary-foreground mb-4">
-                  <Plus className="h-4 w-4" /> Novo Adiantamento
-                </button>
-                <TableWrapper>
-                  <table className="w-full text-sm hidden md:table">
+                <div className="flex justify-end">
+                  <button onClick={() => setModalAdiantamento(true)} className="flex items-center gap-2 rounded-lg gold-gradient px-4 py-2.5 text-sm font-semibold text-primary-foreground">
+                    <Plus className="h-4 w-4" /> Novo Adiantamento
+                  </button>
+                </div>
+                <TableWrapper title="Adiantamentos">
+                  <table className="w-full text-sm">
                     <thead><tr className="border-b border-border text-xs text-text3">
-                      <th className="p-3 text-left">Data</th><th className="p-3 text-left">Profissional</th>
-                      <th className="p-3 text-left">Valor Solicitado</th><th className="p-3 text-left">Valor Aprovado</th>
-                      <th className="p-3 text-left">Aprovado por</th><th className="p-3 text-left">Mês Desconto</th>
-                      <th className="p-3 text-left">Status</th><th className="p-3 text-left">Ações</th>
+                      <th className="p-3 text-left">Data</th><th className="p-3 text-left">Colaborador</th>
+                      <th className="p-3 text-left">Solicitado</th><th className="p-3 text-left">Aprovado</th>
+                      <th className="p-3 text-left">Desconto em</th><th className="p-3 text-left">Status</th>
                     </tr></thead>
                     <tbody>
                       {adiantamentos.map(a => (
-                        <tr key={a.id} className={`border-b border-border/50 hover:bg-surface2/50 transition-colors ${a.status === "Pendente aprovação" ? "bg-primary/5" : a.status === "Aprovado — aguardando desconto" ? "bg-gold/5" : "bg-green-custom/5"}`}>
+                        <tr key={a.id} className="border-b border-border/50 hover:bg-surface2/50 transition-colors">
                           <td className="p-3 text-text3">{a.data}</td>
                           <td className="p-3 font-medium text-foreground">{a.profissional}</td>
                           <td className="p-3 text-foreground">{format(a.valorSolicitado)}</td>
-                          <td className="p-3 text-foreground">{a.valorAprovado > 0 ? format(a.valorAprovado) : "—"}</td>
-                          <td className="p-3 text-text3">{a.aprovadoPor || "—"}</td>
+                          <td className="p-3 text-primary font-medium">{format(a.valorAprovado)}</td>
                           <td className="p-3 text-text3">{a.mesDesconto}</td>
                           <td className="p-3"><StatusBadge status={a.status} /></td>
-                          <td className="p-3">
-                            {a.status === "Pendente aprovação" && (
-                              <button onClick={() => { setAdiantamentos(prev => prev.map(x => x.id === a.id ? { ...x, status: "Aprovado — aguardando desconto", valorAprovado: x.valorSolicitado, aprovadoPor: userName } : x)); saved("Adiantamento aprovado"); }}
-                                className="rounded-lg bg-green-custom/10 px-2.5 py-1 text-xs text-green-custom hover:bg-green-custom/20 transition-colors">Aprovar</button>
-                            )}
-                          </td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
-                  {/* Mobile */}
-                  <div className="md:hidden space-y-2 p-3">
-                    {adiantamentos.map(a => (
-                      <MobileCard key={a.id} className={a.status === "Pendente aprovação" ? "border-primary/30" : ""}>
-                        <div className="flex justify-between items-start">
-                          <div><p className="font-medium text-foreground">{a.profissional}</p><p className="text-xs text-text3">{a.data}</p></div>
-                          <StatusBadge status={a.status} />
-                        </div>
-                        <MobileCardRow label="Solicitado" value={format(a.valorSolicitado)} />
-                        <MobileCardRow label="Aprovado" value={a.valorAprovado > 0 ? format(a.valorAprovado) : "—"} />
-                        {a.status === "Pendente aprovação" && (
-                          <button onClick={() => { setAdiantamentos(prev => prev.map(x => x.id === a.id ? { ...x, status: "Aprovado — aguardando desconto", valorAprovado: x.valorSolicitado, aprovadoPor: userName } : x)); saved("Adiantamento aprovado"); }}
-                            className="w-full rounded-lg bg-green-custom/10 py-1.5 text-xs text-green-custom font-medium mt-1">Aprovar</button>
-                        )}
-                      </MobileCard>
-                    ))}
-                  </div>
                 </TableWrapper>
               </>
             )}
@@ -1088,17 +1016,13 @@ export default function Financeiro() {
         {/* ==================== ABA 9: FECHAMENTO DE CAIXA ==================== */}
         {tab === "fechamento" && (
           <TabContent tabKey="fechamento">
-            <div className="flex items-center gap-3 mb-2">
+            <div className="flex items-center gap-3">
               <label className="text-sm text-text3 font-medium">Data:</label>
-              <input type="date" value={fechamentoData} onChange={e => setFechamentoData(e.target.value)}
-                className="rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
-              {fechamento.fechado && (
-                <span className="rounded-full bg-green-custom/10 px-3 py-1 text-xs font-medium text-green-custom">✓ Caixa fechado</span>
-              )}
+              <input type="date" value={fechamentoData} onChange={e => setFechamentoData(e.target.value)} className="rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground" />
             </div>
 
             <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-              <KpiCard label="Atendimentos" value={String(fechamento.atendimentos.length)} icon={Users} color="bg-primary/10 text-primary" />
+              <KpiCard label="Atendimentos" value={String(fcAtendimentos.length)} icon={Users} color="bg-primary/10 text-primary" />
               <KpiCard label="Receita Bruta" value={format(fcReceitaServicos)} icon={TrendingUp} color="bg-green-custom/10 text-green-custom" />
               <KpiCard label="Receita Produtos" value={format(fcReceitaProdutos)} icon={Package} color="bg-teal-custom/10 text-teal-custom" />
               <KpiCard label="Receita Líquida" value={format(fcReceitaLiquida)} icon={DollarSign} color="bg-primary/10 text-primary" />
@@ -1119,24 +1043,23 @@ export default function Financeiro() {
               </div>
             </div>
 
-            <TableWrapper title="Atendimentos do Dia">
+            <TableWrapper title="Entradas do Dia">
               <table className="w-full text-sm">
                 <thead><tr className="border-b border-border text-xs text-text3">
-                  <th className="p-3 text-left">Hora</th><th className="p-3 text-left">Cliente</th><th className="p-3 text-left">Serviço</th>
-                  <th className="p-3 text-left">Profissional</th><th className="p-3 text-left">Valor</th><th className="p-3 text-left">Forma Pgto</th>
+                  <th className="p-3 text-left">Hora</th><th className="p-3 text-left">Descrição</th><th className="p-3 text-left">Categoria</th>
+                  <th className="p-3 text-left">Valor</th><th className="p-3 text-left">Forma Pgto</th>
                 </tr></thead>
                 <tbody>
-                  {fechamento.atendimentos.map((a, i) => (
-                    <tr key={i} className="border-b border-border/50 hover:bg-surface2/50 transition-colors">
-                      <td className="p-3 text-text3">{a.hora}</td><td className="p-3 text-foreground">{a.cliente}</td>
-                      <td className="p-3 text-text2">{a.servico}</td><td className="p-3 text-text2">{a.profissional}</td>
-                      <td className="p-3 font-semibold text-foreground">{format(a.valor)}</td><td className="p-3 text-text3">{a.formaPgto}</td>
+                  {fcAtendimentos.map((a) => (
+                    <tr key={a.id} className="border-b border-border/50 hover:bg-surface2/50 transition-colors">
+                      <td className="p-3 text-text3">{a.hora}</td><td className="p-3 text-foreground">{a.descricao}</td>
+                      <td className="p-3 text-text2">{a.categoria}</td>
+                      <td className="p-3 font-semibold text-green-custom">{format(a.valor)}</td><td className="p-3 text-text3">{a.formaPgto}</td>
                     </tr>
                   ))}
                   <tr className="bg-surface2 font-bold">
-                    <td colSpan={4} className="p-3 text-foreground text-right">Total Atendimentos:</td>
-                    <td className="p-3 text-green-custom">{format(fcReceitaServicos)}</td>
-                    <td />
+                    <td colSpan={3} className="p-3 text-foreground text-right">Total Entradas:</td>
+                    <td className="p-3 text-green-custom">{format(fcReceitaServicos)}</td><td />
                   </tr>
                 </tbody>
               </table>
@@ -1148,8 +1071,8 @@ export default function Financeiro() {
                   <th className="p-3 text-left">Hora</th><th className="p-3 text-left">Descrição</th><th className="p-3 text-left">Categoria</th><th className="p-3 text-left">Valor</th>
                 </tr></thead>
                 <tbody>
-                  {fechamento.saidasDia.map((s, i) => (
-                    <tr key={i} className="border-b border-border/50 hover:bg-surface2/50 transition-colors">
+                  {fcSaidas.map((s) => (
+                    <tr key={s.id} className="border-b border-border/50 hover:bg-surface2/50 transition-colors">
                       <td className="p-3 text-text3">{s.hora}</td><td className="p-3 text-foreground">{s.descricao}</td>
                       <td className="p-3 text-text2">{s.categoria}</td><td className="p-3 font-semibold text-destructive">{format(s.valor)}</td>
                     </tr>
@@ -1163,7 +1086,7 @@ export default function Financeiro() {
             </TableWrapper>
 
             {!fechamento.fechado ? (
-              <button onClick={() => { setFechamento(prev => ({ ...prev, fechado: true, fechadoPor: userName, horaFechamento: new Date().toTimeString().slice(0, 5) })); saved("✓ Caixa do dia fechado com sucesso"); }}
+              <button onClick={async () => { await fecharCaixa(userName); saved("✓ Caixa do dia fechado com sucesso"); }}
                 className="w-full rounded-lg gold-gradient px-4 py-3 text-sm font-semibold text-primary-foreground hover:opacity-95 transition-opacity">
                 Fechar Caixa do Dia
               </button>
@@ -1272,13 +1195,11 @@ export default function Financeiro() {
               </ResponsiveContainer>
             </div>
 
-            <TableWrapper
-              exportProps={{
-                title: "Produtos Vendidos", fileName: "produtos-vendidos",
-                columns: [{ header: "Produto", key: "nome" }, { header: "Categoria", key: "categoria" }, { header: "Unidades", key: "unidades" }, { header: "Receita", key: "receitaFmt" }, { header: "Margem", key: "margem" }],
-                data: produtosVendidos.map(p => ({ ...p, receitaFmt: format(p.preco * p.unidades), margem: `${((p.preco - p.custo) / p.preco * 100).toFixed(1)}%` }))
-              }}
-            >
+            <TableWrapper exportProps={{
+              title: "Produtos Vendidos", fileName: "produtos-vendidos",
+              columns: [{ header: "Produto", key: "nome" }, { header: "Categoria", key: "categoria" }, { header: "Unidades", key: "unidades" }, { header: "Receita", key: "receitaFmt" }, { header: "Margem", key: "margem" }],
+              data: produtosVendidos.map(p => ({ ...p, receitaFmt: format(p.preco * p.unidades), margem: `${((p.preco - p.custo) / p.preco * 100).toFixed(1)}%` }))
+            }}>
               <table className="w-full text-sm hidden md:table">
                 <thead><tr className="border-b border-border text-xs text-text3">
                   <th className="p-3 text-left">Produto</th><th className="p-3 text-left">Categoria</th>
@@ -1312,7 +1233,6 @@ export default function Financeiro() {
                   </tr>
                 </tbody>
               </table>
-              {/* Mobile */}
               <div className="md:hidden space-y-2 p-3">
                 {produtosVendidos.map(p => (
                   <MobileCard key={p.id}>
@@ -1333,15 +1253,15 @@ export default function Financeiro() {
 
       {/* ==================== MODAIS ==================== */}
       <Modal open={modalEntrada} onClose={() => setModalEntrada(false)} title="Nova Entrada">
-        <FormEntradaSaida tipo="Entrada" registradoPor={userName} onSave={(m) => { setMovimentacoes(prev => [m, ...prev]); setModalEntrada(false); saved("Entrada registrada com sucesso"); }} />
+        <FormEntradaSaida tipo="Entrada" registradoPor={userName} onSave={async (m) => { await addMovimentacao(m); setModalEntrada(false); saved("Entrada registrada com sucesso"); }} />
       </Modal>
 
       <Modal open={modalSaida} onClose={() => setModalSaida(false)} title="Nova Saída">
-        <FormEntradaSaida tipo="Saída" registradoPor={userName} onSave={(m) => { setMovimentacoes(prev => [m, ...prev]); setModalSaida(false); saved("Saída registrada com sucesso"); }} />
+        <FormEntradaSaida tipo="Saída" registradoPor={userName} onSave={async (m) => { await addMovimentacao(m); setModalSaida(false); saved("Saída registrada com sucesso"); }} />
       </Modal>
 
       <Modal open={modalContaPagar} onClose={() => setModalContaPagar(false)} title="Nova Conta a Pagar">
-        <FormContaPagar onSave={(c) => { setContasPagar(prev => [c, ...prev]); setModalContaPagar(false); saved("Conta a pagar registrada"); }} />
+        <FormContaPagar onSave={async (c) => { await addContaPagar(c); setModalContaPagar(false); saved("Conta a pagar registrada"); }} />
       </Modal>
 
       <Modal open={modalPagarConta !== null} onClose={() => setModalPagarConta(null)} title="Registrar Pagamento">
@@ -1352,9 +1272,9 @@ export default function Financeiro() {
             <FormPagarConta 
               conta={conta} 
               format={format} 
-              onSave={(dataPgto, formaPgto) => {
+              onSave={async (dataPgto, formaPgto) => {
                 const isAtrasada = conta.status === "Vencida";
-                setContasPagar(prev => prev.map(x => x.id === modalPagarConta ? { ...x, status: isAtrasada ? "Paga com atraso" : "Paga", dataPagamento: dataPgto, formaPgto } : x));
+                await updateContaPagar(conta.id, { status: isAtrasada ? "Paga com atraso" : "Paga", dataPagamento: dataPgto, formaPgto });
                 setModalPagarConta(null);
                 saved(`Conta "${conta.descricao}" marcada como paga`);
               }} 
@@ -1364,7 +1284,7 @@ export default function Financeiro() {
       </Modal>
 
       <Modal open={modalFiado} onClose={() => setModalFiado(false)} title="Registrar Fiado">
-        <FormFiado onSave={(c) => { setContasReceber(prev => [c, ...prev]); setModalFiado(false); saved("Fiado registrado com sucesso"); }} />
+        <FormFiado onSave={async (c) => { await addContaReceber(c); setModalFiado(false); saved("Fiado registrado com sucesso"); }} />
       </Modal>
 
       <Modal open={modalPagamento !== null} onClose={() => setModalPagamento(null)} title="Registrar Pagamento">
@@ -1375,13 +1295,8 @@ export default function Financeiro() {
             <FormPagamentoFiado
               conta={conta}
               format={format}
-              onSave={(valor, formaPgto) => {
-                setContasReceber(prev => prev.map(c => {
-                  if (c.id !== modalPagamento) return c;
-                  const novoPago = c.valorPago + valor;
-                  const newHistorico = [...(c.historicoPagamentos || []), { data: new Date().toISOString().slice(0, 10), valor, forma: formaPgto }];
-                  return { ...c, valorPago: novoPago, status: novoPago >= c.valorTotal ? "Quitado" : "Parcialmente pago", historicoPagamentos: newHistorico };
-                }));
+              onSave={async (valor, formaPgto) => {
+                await registrarPagamentoCR(conta.id, valor, formaPgto);
                 setModalPagamento(null);
                 saved("Pagamento registrado com sucesso");
               }}
@@ -1391,23 +1306,19 @@ export default function Financeiro() {
       </Modal>
 
       <Modal open={modalDespesa} onClose={() => setModalDespesa(false)} title="Nova Despesa">
-        <FormDespesa registradoPor={userName} onSave={(d) => { setDespesas(prev => [d, ...prev]); setModalDespesa(false); saved("Despesa registrada"); }} />
+        <FormDespesa registradoPor={userName} onSave={async (dItem) => { await addDespesa(dItem); setModalDespesa(false); saved("Despesa registrada"); }} />
       </Modal>
 
       <Modal open={modalFornecedor} onClose={() => setModalFornecedor(false)} title="Novo Fornecedor">
-        <FormFornecedor onSave={(f) => { setFornecedores(prev => [...prev, f]); setModalFornecedor(false); saved("Fornecedor cadastrado"); }} />
+        <FormFornecedor onSave={async (f) => { await addFornecedor(f); setModalFornecedor(false); saved("Fornecedor cadastrado"); }} />
       </Modal>
 
       <Modal open={modalCompraFornecedor} onClose={() => setModalCompraFornecedor(false)} title="Registrar Compra / Pagamento">
         <FormCompraFornecedor 
           fornecedores={fornecedores} 
           format={format}
-          onSave={(fornecedorId, descricao, valorTotal, valorPago) => { 
-            setFornecedores(prev => prev.map(f => {
-              if (f.id !== fornecedorId) return f;
-              const newHistorico = [...(f.historicoCompras || []), { data: new Date().toISOString().slice(0, 10), descricao, valor: valorTotal, pago: valorPago }];
-              return { ...f, saldoDevedor: f.saldoDevedor + valorTotal - valorPago, ultimaCompra: new Date().toLocaleDateString("pt-BR"), historicoCompras: newHistorico };
-            }));
+          onSave={async (fornecedorId, descricao, valorTotal, valorPago) => { 
+            await registrarCompraFornecedor(fornecedorId, descricao, valorTotal, valorPago);
             setModalCompraFornecedor(false); 
             saved("Compra registrada com sucesso"); 
           }} 
@@ -1427,13 +1338,8 @@ export default function Financeiro() {
               comissao={comissao}
               adiantamentos={adiantDesc}
               format={format}
-              onSave={() => {
-                // Mark advances as discounted
-                setAdiantamentos(prev => prev.map(a => 
-                  a.profissional === s.profissional && a.status === "Aprovado — aguardando desconto"
-                    ? { ...a, status: "Descontado no salário" }
-                    : a
-                ));
+              onSave={async () => {
+                await updateAdiantamentoStatus(s.profissional, "Descontado no salário");
                 setModalSalario(null);
                 saved(`Salário de ${s.profissional} pago: ${format(s.fixo + comissao - adiantDesc)}`);
               }}
@@ -1446,7 +1352,7 @@ export default function Financeiro() {
         <FormAdiantamento
           profissionais={salariosConfig.map(s => s.profissional)}
           aprovadoPor={userName}
-          onSave={(a) => { setAdiantamentos(prev => [...prev, a]); setModalAdiantamento(false); saved("Adiantamento registrado"); }}
+          onSave={async (a) => { await addAdiantamento(a); setModalAdiantamento(false); saved("Adiantamento registrado"); }}
         />
       </Modal>
 
