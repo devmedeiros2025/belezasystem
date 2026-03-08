@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -45,8 +45,28 @@ export default function Layout({ children }: LayoutProps) {
   const location = useLocation();
   const navigate = useNavigate();
   const { usuarioLogado, perfil, logout, podeAcessar } = useAuth();
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showNewAppointment, setShowNewAppointment] = useState(false);
+
+  // Auto-detect desktop vs mobile on mount and resize
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  useEffect(() => {
+    const onResize = () => {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      if (mobile) setSidebarOpen(false);
+      else setSidebarOpen(true);
+    };
+    onResize(); // run on mount
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
+  // Close sidebar on route change (mobile)
+  useEffect(() => {
+    if (isMobile) setSidebarOpen(false);
+  }, [location.pathname, isMobile]);
 
   const currentPage = pageNames[location.pathname] || "BeautyCRM";
 
@@ -98,10 +118,22 @@ export default function Layout({ children }: LayoutProps) {
 
   return (
     <div className="flex min-h-screen bg-background font-body">
+      {/* Mobile overlay */}
+      {isMobile && sidebarOpen && (
+        <div
+          className="fixed inset-0 z-30 bg-foreground/30 backdrop-blur-sm transition-opacity"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
       <aside
         className={`fixed top-0 left-0 z-40 h-screen border-r border-border bg-sidebar transition-all duration-300 ${
-          sidebarOpen ? "w-60" : "w-0 -translate-x-full lg:w-16 lg:translate-x-0"
+          sidebarOpen
+            ? "w-60 translate-x-0"
+            : isMobile
+              ? "w-60 -translate-x-full"
+              : "w-16 translate-x-0"
         }`}
       >
         <div className="flex h-full flex-col overflow-hidden">
@@ -195,7 +227,9 @@ export default function Layout({ children }: LayoutProps) {
       </aside>
 
       {/* Main content */}
-      <div className={`flex flex-1 flex-col transition-all duration-300 ${sidebarOpen ? "ml-60" : "ml-0 lg:ml-16"}`}>
+      <div className={`flex flex-1 flex-col transition-all duration-300 ${
+        isMobile ? "ml-0" : sidebarOpen ? "ml-60" : "ml-16"
+      }`}>
         {/* Topbar */}
         <header className="sticky top-0 z-30 flex h-[60px] items-center justify-between border-b border-border px-6 glass-blur">
           <div className="flex items-center gap-4">
@@ -203,7 +237,7 @@ export default function Layout({ children }: LayoutProps) {
               onClick={() => setSidebarOpen(!sidebarOpen)}
               className="rounded-lg p-2 text-text2 hover:bg-surface2 hover:text-foreground"
             >
-              {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              {sidebarOpen && !isMobile ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </button>
             <h2 className="font-display text-lg font-semibold text-foreground">{currentPage}</h2>
           </div>
