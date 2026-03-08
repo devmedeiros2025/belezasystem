@@ -61,31 +61,38 @@ export default function Clientes() {
     return false;
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.nome.trim() || !form.telefone.trim()) {
       toast.error("Nome e Telefone são obrigatórios.");
       return;
     }
-    addCliente({
-      nome: form.nome.trim(),
-      email: form.email.trim(),
-      telefone: form.telefone.trim(),
-      aniversario: form.dataNascimento ? new Date(form.dataNascimento).toLocaleDateString("pt-BR", { day: "numeric", month: "short" }) : "—",
-      genero: form.genero,
-      profissao: form.profissao,
-      dataNascimento: form.dataNascimento,
-      bi: form.bi,
-      observacoes: form.observacoes,
-    });
-    setForm(initialForm);
-    setOpen(false);
-    toast.success("Cliente adicionado com sucesso!");
+    try {
+      await addCliente({
+        nome: form.nome.trim(),
+        email: form.email.trim(),
+        telefone: form.telefone.trim(),
+        genero: form.genero,
+        profissao: form.profissao,
+        dataNascimento: form.dataNascimento,
+        bi: form.bi,
+        observacoes: form.observacoes,
+      });
+      setForm(initialForm);
+      setOpen(false);
+      toast.success("Cliente adicionado com sucesso!");
+    } catch {
+      toast.error("Erro ao adicionar cliente.");
+    }
   };
 
-  const handleRemove = (id: number, nome: string) => {
-    removeCliente(id);
-    toast.success(`Cliente "${nome}" removido com sucesso.`);
+  const handleRemove = async (id: string, nome: string) => {
+    try {
+      await removeCliente(id);
+      toast.success(`Cliente "${nome}" removido com sucesso.`);
+    } catch {
+      toast.error("Erro ao remover cliente.");
+    }
   };
 
   const updateField = (field: string, value: string) => setForm((prev) => ({ ...prev, [field]: value }));

@@ -1,32 +1,33 @@
-import { useState } from "react";
-import { servicos as servicosInit, profissionais } from "@/data/mockData";
+import { useState, useEffect, useCallback } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import type { Tables } from "@/integrations/supabase/types";
 import { Clock, DollarSign, Edit, Plus, X, Trash2 } from "lucide-react";
 import { useCurrency } from "@/hooks/useCurrency";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 const categorias = ["Cabelo", "Estética", "Unhas", "Barba", "Spa & Bem-estar"] as const;
 type Categoria = typeof categorias[number];
 
-interface Servico {
-  id: number;
-  nome: string;
-  categoria: string;
-  duracao: number;
-  preco: number;
-  contagem: number;
-  ativo: boolean;
-}
+type ServicoDB = Tables<"servicos">;
 
 export default function Servicos() {
   const [cat, setCat] = useState<Categoria>("Cabelo");
   const { format } = useCurrency();
-  const { toast } = useToast();
-  const [servicosList, setServicosList] = useState<Servico[]>(servicosInit);
+  const [servicosList, setServicosList] = useState<ServicoDB[]>([]);
+  const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
-  const [editId, setEditId] = useState<number | null>(null);
+  const [editId, setEditId] = useState<string | null>(null);
 
   const emptyForm = { nome: "", categoria: cat as string, duracao: 60, preco: 0, ativo: true };
   const [form, setForm] = useState(emptyForm);
+
+  const fetchServicos = useCallback(async () => {
+    const { data } = await supabase.from("servicos").select("*").order("nome");
+    if (data) setServicosList(data);
+    setLoading(false);
+  }, []);
+
+  useEffect(() => { fetchServicos(); }, [fetchServicos]);
 
   const filtered = servicosList.filter(s => s.categoria === cat);
 
@@ -36,33 +37,38 @@ export default function Servicos() {
     setShowModal(true);
   };
 
-  const openEdit = (s: Servico) => {
+  const openEdit = (s: ServicoDB) => {
     setEditId(s.id);
-    setForm({ nome: s.nome, categoria: s.categoria, duracao: s.duracao, preco: s.preco, ativo: s.ativo });
+    setForm({ nome: s.nome, categoria: s.categoria, duracao: s.duracao, preco: Number(s.preco), ativo: s.ativo });
     setShowModal(true);
   };
 
-  const save = () => {
+  const save = async () => {
     if (!form.nome.trim()) return;
     if (editId) {
-      setServicosList(prev => prev.map(s => s.id === editId ? { ...s, ...form } : s));
-      toast({ title: "Serviço atualizado" });
+      const { error } = await supabase.from("servicos").update({ nome: form.nome, categoria: form.categoria, duracao: form.duracao, preco: form.preco, ativo: form.ativo }).eq("id", editId);
+      if (error) { toast.error("Erro ao atualizar"); return; }
+      toast.success("Serviço atualizado");
     } else {
-      const novo: Servico = { id: Date.now(), ...form, contagem: 0 };
-      setServicosList(prev => [...prev, novo]);
-      toast({ title: "Serviço adicionado" });
+      const { error } = await supabase.from("servicos").insert({ nome: form.nome, categoria: form.categoria, duracao: form.duracao, preco: form.preco, ativo: form.ativo });
+      if (error) { toast.error("Erro ao adicionar"); return; }
+      toast.success("Serviço adicionado");
     }
     setShowModal(false);
+    fetchServicos();
   };
 
-  const remove = (id: number) => {
+  const remove = async (id: string) => {
+    const { error } = await supabase.from("servicos").delete().eq("id", id);
+    if (error) { toast.error("Erro ao remover"); return; }
+    toast.success("Serviço removido");
     setServicosList(prev => prev.filter(s => s.id !== id));
-    toast({ title: "Serviço removido" });
   };
+
+  if (loading) return <div className="flex items-center justify-center py-20"><div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" /></div>;
 
   return (
     <div className="space-y-6">
-      {/* Tabs */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex gap-1 overflow-x-auto">
           {categorias.map(c => (
@@ -74,7 +80,6 @@ export default function Servicos() {
         </button>
       </div>
 
-      {/* Cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {filtered.map(s => (
           <div key={s.id} className="rounded-xl border border-border bg-card p-5 card-hover">
@@ -87,25 +92,16 @@ export default function Servicos() {
             </div>
             <div className="flex items-center gap-4 text-sm text-text2 mb-4">
               <span className="flex items-center gap-1.5"><Clock className="h-4 w-4 text-text3" />{s.duracao} min</span>
-              <span className="flex items-center gap-1.5"><DollarSign className="h-4 w-4 text-text3" />{format(s.preco)}</span>
+              <span className="flex items-center gap-1.5"><DollarSign className="h-4 w-4 text-text3" />{format(Number(s.preco))}</span>
             </div>
-            <div className="flex items-center justify-between">
-              <div className="flex -space-x-2">
-                {profissionais.slice(0, 3).map(p => (
-                  <div key={p.id} className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-card bg-surface2 text-xs">{p.emoji}</div>
-                ))}
-              </div>
-              <div className={`rounded-full px-2.5 py-1 text-[11px] font-medium ${s.ativo ? "badge-active" : "badge-inactive"}`}>
-                {s.ativo ? "Ativo" : "Inativo"}
-              </div>
+            <div className={`inline-block rounded-full px-2.5 py-1 text-[11px] font-medium ${s.ativo ? "badge-active" : "badge-inactive"}`}>
+              {s.ativo ? "Ativo" : "Inativo"}
             </div>
-            <p className="mt-3 text-xs text-text3">{s.contagem} atendimentos</p>
           </div>
         ))}
         {filtered.length === 0 && <p className="text-sm text-text3 col-span-full text-center py-10">Nenhum serviço nesta categoria</p>}
       </div>
 
-      {/* Modal */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="w-full max-w-md rounded-xl border border-border bg-card p-6 space-y-4">
