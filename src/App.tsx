@@ -31,31 +31,31 @@ const App = () => (
     <AuthProvider>
       <CurrencyProvider>
         <ClientesProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Navigate to="/dashboard" replace />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/dashboard" element={<ProtectedRoute><Layout><Dashboard /></Layout></ProtectedRoute>} />
-              <Route path="/agenda" element={<ProtectedRoute><Layout><Agenda /></Layout></ProtectedRoute>} />
-              <Route path="/clientes" element={<ProtectedRoute><Layout><Clientes /></Layout></ProtectedRoute>} />
-              <Route path="/clientes/:id" element={<ProtectedRoute><Layout><ClientePerfil /></Layout></ProtectedRoute>} />
-              <Route path="/mensagens" element={<ProtectedRoute><Layout><Mensagens /></Layout></ProtectedRoute>} />
-              <Route path="/servicos" element={<ProtectedRoute><Layout><Servicos /></Layout></ProtectedRoute>} />
-              <Route path="/profissionais" element={<ProtectedRoute><Layout><Profissionais /></Layout></ProtectedRoute>} />
-              <Route path="/financeiro" element={<ProtectedRoute><Layout><Financeiro /></Layout></ProtectedRoute>} />
-              <Route path="/estoque" element={<ProtectedRoute><Layout><Estoque /></Layout></ProtectedRoute>} />
-              <Route path="/fidelidade" element={<ProtectedRoute><Layout><Fidelidade /></Layout></ProtectedRoute>} />
-              <Route path="/avaliacoes" element={<ProtectedRoute><Layout><Avaliacoes /></Layout></ProtectedRoute>} />
-              <Route path="/configuracoes" element={<ProtectedRoute allowedProfiles={["Administrador"]}><Layout><Configuracoes /></Layout></ProtectedRoute>} />
-              <Route path="/admin" element={<ProtectedRoute allowedProfiles={["Administrador"]}><Layout><Admin /></Layout></ProtectedRoute>} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <Routes>
+                <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/dashboard" element={<ProtectedRoute><Layout><Dashboard /></Layout></ProtectedRoute>} />
+                <Route path="/agenda" element={<ProtectedRoute><Layout><Agenda /></Layout></ProtectedRoute>} />
+                <Route path="/clientes" element={<ProtectedRoute><Layout><Clientes /></Layout></ProtectedRoute>} />
+                <Route path="/clientes/:id" element={<ProtectedRoute><Layout><ClientePerfil /></Layout></ProtectedRoute>} />
+                <Route path="/mensagens" element={<ProtectedRoute><Layout><Mensagens /></Layout></ProtectedRoute>} />
+                <Route path="/servicos" element={<ProtectedRoute><Layout><Servicos /></Layout></ProtectedRoute>} />
+                <Route path="/profissionais" element={<ProtectedRoute><Layout><Profissionais /></Layout></ProtectedRoute>} />
+                <Route path="/financeiro" element={<ProtectedRoute><Layout><Financeiro /></Layout></ProtectedRoute>} />
+                <Route path="/estoque" element={<ProtectedRoute><Layout><Estoque /></Layout></ProtectedRoute>} />
+                <Route path="/fidelidade" element={<ProtectedRoute><Layout><Fidelidade /></Layout></ProtectedRoute>} />
+                <Route path="/avaliacoes" element={<ProtectedRoute><Layout><Avaliacoes /></Layout></ProtectedRoute>} />
+                <Route path="/configuracoes" element={<ProtectedRoute allowedProfiles={["Administrador"]}><Layout><Configuracoes /></Layout></ProtectedRoute>} />
+                <Route path="/admin" element={<ProtectedRoute allowedProfiles={["Administrador"]}><Layout><Admin /></Layout></ProtectedRoute>} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </TooltipProvider>
         </ClientesProvider>
-        </TooltipProvider>
       </CurrencyProvider>
     </AuthProvider>
   </QueryClientProvider>
