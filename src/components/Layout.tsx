@@ -24,6 +24,19 @@ const pageNames: Record<string, string> = {
   "/admin": "Administração",
 };
 
+interface NavItem {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  path: string;
+  badge?: number;
+  hidden?: boolean;
+}
+
+interface NavSection {
+  label: string;
+  items: NavItem[];
+}
+
 interface LayoutProps {
   children: React.ReactNode;
 }
@@ -37,7 +50,7 @@ export default function Layout({ children }: LayoutProps) {
 
   const currentPage = pageNames[location.pathname] || "BeautyCRM";
 
-  const navSections = [
+  const navSections: NavSection[] = [
     {
       label: "PRINCIPAL",
       items: [
