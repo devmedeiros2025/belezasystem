@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { Building2, Palette, Bell, Link as LinkIcon, Users } from "lucide-react";
+import { Building2, Palette, Bell, Link as LinkIcon, Users, Globe } from "lucide-react";
+import { useCurrency, moedas, MoedaCode, FormatoNumerico } from "@/hooks/useCurrency";
 
 const tabs = [
   { id: "negocio", label: "Meu Negócio", icon: Building2 },
-  { id: "aparencia", label: "Aparência", icon: Palette },
+  { id: "aparencia", label: "Aparência / Regional", icon: Palette },
   { id: "notificacoes", label: "Notificações", icon: Bell },
   { id: "integracoes", label: "Integrações", icon: LinkIcon },
   { id: "usuarios", label: "Usuários", icon: Users },
@@ -25,6 +26,7 @@ const usuarios = [
 
 export default function Configuracoes() {
   const [tab, setTab] = useState<string>("negocio");
+  const { moeda, formato, setMoeda, setFormato } = useCurrency();
 
   return (
     <div className="space-y-6">
@@ -48,13 +50,13 @@ export default function Configuracoes() {
           {[
             { label: "Nome do Negócio", value: "Studio Élise", type: "text" },
             { label: "Tipo", value: "Salão de Beleza", type: "text" },
-            { label: "Endereço", value: "Rua das Flores, 123 — Rio de Janeiro, RJ", type: "text" },
-            { label: "Telefone", value: "(21) 3333-4444", type: "text" },
-            { label: "CNPJ", value: "12.345.678/0001-90", type: "text" },
+            { label: "Endereço", value: "Rua das Flores, 123 — Luanda, Angola", type: "text" },
+            { label: "Telefone", value: "+244 923 456 789", type: "text" },
+            { label: "NIF", value: "5000123456", type: "text" },
           ].map(f => (
             <div key={f.label}>
               <label className="mb-1.5 block text-sm text-text2">{f.label}</label>
-              <input defaultValue={f.value} className="w-full rounded-lg border border-border bg-surface2 px-3 py-2.5 text-sm text-foreground focus:border-primary/50 focus:outline-none" />
+              <input defaultValue={f.value} className="w-full rounded-lg border border-border bg-input px-3 py-2.5 text-sm text-foreground focus:border-primary/50 focus:outline-none" />
             </div>
           ))}
           <button className="rounded-lg gold-gradient px-5 py-2.5 text-sm font-semibold text-primary-foreground mt-2">Salvar Alterações</button>
@@ -62,7 +64,8 @@ export default function Configuracoes() {
       )}
 
       {tab === "aparencia" && (
-        <div className="max-w-2xl space-y-6">
+        <div className="max-w-2xl space-y-8">
+          {/* Color Theme */}
           <div>
             <h4 className="text-sm font-medium text-foreground mb-3">Cor de Destaque</h4>
             <div className="flex gap-3">
@@ -77,6 +80,75 @@ export default function Configuracoes() {
                   <span className="text-xs text-text2">{c.name}</span>
                 </button>
               ))}
+            </div>
+          </div>
+
+          {/* Currency */}
+          <div>
+            <h4 className="text-sm font-medium text-foreground mb-3 flex items-center gap-2">
+              <Globe className="h-4 w-4 text-primary" />
+              Moeda Principal do Sistema
+            </h4>
+            <div className="space-y-2">
+              {moedas.map(m => (
+                <label
+                  key={m.code}
+                  className={`flex items-center gap-3 rounded-lg border p-4 cursor-pointer transition-colors ${
+                    moeda === m.code ? "border-primary bg-primary/5" : "border-border hover:border-primary/40"
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="moeda"
+                    checked={moeda === m.code}
+                    onChange={() => setMoeda(m.code)}
+                    className="h-4 w-4 text-primary focus:ring-primary"
+                  />
+                  <span className="font-semibold text-foreground">{m.symbol}</span>
+                  <span className="text-text2">—</span>
+                  <span className="text-text2">{m.name}</span>
+                  {m.code === "KZ" && (
+                    <span className="ml-auto text-xs text-primary font-medium">(padrão)</span>
+                  )}
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {/* Number Format */}
+          <div>
+            <h4 className="text-sm font-medium text-foreground mb-3">Formato Numérico</h4>
+            <div className="space-y-2">
+              <label
+                className={`flex items-center gap-3 rounded-lg border p-4 cursor-pointer transition-colors ${
+                  formato === "pt" ? "border-primary bg-primary/5" : "border-border hover:border-primary/40"
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="formato"
+                  checked={formato === "pt"}
+                  onChange={() => setFormato("pt")}
+                  className="h-4 w-4 text-primary focus:ring-primary"
+                />
+                <span className="text-foreground">1.000,00</span>
+                <span className="text-text3">(padrão pt-BR / Angola)</span>
+              </label>
+              <label
+                className={`flex items-center gap-3 rounded-lg border p-4 cursor-pointer transition-colors ${
+                  formato === "en" ? "border-primary bg-primary/5" : "border-border hover:border-primary/40"
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="formato"
+                  checked={formato === "en"}
+                  onChange={() => setFormato("en")}
+                  className="h-4 w-4 text-primary focus:ring-primary"
+                />
+                <span className="text-foreground">1,000.00</span>
+                <span className="text-text3">(padrão en-US)</span>
+              </label>
             </div>
           </div>
         </div>

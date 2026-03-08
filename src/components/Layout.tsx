@@ -1,42 +1,13 @@
 import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard, Calendar, Users, MessageSquare, Scissors, UserCheck,
   DollarSign, Package, Star, Award, BarChart3, Settings, Bell, Search,
-  Plus, ChevronDown, Menu, X
+  Plus, ChevronDown, Menu, X, Shield, LogOut
 } from "lucide-react";
 import { toast } from "sonner";
-
-const navSections = [
-  {
-    label: "PRINCIPAL",
-    items: [
-      { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
-      { icon: Calendar, label: "Agenda", path: "/agenda", badge: 3 },
-      { icon: Users, label: "Clientes", path: "/clientes" },
-      { icon: MessageSquare, label: "Mensagens", path: "/mensagens", badge: 7 },
-    ],
-  },
-  {
-    label: "OPERAÇÃO",
-    items: [
-      { icon: Scissors, label: "Serviços", path: "/servicos" },
-      { icon: UserCheck, label: "Profissionais", path: "/profissionais" },
-      { icon: Package, label: "Estoque", path: "/estoque" },
-      { icon: DollarSign, label: "Financeiro", path: "/financeiro" },
-    ],
-  },
-  {
-    label: "CRESCIMENTO",
-    items: [
-      { icon: BarChart3, label: "Relatórios", path: "/financeiro" },
-      { icon: Award, label: "Fidelidade", path: "/fidelidade" },
-      { icon: Star, label: "Avaliações", path: "/avaliacoes" },
-      { icon: Settings, label: "Configurações", path: "/configuracoes" },
-    ],
-  },
-];
+import { useAuth } from "@/contexts/AuthContext";
 
 const pageNames: Record<string, string> = {
   "/dashboard": "Dashboard",
@@ -50,6 +21,7 @@ const pageNames: Record<string, string> = {
   "/fidelidade": "Fidelidade",
   "/avaliacoes": "Avaliações",
   "/configuracoes": "Configurações",
+  "/admin": "Administração",
 };
 
 interface LayoutProps {
@@ -58,16 +30,64 @@ interface LayoutProps {
 
 export default function Layout({ children }: LayoutProps) {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { usuarioLogado, perfil, logout, podeAcessar } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [showNewAppointment, setShowNewAppointment] = useState(false);
 
   const currentPage = pageNames[location.pathname] || "BeautyCRM";
 
+  const navSections = [
+    {
+      label: "PRINCIPAL",
+      items: [
+        { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
+        { icon: Calendar, label: "Agenda", path: "/agenda", badge: 3 },
+        { icon: Users, label: "Clientes", path: "/clientes" },
+        { icon: MessageSquare, label: "Mensagens", path: "/mensagens", badge: 7 },
+      ],
+    },
+    {
+      label: "OPERAÇÃO",
+      items: [
+        { icon: Scissors, label: "Serviços", path: "/servicos" },
+        { icon: UserCheck, label: "Profissionais", path: "/profissionais" },
+        { icon: Package, label: "Estoque", path: "/estoque", hidden: !podeAcessar("estoque") },
+        { icon: DollarSign, label: "Financeiro", path: "/financeiro", hidden: !podeAcessar("financeiro_completo") },
+      ],
+    },
+    {
+      label: "CRESCIMENTO",
+      items: [
+        { icon: BarChart3, label: "Relatórios", path: "/financeiro", hidden: !podeAcessar("financeiro_completo") },
+        { icon: Award, label: "Fidelidade", path: "/fidelidade" },
+        { icon: Star, label: "Avaliações", path: "/avaliacoes" },
+        { icon: Settings, label: "Configurações", path: "/configuracoes", hidden: !podeAcessar("configuracoes") },
+      ],
+    },
+  ];
+
+  // Add Admin section for admins
+  if (podeAcessar("admin")) {
+    navSections.push({
+      label: "ADMINISTRAÇÃO",
+      items: [
+        { icon: Shield, label: "Painel Admin", path: "/admin" },
+      ],
+    });
+  }
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+    toast.success("Logout realizado com sucesso");
+  };
+
   return (
     <div className="flex min-h-screen bg-background font-body">
       {/* Sidebar */}
       <aside
-        className={`fixed top-0 left-0 z-40 h-screen border-r border-border bg-card transition-all duration-300 ${
+        className={`fixed top-0 left-0 z-40 h-screen border-r border-border bg-sidebar transition-all duration-300 ${
           sidebarOpen ? "w-60" : "w-0 -translate-x-full lg:w-16 lg:translate-x-0"
         }`}
       >
@@ -95,54 +115,66 @@ export default function Layout({ children }: LayoutProps) {
 
           {/* Navigation */}
           <nav className="flex-1 overflow-y-auto px-2 py-3">
-            {navSections.map((section) => (
-              <div key={section.label} className="mb-4">
-                {sidebarOpen && (
-                  <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-[0.15em] text-text3">
-                    {section.label}
-                  </p>
-                )}
-                {section.items.map((item) => {
-                  const isActive = location.pathname === item.path || 
-                    (item.path !== "/dashboard" && location.pathname.startsWith(item.path));
-                  return (
-                    <Link
-                      key={item.path}
-                      to={item.path}
-                      className={`group relative mb-0.5 flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-all ${
-                        isActive
-                          ? "bg-primary/10 text-primary font-medium"
-                          : "text-text2 hover:bg-surface2 hover:text-foreground"
-                      }`}
-                    >
-                      {isActive && (
-                        <span className="absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-primary" />
-                      )}
-                      <item.icon className="h-[18px] w-[18px] shrink-0" />
-                      {sidebarOpen && <span>{item.label}</span>}
-                      {sidebarOpen && item.badge && (
-                        <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-primary/20 px-1.5 text-[11px] font-semibold text-primary">
-                          {item.badge}
-                        </span>
-                      )}
-                    </Link>
-                  );
-                })}
-              </div>
-            ))}
+            {navSections.map((section) => {
+              const visibleItems = section.items.filter(item => !item.hidden);
+              if (visibleItems.length === 0) return null;
+              
+              return (
+                <div key={section.label} className="mb-4">
+                  {sidebarOpen && (
+                    <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-[0.15em] text-text3">
+                      {section.label}
+                    </p>
+                  )}
+                  {visibleItems.map((item) => {
+                    const isActive = location.pathname === item.path || 
+                      (item.path !== "/dashboard" && location.pathname.startsWith(item.path));
+                    return (
+                      <Link
+                        key={item.path}
+                        to={item.path}
+                        className={`group relative mb-0.5 flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-all ${
+                          isActive
+                            ? "bg-primary/10 text-primary font-medium"
+                            : "text-text2 hover:bg-surface2 hover:text-foreground"
+                        }`}
+                      >
+                        {isActive && (
+                          <span className="absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-primary" />
+                        )}
+                        <item.icon className="h-[18px] w-[18px] shrink-0" />
+                        {sidebarOpen && <span>{item.label}</span>}
+                        {sidebarOpen && item.badge && (
+                          <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-primary/20 px-1.5 text-[11px] font-semibold text-primary">
+                            {item.badge}
+                          </span>
+                        )}
+                      </Link>
+                    );
+                  })}
+                </div>
+              );
+            })}
           </nav>
 
           {/* User card */}
-          {sidebarOpen && (
+          {sidebarOpen && usuarioLogado && (
             <div className="border-t border-border p-3">
               <div className="flex items-center gap-3 rounded-lg bg-surface2 px-3 py-2.5">
                 <div className="flex h-9 w-9 items-center justify-center rounded-full gold-gradient text-sm font-semibold text-primary-foreground">
-                  JM
+                  {usuarioLogado.nome.split(" ").map(n => n[0]).join("").slice(0, 2)}
                 </div>
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-medium text-foreground">Juliana Moraes</p>
-                  <p className="text-[11px] text-text3">Proprietária</p>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium text-foreground">{usuarioLogado.nome}</p>
+                  <p className="text-[11px] text-text3">{perfil}</p>
                 </div>
+                <button
+                  onClick={handleLogout}
+                  className="rounded-lg p-1.5 text-text3 hover:bg-surface3 hover:text-foreground transition-colors"
+                  title="Sair"
+                >
+                  <LogOut className="h-4 w-4" />
+                </button>
               </div>
             </div>
           )}
@@ -168,7 +200,7 @@ export default function Layout({ children }: LayoutProps) {
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text3" />
               <input
                 placeholder="Buscar..."
-                className="h-9 w-[220px] rounded-lg border border-border bg-surface2 pl-9 pr-3 text-sm text-foreground placeholder:text-text3 focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/30"
+                className="h-9 w-[220px] rounded-lg border border-border bg-input pl-9 pr-3 text-sm text-foreground placeholder:text-text3 focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/30"
               />
             </div>
             <button className="relative rounded-lg p-2 text-text2 hover:bg-surface2 hover:text-foreground">
@@ -219,7 +251,7 @@ export default function Layout({ children }: LayoutProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-background/60 backdrop-blur-sm p-4"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/20 backdrop-blur-sm p-4"
             onClick={() => setShowNewAppointment(false)}
           >
             <motion.div
@@ -233,12 +265,12 @@ export default function Layout({ children }: LayoutProps) {
               <div className="space-y-4">
                 <div>
                   <label className="mb-1.5 block text-sm text-text2">Cliente</label>
-                  <input placeholder="Buscar cliente..." className="w-full rounded-lg border border-border bg-surface2 px-3 py-2.5 text-sm text-foreground placeholder:text-text3 focus:border-primary/50 focus:outline-none" />
+                  <input placeholder="Buscar cliente..." className="w-full rounded-lg border border-border bg-input px-3 py-2.5 text-sm text-foreground placeholder:text-text3 focus:border-primary/50 focus:outline-none" />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="mb-1.5 block text-sm text-text2">Serviço</label>
-                    <select className="w-full rounded-lg border border-border bg-surface2 px-3 py-2.5 text-sm text-foreground focus:border-primary/50 focus:outline-none">
+                    <select className="w-full rounded-lg border border-border bg-input px-3 py-2.5 text-sm text-foreground focus:border-primary/50 focus:outline-none">
                       <option>Coloração</option>
                       <option>Corte Feminino</option>
                       <option>Progressiva</option>
@@ -248,7 +280,7 @@ export default function Layout({ children }: LayoutProps) {
                   </div>
                   <div>
                     <label className="mb-1.5 block text-sm text-text2">Profissional</label>
-                    <select className="w-full rounded-lg border border-border bg-surface2 px-3 py-2.5 text-sm text-foreground focus:border-primary/50 focus:outline-none">
+                    <select className="w-full rounded-lg border border-border bg-input px-3 py-2.5 text-sm text-foreground focus:border-primary/50 focus:outline-none">
                       <option>Élise Monteiro</option>
                       <option>Rodrigo Alves</option>
                       <option>Camile Torres</option>
@@ -259,11 +291,11 @@ export default function Layout({ children }: LayoutProps) {
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="mb-1.5 block text-sm text-text2">Data</label>
-                    <input type="date" className="w-full rounded-lg border border-border bg-surface2 px-3 py-2.5 text-sm text-foreground focus:border-primary/50 focus:outline-none" />
+                    <input type="date" className="w-full rounded-lg border border-border bg-input px-3 py-2.5 text-sm text-foreground focus:border-primary/50 focus:outline-none" />
                   </div>
                   <div>
                     <label className="mb-1.5 block text-sm text-text2">Horário</label>
-                    <input type="time" className="w-full rounded-lg border border-border bg-surface2 px-3 py-2.5 text-sm text-foreground focus:border-primary/50 focus:outline-none" />
+                    <input type="time" className="w-full rounded-lg border border-border bg-input px-3 py-2.5 text-sm text-foreground focus:border-primary/50 focus:outline-none" />
                   </div>
                 </div>
                 <div>
@@ -276,7 +308,7 @@ export default function Layout({ children }: LayoutProps) {
                 </div>
                 <div>
                   <label className="mb-1.5 block text-sm text-text2">Observações</label>
-                  <textarea rows={2} className="w-full rounded-lg border border-border bg-surface2 px-3 py-2.5 text-sm text-foreground placeholder:text-text3 focus:border-primary/50 focus:outline-none resize-none" placeholder="Notas adicionais..." />
+                  <textarea rows={2} className="w-full rounded-lg border border-border bg-input px-3 py-2.5 text-sm text-foreground placeholder:text-text3 focus:border-primary/50 focus:outline-none resize-none" placeholder="Notas adicionais..." />
                 </div>
               </div>
               <div className="mt-6 flex gap-3 justify-end">
