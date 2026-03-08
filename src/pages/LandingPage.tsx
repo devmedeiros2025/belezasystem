@@ -177,7 +177,7 @@ export default function LandingPage() {
               onClick={() => navigate("/login")}
               className="gold-gradient px-8 py-4 rounded-full text-[hsl(0,0%,100%)] font-semibold text-lg shadow-xl hover:shadow-2xl hover:scale-105 transition-all flex items-center gap-2"
             >
-              Começar Grátis por 3ias
+              Começar Grátis por 3 Dias
               <ArrowRight className="w-5 h-5" />
             </button>
             <p className="text-sm text-[hsl(280,15%,60%)]">
@@ -278,7 +278,7 @@ export default function LandingPage() {
               Invista no crescimento do seu <span className="text-primary">negócio</span>
             </motion.h2>
             <motion.p variants={fadeUp} custom={2} className="text-[hsl(280,15%,45%)] max-w-xl mx-auto">
-              Escolha o plano ideal para o tamanho do seu salão. Todos incluem 133as grátis.
+              Escolha o plano ideal para o tamanho do seu salão. Todos incluem 3 dias grátis.
             </motion.p>
           </motion.div>
 
