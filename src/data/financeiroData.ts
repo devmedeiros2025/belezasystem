@@ -280,3 +280,23 @@ export const dreData = {
   },
   compraFornecedores: 32000,
 };
+
+// ===== DADOS MENSAIS DE DESPESAS (tendência 6 meses) =====
+export const despesasMensalTrend = [
+  { mes: "Out", total: 245000, aluguel: 80000, produtos: 52000, utilidades: 18000, marketing: 12000, outros: 83000 },
+  { mes: "Nov", total: 268000, aluguel: 80000, produtos: 61000, utilidades: 19000, marketing: 14000, outros: 94000 },
+  { mes: "Dez", total: 312000, aluguel: 80000, produtos: 78000, utilidades: 21000, marketing: 25000, outros: 108000 },
+  { mes: "Jan", total: 285000, aluguel: 80000, produtos: 65000, utilidades: 20000, marketing: 15000, outros: 105000 },
+  { mes: "Fev", total: 298000, aluguel: 80000, produtos: 70000, utilidades: 19500, marketing: 18000, outros: 110500 },
+  { mes: "Mar", total: 385500, aluguel: 80000, produtos: 95000, utilidades: 22000, marketing: 15000, outros: 173500 },
+];
+
+// ===== DADOS MENSAIS DE CONTAS A PAGAR (tendência 6 meses) =====
+export const contasPagarMensalTrend = [
+  { mes: "Out", total: 180000, pagas: 165000, vencidas: 15000, pendentes: 0 },
+  { mes: "Nov", total: 195000, pagas: 172000, vencidas: 8000, pendentes: 15000 },
+  { mes: "Dez", total: 230000, pagas: 210000, vencidas: 12000, pendentes: 8000 },
+  { mes: "Jan", total: 205000, pagas: 185000, vencidas: 10000, pendentes: 10000 },
+  { mes: "Fev", total: 215000, pagas: 190000, vencidas: 5000, pendentes: 20000 },
+  { mes: "Mar", total: 248000, pagas: 180000, vencidas: 28000, pendentes: 40000 },
+];
