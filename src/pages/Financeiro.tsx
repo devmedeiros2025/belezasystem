@@ -252,6 +252,9 @@ export default function Financeiro() {
     ? (produtosVendidos.reduce((a, p) => a + ((p.preco - p.custo) / p.preco) * 100, 0) / produtosVendidos.length).toFixed(1)
     : "0";
 
+  // Redirect non-authorized (after all hooks)
+  if (perfil === "Colaborador") return <Navigate to="/dashboard" replace />;
+
   return (
     <div className="space-y-6">
       {/* ALERTAS GLOBAIS */}
