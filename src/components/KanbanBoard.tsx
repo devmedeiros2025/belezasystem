@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const colunas: { key: TarefaStatus; label: string; icon: React.ElementType; colorClass: string; bgClass: string }[] = [
+  { key: "afazer", label: "A Fazer", icon: ListTodo, colorClass: "text-slate-600", bgClass: "bg-slate-50 border-slate-200" },
   { key: "fazendo", label: "Fazendo", icon: Loader2, colorClass: "text-blue-600", bgClass: "bg-blue-50 border-blue-200" },
   { key: "feito", label: "Feito", icon: ClipboardCheck, colorClass: "text-amber-600", bgClass: "bg-amber-50 border-amber-200" },
   { key: "aguardando", label: "Aguardando Aprovação", icon: Eye, colorClass: "text-purple-600", bgClass: "bg-purple-50 border-purple-200" },
