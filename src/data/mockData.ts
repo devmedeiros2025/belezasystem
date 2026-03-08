@@ -9,10 +9,10 @@ export const clientes = [
 ];
 
 export const profissionais = [
-  { id: 1, nome: "Élise Monteiro", cargo: "Colorista Sênior", emoji: "💆", receita: 7200, atendimentos: 62, avaliacao: 4.9, servicos: ["Coloração", "Progressiva", "Hidratação"], status: "Disponível" as const, cor: "gold" },
-  { id: 2, nome: "Rodrigo Alves", cargo: "Barbeiro / Estilista", emoji: "✂️", receita: 4850, atendimentos: 78, avaliacao: 4.8, servicos: ["Corte Masculino", "Corte Feminino", "Escova"], status: "Em atendimento" as const, cor: "teal" },
-  { id: 3, nome: "Camile Torres", cargo: "Manicure / Nail Designer", emoji: "💅", receita: 3120, atendimentos: 94, avaliacao: 5.0, servicos: ["Manicure + Pedicure", "Nail Art"], status: "Disponível" as const, cor: "rose" },
-  { id: 4, nome: "Patrícia Nunes", cargo: "Esteticista", emoji: "🌿", receita: 3250, atendimentos: 41, avaliacao: 4.7, servicos: ["Limpeza de Pele", "Hidratação Facial"], status: "Folga" as const, cor: "purple" },
+  { id: 1, nome: "Élise Monteiro", cargo: "Colorista Sênior", emoji: "💆", foto: "", receita: 7200, atendimentos: 62, avaliacao: 4.9, servicos: ["Coloração", "Progressiva", "Hidratação"], status: "Disponível" as const, cor: "gold" },
+  { id: 2, nome: "Rodrigo Alves", cargo: "Barbeiro / Estilista", emoji: "✂️", foto: "", receita: 4850, atendimentos: 78, avaliacao: 4.8, servicos: ["Corte Masculino", "Corte Feminino", "Escova"], status: "Em atendimento" as const, cor: "teal" },
+  { id: 3, nome: "Camile Torres", cargo: "Manicure / Nail Designer", emoji: "💅", foto: "", receita: 3120, atendimentos: 94, avaliacao: 5.0, servicos: ["Manicure + Pedicure", "Nail Art"], status: "Disponível" as const, cor: "rose" },
+  { id: 4, nome: "Patrícia Nunes", cargo: "Esteticista", emoji: "🌿", foto: "", receita: 3250, atendimentos: 41, avaliacao: 4.7, servicos: ["Limpeza de Pele", "Hidratação Facial"], status: "Folga" as const, cor: "purple" },
 ];
 
 export const servicos = [
