@@ -346,6 +346,45 @@ export type Database = {
         }
         Relationships: []
       }
+      estabelecimentos: {
+        Row: {
+          ativo: boolean
+          cor_primaria: string | null
+          created_at: string
+          id: string
+          logo_url: string | null
+          nome: string
+          owner_user_id: string
+          plano: string
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          ativo?: boolean
+          cor_primaria?: string | null
+          created_at?: string
+          id?: string
+          logo_url?: string | null
+          nome: string
+          owner_user_id: string
+          plano?: string
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          ativo?: boolean
+          cor_primaria?: string | null
+          created_at?: string
+          id?: string
+          logo_url?: string | null
+          nome?: string
+          owner_user_id?: string
+          plano?: string
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       estoque: {
         Row: {
           categoria: string
@@ -643,6 +682,7 @@ export type Database = {
           ativo: boolean
           created_at: string
           email: string | null
+          estabelecimento_id: string | null
           id: string
           nome: string
           profissional_id: string | null
@@ -653,6 +693,7 @@ export type Database = {
           ativo?: boolean
           created_at?: string
           email?: string | null
+          estabelecimento_id?: string | null
           id?: string
           nome: string
           profissional_id?: string | null
@@ -663,6 +704,7 @@ export type Database = {
           ativo?: boolean
           created_at?: string
           email?: string | null
+          estabelecimento_id?: string | null
           id?: string
           nome?: string
           profissional_id?: string | null
@@ -670,6 +712,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "profiles_estabelecimento_id_fkey"
+            columns: ["estabelecimento_id"]
+            isOneToOne: false
+            referencedRelation: "estabelecimentos"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "profiles_profissional_id_fkey"
             columns: ["profissional_id"]
