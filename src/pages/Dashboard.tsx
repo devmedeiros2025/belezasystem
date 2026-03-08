@@ -1,4 +1,4 @@
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, LineChart, Line, AreaChart, Area, Legend, PieChart, Pie, Cell } from "recharts";
 import { TrendingUp, Calendar, Users, Star, CheckCircle, Clock, DollarSign, ArrowUpCircle, ArrowDownCircle, Receipt } from "lucide-react";
 import { agendamentos, clientes, profissionais, servicos, receitaSemanal, avaliacoes } from "@/data/mockData";
 import { useState } from "react";
