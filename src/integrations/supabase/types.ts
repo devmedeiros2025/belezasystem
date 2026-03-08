@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      adiantamentos: {
+        Row: {
+          aprovado_por: string
+          created_at: string
+          data: string
+          id: string
+          mes_desconto: string
+          motivo: string | null
+          profissional: string
+          status: string
+          updated_at: string
+          valor_aprovado: number
+          valor_solicitado: number
+        }
+        Insert: {
+          aprovado_por?: string
+          created_at?: string
+          data?: string
+          id?: string
+          mes_desconto: string
+          motivo?: string | null
+          profissional: string
+          status?: string
+          updated_at?: string
+          valor_aprovado?: number
+          valor_solicitado?: number
+        }
+        Update: {
+          aprovado_por?: string
+          created_at?: string
+          data?: string
+          id?: string
+          mes_desconto?: string
+          motivo?: string | null
+          profissional?: string
+          status?: string
+          updated_at?: string
+          valor_aprovado?: number
+          valor_solicitado?: number
+        }
+        Relationships: []
+      }
       agendamentos: {
         Row: {
           canal: string | null
@@ -134,6 +176,382 @@ export type Database = {
         }
         Relationships: []
       }
+      contas_pagar: {
+        Row: {
+          categoria: string
+          created_at: string
+          data_pagamento: string | null
+          descricao: string
+          forma_pgto: string | null
+          fornecedor_beneficiario: string
+          id: string
+          recorrencia: string | null
+          status: string
+          updated_at: string
+          valor: number
+          vencimento: string
+        }
+        Insert: {
+          categoria: string
+          created_at?: string
+          data_pagamento?: string | null
+          descricao: string
+          forma_pgto?: string | null
+          fornecedor_beneficiario: string
+          id?: string
+          recorrencia?: string | null
+          status?: string
+          updated_at?: string
+          valor?: number
+          vencimento: string
+        }
+        Update: {
+          categoria?: string
+          created_at?: string
+          data_pagamento?: string | null
+          descricao?: string
+          forma_pgto?: string | null
+          fornecedor_beneficiario?: string
+          id?: string
+          recorrencia?: string | null
+          status?: string
+          updated_at?: string
+          valor?: number
+          vencimento?: string
+        }
+        Relationships: []
+      }
+      contas_receber: {
+        Row: {
+          cliente: string
+          created_at: string
+          data_servico: string | null
+          id: string
+          observacoes: string | null
+          servico: string
+          status: string
+          updated_at: string
+          valor_pago: number
+          valor_total: number
+          vencimento: string
+        }
+        Insert: {
+          cliente: string
+          created_at?: string
+          data_servico?: string | null
+          id?: string
+          observacoes?: string | null
+          servico: string
+          status?: string
+          updated_at?: string
+          valor_pago?: number
+          valor_total?: number
+          vencimento: string
+        }
+        Update: {
+          cliente?: string
+          created_at?: string
+          data_servico?: string | null
+          id?: string
+          observacoes?: string | null
+          servico?: string
+          status?: string
+          updated_at?: string
+          valor_pago?: number
+          valor_total?: number
+          vencimento?: string
+        }
+        Relationships: []
+      }
+      contas_receber_pagamentos: {
+        Row: {
+          conta_receber_id: string
+          created_at: string
+          data: string
+          forma: string
+          id: string
+          valor: number
+        }
+        Insert: {
+          conta_receber_id: string
+          created_at?: string
+          data?: string
+          forma?: string
+          id?: string
+          valor?: number
+        }
+        Update: {
+          conta_receber_id?: string
+          created_at?: string
+          data?: string
+          forma?: string
+          id?: string
+          valor?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contas_receber_pagamentos_conta_receber_id_fkey"
+            columns: ["conta_receber_id"]
+            isOneToOne: false
+            referencedRelation: "contas_receber"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      despesas: {
+        Row: {
+          categoria: string
+          comprovante: string | null
+          created_at: string
+          data: string
+          descricao: string
+          forma_pgto: string
+          fornecedor: string | null
+          id: string
+          nr_fatura: string | null
+          recorrencia: string
+          registrado_por: string
+          updated_at: string
+          valor: number
+        }
+        Insert: {
+          categoria: string
+          comprovante?: string | null
+          created_at?: string
+          data?: string
+          descricao: string
+          forma_pgto?: string
+          fornecedor?: string | null
+          id?: string
+          nr_fatura?: string | null
+          recorrencia?: string
+          registrado_por?: string
+          updated_at?: string
+          valor?: number
+        }
+        Update: {
+          categoria?: string
+          comprovante?: string | null
+          created_at?: string
+          data?: string
+          descricao?: string
+          forma_pgto?: string
+          fornecedor?: string | null
+          id?: string
+          nr_fatura?: string | null
+          recorrencia?: string
+          registrado_por?: string
+          updated_at?: string
+          valor?: number
+        }
+        Relationships: []
+      }
+      fechamentos_caixa: {
+        Row: {
+          created_at: string
+          data: string
+          descontos: number
+          fechado: boolean
+          fechado_por: string | null
+          hora_fechamento: string | null
+          id: string
+          receita_produtos: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          data?: string
+          descontos?: number
+          fechado?: boolean
+          fechado_por?: string | null
+          hora_fechamento?: string | null
+          id?: string
+          receita_produtos?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          data?: string
+          descontos?: number
+          fechado?: boolean
+          fechado_por?: string | null
+          hora_fechamento?: string | null
+          id?: string
+          receita_produtos?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      fornecedor_compras: {
+        Row: {
+          created_at: string
+          data: string
+          descricao: string
+          fornecedor_id: string
+          id: string
+          pago: number
+          valor: number
+        }
+        Insert: {
+          created_at?: string
+          data?: string
+          descricao: string
+          fornecedor_id: string
+          id?: string
+          pago?: number
+          valor?: number
+        }
+        Update: {
+          created_at?: string
+          data?: string
+          descricao?: string
+          fornecedor_id?: string
+          id?: string
+          pago?: number
+          valor?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fornecedor_compras_fornecedor_id_fkey"
+            columns: ["fornecedor_id"]
+            isOneToOne: false
+            referencedRelation: "fornecedores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fornecedores: {
+        Row: {
+          categoria: string
+          contato: string
+          created_at: string
+          email: string | null
+          endereco: string | null
+          id: string
+          nif: string | null
+          nome: string
+          nome_contato: string | null
+          observacoes: string | null
+          saldo_devedor: number
+          ultima_compra: string | null
+          updated_at: string
+        }
+        Insert: {
+          categoria: string
+          contato: string
+          created_at?: string
+          email?: string | null
+          endereco?: string | null
+          id?: string
+          nif?: string | null
+          nome: string
+          nome_contato?: string | null
+          observacoes?: string | null
+          saldo_devedor?: number
+          ultima_compra?: string | null
+          updated_at?: string
+        }
+        Update: {
+          categoria?: string
+          contato?: string
+          created_at?: string
+          email?: string | null
+          endereco?: string | null
+          id?: string
+          nif?: string | null
+          nome?: string
+          nome_contato?: string | null
+          observacoes?: string | null
+          saldo_devedor?: number
+          ultima_compra?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      movimentacoes: {
+        Row: {
+          beneficiario_origem: string | null
+          categoria: string
+          created_at: string
+          data: string
+          descricao: string
+          forma_pgto: string
+          hora: string
+          id: string
+          observacoes: string | null
+          referencia: string | null
+          registrado_por: string
+          tipo: string
+          updated_at: string
+          valor: number
+        }
+        Insert: {
+          beneficiario_origem?: string | null
+          categoria: string
+          created_at?: string
+          data?: string
+          descricao: string
+          forma_pgto?: string
+          hora?: string
+          id?: string
+          observacoes?: string | null
+          referencia?: string | null
+          registrado_por?: string
+          tipo?: string
+          updated_at?: string
+          valor?: number
+        }
+        Update: {
+          beneficiario_origem?: string | null
+          categoria?: string
+          created_at?: string
+          data?: string
+          descricao?: string
+          forma_pgto?: string
+          hora?: string
+          id?: string
+          observacoes?: string | null
+          referencia?: string | null
+          registrado_por?: string
+          tipo?: string
+          updated_at?: string
+          valor?: number
+        }
+        Relationships: []
+      }
+      produtos_vendidos: {
+        Row: {
+          categoria: string
+          created_at: string
+          custo: number
+          id: string
+          nome: string
+          preco: number
+          unidades: number
+          updated_at: string
+        }
+        Insert: {
+          categoria: string
+          created_at?: string
+          custo?: number
+          id?: string
+          nome: string
+          preco?: number
+          unidades?: number
+          updated_at?: string
+        }
+        Update: {
+          categoria?: string
+          created_at?: string
+          custo?: number
+          id?: string
+          nome?: string
+          preco?: number
+          unidades?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           ativo: boolean
@@ -213,6 +631,53 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      salarios_config: {
+        Row: {
+          atendimentos_mes: number
+          comissao_pct: number
+          created_at: string
+          fixo: number
+          id: string
+          profissional: string
+          profissional_id: string | null
+          receita_gerada_mes: number
+          tipo: string
+          updated_at: string
+        }
+        Insert: {
+          atendimentos_mes?: number
+          comissao_pct?: number
+          created_at?: string
+          fixo?: number
+          id?: string
+          profissional: string
+          profissional_id?: string | null
+          receita_gerada_mes?: number
+          tipo?: string
+          updated_at?: string
+        }
+        Update: {
+          atendimentos_mes?: number
+          comissao_pct?: number
+          created_at?: string
+          fixo?: number
+          id?: string
+          profissional?: string
+          profissional_id?: string | null
+          receita_gerada_mes?: number
+          tipo?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "salarios_config_profissional_id_fkey"
+            columns: ["profissional_id"]
+            isOneToOne: false
+            referencedRelation: "profissionais"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       servicos: {
         Row: {
