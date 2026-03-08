@@ -114,8 +114,26 @@ export default function KanbanBoard() {
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
         {colunas.map((col) => {
           const items = visibleTarefas.filter(t => t.status === col.key);
+          const isOver = dragOverCol === col.key;
           return (
-            <div key={col.key} className={`rounded-xl border p-3 min-h-[200px] ${col.bgClass}`}>
+            <div
+              key={col.key}
+              className={`rounded-xl border p-3 min-h-[200px] transition-all duration-200 ${col.bgClass} ${isOver ? "ring-2 ring-primary/40 scale-[1.01]" : ""}`}
+              onDragOver={(e: DragEvent) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = "move";
+                setDragOverCol(col.key);
+              }}
+              onDragLeave={() => setDragOverCol(null)}
+              onDrop={(e: DragEvent) => {
+                e.preventDefault();
+                setDragOverCol(null);
+                if (draggedId !== null) {
+                  moveTask(draggedId, col.key);
+                  setDraggedId(null);
+                }
+              }}
+            >
               <div className="flex items-center gap-2 mb-3 px-1">
                 <col.icon className={`h-4 w-4 ${col.colorClass}`} />
                 <span className={`text-sm font-semibold ${col.colorClass}`}>{col.label}</span>
@@ -127,8 +145,24 @@ export default function KanbanBoard() {
                 {items.map((t) => (
                   <div
                     key={t.id}
+                    draggable
+                    onDragStart={(e: DragEvent) => {
+                      setDraggedId(t.id);
+                      e.dataTransfer.effectAllowed = "move";
+                      // Make the ghost semi-transparent
+                      if (e.currentTarget instanceof HTMLElement) {
+                        e.currentTarget.style.opacity = "0.5";
+                      }
+                    }}
+                    onDragEnd={(e: DragEvent) => {
+                      setDraggedId(null);
+                      setDragOverCol(null);
+                      if (e.currentTarget instanceof HTMLElement) {
+                        e.currentTarget.style.opacity = "1";
+                      }
+                    }}
                     onClick={() => setDetailTask(t)}
-                    className="rounded-lg border border-white/60 bg-white p-3 shadow-sm cursor-pointer hover:shadow-md transition-shadow"
+                    className={`rounded-lg border border-white/60 bg-white p-3 shadow-sm cursor-grab hover:shadow-md transition-all active:cursor-grabbing ${draggedId === t.id ? "opacity-50 scale-95" : ""}`}
                   >
                     <p className="text-sm font-medium text-foreground leading-snug">{t.titulo}</p>
                     <p className="text-xs text-text3 mt-1 line-clamp-2">{t.descricao}</p>
@@ -144,6 +178,11 @@ export default function KanbanBoard() {
                     </div>
                   </div>
                 ))}
+                {isOver && draggedId !== null && (
+                  <div className="rounded-lg border-2 border-dashed border-primary/30 bg-primary/5 p-3 text-center text-xs text-primary font-medium">
+                    Soltar aqui
+                  </div>
+                )}
               </div>
             </div>
           );
