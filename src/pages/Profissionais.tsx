@@ -83,8 +83,7 @@ export default function Profissionais() {
           </tbody>
         </table>
       </div>
-    </div>
-    <KanbanBoard />
+      <KanbanBoard />
     </div>
   );
 }
