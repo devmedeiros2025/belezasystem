@@ -368,6 +368,7 @@ export default function Financeiro() {
                   <Plus className="h-4 w-4" /> Nova Movimentação
                 </button>
               </div>
+            </div>
             <table className="w-full text-sm">
               <thead><tr className="border-b border-border text-xs text-text3"><th className="p-4 text-left">Data</th><th className="p-4 text-left">Descrição</th><th className="p-4 text-left hidden md:table-cell">Categoria</th><th className="p-4 text-left">Tipo</th><th className="p-4 text-left">Valor</th></tr></thead>
               <tbody>
