@@ -13,20 +13,18 @@ export default function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    
-    setTimeout(() => {
-      const success = login(email, senha);
-      if (success) {
-        toast.success("Login realizado com sucesso!");
-        navigate("/dashboard");
-      } else {
-        toast.error("E-mail ou senha inválidos");
-      }
-      setLoading(false);
-    }, 500);
+
+    const success = await login(email, senha);
+    if (success) {
+      toast.success("Login realizado com sucesso!");
+      navigate("/dashboard");
+    } else {
+      toast.error("E-mail ou senha inválidos");
+    }
+    setLoading(false);
   };
 
   return (
@@ -91,24 +89,6 @@ export default function Login() {
               {loading ? "Entrando..." : "Entrar"}
             </button>
           </form>
-
-          <div className="mt-6 pt-6 border-t border-border">
-            <p className="text-xs text-text3 text-center mb-3">Usuários para teste:</p>
-            <div className="space-y-2 text-xs">
-              <div className="flex justify-between px-2 py-1.5 rounded bg-surface2">
-                <span className="text-text2">Admin:</span>
-                <span className="text-foreground font-mono">elise@studio.ao / admin123</span>
-              </div>
-              <div className="flex justify-between px-2 py-1.5 rounded bg-surface2">
-                <span className="text-text2">Financeiro:</span>
-                <span className="text-foreground font-mono">carlos@studio.ao / fin123</span>
-              </div>
-              <div className="flex justify-between px-2 py-1.5 rounded bg-surface2">
-                <span className="text-text2">Colaborador:</span>
-                <span className="text-foreground font-mono">rodrigo@studio.ao / colab123</span>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>
