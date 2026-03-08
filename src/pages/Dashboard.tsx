@@ -199,9 +199,11 @@ function DashboardCompleto() {
           </div>
         </div>
       </div>
+
+      {/* Kanban */}
+      <KanbanBoard />
     </div>
   );
-}
 
 function DashboardColaborador() {
   const { usuarioLogado } = useAuth();
