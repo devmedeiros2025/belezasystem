@@ -9,6 +9,7 @@ import { ClientesProvider } from "@/contexts/ClientesContext";
 import Layout from "@/components/Layout";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Login from "@/pages/Login";
+import ResetPassword from "@/pages/ResetPassword";
 import Dashboard from "@/pages/Dashboard";
 import Agenda from "@/pages/Agenda";
 import Clientes from "@/pages/Clientes";
