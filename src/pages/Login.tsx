@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { Eye, EyeOff } from "lucide-react";
+import angolaBg from "@/assets/angola-bg.jpg";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -29,8 +30,12 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center bg-background p-4 relative overflow-hidden">
+      <div
+        className="absolute inset-0 bg-cover bg-center"
+        style={{ backgroundImage: `url(${angolaBg})`, opacity: 0.15 }}
+      />
+      <div className="w-full max-w-md relative z-10">
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-2 mb-4">
             <span className="text-4xl text-primary">✦</span>
