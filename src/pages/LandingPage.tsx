@@ -2,6 +2,9 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Check, Star, Crown, Gem, Sparkles, ArrowRight, Shield, Zap, Users, BarChart3, Calendar, MessageSquare } from "lucide-react";
+import salonHero from "@/assets/salon-hero.jpg";
+import barberSection from "@/assets/barber-section.jpg";
+import spaSection from "@/assets/spa-section.jpg";
 
 const plans = [
   {
