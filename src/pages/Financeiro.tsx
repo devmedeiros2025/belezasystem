@@ -456,7 +456,8 @@ export default function Financeiro() {
                 <button onClick={() => exportarFolha("excel")} className="flex items-center gap-1.5 rounded-lg bg-surface2 px-3 py-1.5 text-xs font-medium text-text2 hover:text-foreground hover:bg-primary/10"><FileSpreadsheet className="h-3.5 w-3.5" />Excel</button>
                 <button onClick={() => setShowFolhaModal(true)} className="flex items-center gap-2 rounded-lg gold-gradient px-4 py-2 text-sm font-semibold text-primary-foreground">
                   <Plus className="h-4 w-4" /> Novo Lançamento
-              </button>
+                </button>
+              </div>
             </div>
             <table className="w-full text-sm">
               <thead><tr className="border-b border-border text-xs text-text3"><th className="p-4 text-left">Data</th><th className="p-4 text-left">Profissional</th><th className="p-4 text-left">Tipo</th><th className="p-4 text-left hidden md:table-cell">Descrição</th><th className="p-4 text-left">Valor</th><th className="p-4 text-left">Status</th><th className="p-4 text-left">Ação</th></tr></thead>
