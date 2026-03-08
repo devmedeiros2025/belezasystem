@@ -300,8 +300,8 @@ export default function KanbanBoard() {
               <Select value={String(form.responsavelId || "")} onValueChange={v => setForm(p => ({ ...p, responsavelId: Number(v) }))}>
                 <SelectTrigger className="mt-1"><SelectValue placeholder="Selecione..." /></SelectTrigger>
                 <SelectContent>
-                  {usuarios.filter(u => u.ativo).map(u => (
-                    <SelectItem key={u.id} value={String(u.id)}>{u.nome} — {u.perfil}</SelectItem>
+                  {mockUsuarios.filter(u => u.ativo).map(u => (
+                    <SelectItem key={u.id} value={u.id}>{u.nome} — {u.perfil}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
