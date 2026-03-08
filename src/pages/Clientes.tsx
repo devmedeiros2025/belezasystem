@@ -2,6 +2,7 @@ import { useState } from "react";
 import { clientes } from "@/data/mockData";
 import { Search, Users, UserCheck, TrendingUp, DollarSign } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useCurrency } from "@/hooks/useCurrency";
 
 type Filter = "Todos" | "VIP" | "Ativos" | "Inativos" | "Em risco";
 
@@ -12,16 +13,17 @@ const statusStyle: Record<string, string> = {
   Inativo: "badge-inactive",
 };
 
-const metrics = [
-  { label: "Total", value: "384", icon: Users, color: "text-primary" },
-  { label: "Ativos este mês", value: "127", icon: UserCheck, color: "text-green-custom" },
-  { label: "Taxa de retorno", value: "68%", icon: TrendingUp, color: "text-teal-custom" },
-  { label: "Ticket médio", value: "R$ 147", icon: DollarSign, color: "text-primary" },
-];
-
 export default function Clientes() {
   const [filter, setFilter] = useState<Filter>("Todos");
   const [search, setSearch] = useState("");
+  const { format } = useCurrency();
+
+  const metrics = [
+    { label: "Total", value: "384", icon: Users, color: "text-primary" },
+    { label: "Ativos este mês", value: "127", icon: UserCheck, color: "text-green-custom" },
+    { label: "Taxa de retorno", value: "68%", icon: TrendingUp, color: "text-teal-custom" },
+    { label: "Ticket médio", value: format(147), icon: DollarSign, color: "text-primary" },
+  ];
 
   const filtered = clientes.filter((c) => {
     if (search && !c.nome.toLowerCase().includes(search.toLowerCase()) && !c.telefone.includes(search)) return false;
@@ -57,7 +59,7 @@ export default function Clientes() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Buscar por nome ou telefone..."
-            className="w-full rounded-lg border border-border bg-surface2 pl-9 pr-3 py-2.5 text-sm text-foreground placeholder:text-text3 focus:border-primary/50 focus:outline-none"
+            className="w-full rounded-lg border border-border bg-input pl-9 pr-3 py-2.5 text-sm text-foreground placeholder:text-text3 focus:border-primary/50 focus:outline-none"
           />
         </div>
         <div className="flex gap-1">
@@ -103,7 +105,7 @@ export default function Clientes() {
                 <td className="p-4 text-text2 hidden md:table-cell">{c.telefone}</td>
                 <td className="p-4 text-text2 hidden lg:table-cell">{c.ultimoServico}</td>
                 <td className="p-4 text-text3 hidden lg:table-cell">{c.ultimaVisita}</td>
-                <td className="p-4 font-semibold text-foreground">R$ {c.totalGasto.toLocaleString()}</td>
+                <td className="p-4 font-semibold text-foreground">{format(c.totalGasto)}</td>
                 <td className="p-4 text-text2 hidden md:table-cell">{c.visitas}</td>
                 <td className="p-4">
                   <span className={`inline-block rounded-full px-2.5 py-1 text-[11px] font-medium ${statusStyle[c.status]}`}>
