@@ -1,5 +1,5 @@
 import { useState, useRef, DragEvent } from "react";
-import { Plus, Clock, Eye, CheckCircle2, Loader2, ClipboardCheck, X, MessageSquare, CalendarDays, User } from "lucide-react";
+import { Plus, Clock, Eye, CheckCircle2, Loader2, ClipboardCheck, X, MessageSquare, CalendarDays, User, ListTodo } from "lucide-react";
 import { Tarefa, TarefaStatus, tarefasMock } from "@/data/tarefasData";
 import { useAuth, usuarios } from "@/contexts/AuthContext";
 import { profissionais } from "@/data/mockData";
