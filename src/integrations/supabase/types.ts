@@ -357,6 +357,7 @@ export type Database = {
           owner_user_id: string
           plano: string
           slug: string
+          trial_expires_at: string | null
           updated_at: string
         }
         Insert: {
@@ -369,6 +370,7 @@ export type Database = {
           owner_user_id: string
           plano?: string
           slug: string
+          trial_expires_at?: string | null
           updated_at?: string
         }
         Update: {
@@ -381,6 +383,7 @@ export type Database = {
           owner_user_id?: string
           plano?: string
           slug?: string
+          trial_expires_at?: string | null
           updated_at?: string
         }
         Relationships: []
