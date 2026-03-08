@@ -249,10 +249,8 @@ export default function LandingPage() {
       </section>
 
       {/* Social Proof Banner */}
-      <section className="py-12 px-6 relative overflow-hidden">
-        <img src={barberSection} alt="" className="absolute inset-0 w-full h-full object-cover" />
-        <div className="absolute inset-0 bg-[hsl(35,50%,35%)/0.85]" />
-        <div className="max-w-4xl mx-auto text-center text-[hsl(0,0%,100%)] relative z-10">
+      <section className="py-12 px-6 gold-gradient">
+        <div className="max-w-4xl mx-auto text-center text-[hsl(0,0%,100%)]">
           <p className="font-display text-2xl md:text-3xl font-bold mb-2">
             "Cada dia sem sistema, é dinheiro que escapa pelas suas mãos."
           </p>
