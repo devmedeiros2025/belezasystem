@@ -252,6 +252,7 @@ export default function Agenda() {
                 ["Horário", selected.hora],
                 ["Duração", `${selected.duracao} min`],
                 ["Status", selected.status],
+                ["Canal", selected.canal || "—"],
               ].map(([k, v]) => (
                 <div key={k} className="flex justify-between text-sm">
                   <span className="text-text3">{k}</span>
