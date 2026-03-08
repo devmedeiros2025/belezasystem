@@ -346,6 +346,92 @@ export type Database = {
         }
         Relationships: []
       }
+      estoque: {
+        Row: {
+          categoria: string
+          created_at: string
+          custo_unit: number
+          estoque_atual: number
+          fornecedor: string | null
+          id: string
+          minimo: number
+          nota_fiscal: string | null
+          produto: string
+          updated_at: string
+          validade: string | null
+        }
+        Insert: {
+          categoria: string
+          created_at?: string
+          custo_unit?: number
+          estoque_atual?: number
+          fornecedor?: string | null
+          id?: string
+          minimo?: number
+          nota_fiscal?: string | null
+          produto: string
+          updated_at?: string
+          validade?: string | null
+        }
+        Update: {
+          categoria?: string
+          created_at?: string
+          custo_unit?: number
+          estoque_atual?: number
+          fornecedor?: string | null
+          id?: string
+          minimo?: number
+          nota_fiscal?: string | null
+          produto?: string
+          updated_at?: string
+          validade?: string | null
+        }
+        Relationships: []
+      }
+      estoque_movimentacoes: {
+        Row: {
+          created_at: string
+          custo_unit: number | null
+          estoque_id: string
+          fornecedor: string | null
+          id: string
+          nota_fiscal: string | null
+          quantidade: number
+          registrado_por: string
+          tipo: string
+        }
+        Insert: {
+          created_at?: string
+          custo_unit?: number | null
+          estoque_id: string
+          fornecedor?: string | null
+          id?: string
+          nota_fiscal?: string | null
+          quantidade?: number
+          registrado_por?: string
+          tipo?: string
+        }
+        Update: {
+          created_at?: string
+          custo_unit?: number | null
+          estoque_id?: string
+          fornecedor?: string | null
+          id?: string
+          nota_fiscal?: string | null
+          quantidade?: number
+          registrado_por?: string
+          tipo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "estoque_movimentacoes_estoque_id_fkey"
+            columns: ["estoque_id"]
+            isOneToOne: false
+            referencedRelation: "estoque"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       fechamentos_caixa: {
         Row: {
           created_at: string
