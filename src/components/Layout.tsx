@@ -227,7 +227,9 @@ export default function Layout({ children }: LayoutProps) {
       </aside>
 
       {/* Main content */}
-      <div className={`flex flex-1 flex-col transition-all duration-300 ${sidebarOpen ? "ml-60" : "ml-0 lg:ml-16"}`}>
+      <div className={`flex flex-1 flex-col transition-all duration-300 ${
+        isMobile ? "ml-0" : sidebarOpen ? "ml-60" : "ml-16"
+      }`}>
         {/* Topbar */}
         <header className="sticky top-0 z-30 flex h-[60px] items-center justify-between border-b border-border px-6 glass-blur">
           <div className="flex items-center gap-4">
