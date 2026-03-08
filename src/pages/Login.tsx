@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { Eye, EyeOff } from "lucide-react";
+import angolaBg from "@/assets/angola-bg.jpg";
 
 export default function Login() {
   const [email, setEmail] = useState("");
