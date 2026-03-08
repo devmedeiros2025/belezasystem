@@ -92,31 +92,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Set up auth state listener FIRST
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (session?.user) {
-        // Use setTimeout to avoid potential deadlocks with Supabase client
-        setTimeout(async () => {
-          const userData = await fetchUserData(session.user);
-          setUsuarioLogado(userData);
-          setLoading(false);
-        }, 0);
-      } else {
-        setUsuarioLogado(null);
-        setLoading(false);
-      }
-    });
+    let isMounted = true;
 
-    // THEN check for existing session
+    // Restore session from storage first
     supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (!isMounted) return;
       if (session?.user) {
         const userData = await fetchUserData(session.user);
-        setUsuarioLogado(userData);
+        if (isMounted) setUsuarioLogado(userData);
       }
-      setLoading(false);
+      if (isMounted) setLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    // Then listen for subsequent auth changes (login/logout)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        if (!isMounted) return;
+        if (event === 'SIGNED_IN' && session?.user) {
+          // Use setTimeout to avoid deadlock with Supabase client internals
+          setTimeout(async () => {
+            if (!isMounted) return;
+            const userData = await fetchUserData(session.user);
+            if (isMounted) setUsuarioLogado(userData);
+          }, 0);
+        } else if (event === 'SIGNED_OUT') {
+          setUsuarioLogado(null);
+        }
+      }
+    );
+
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const login = async (email: string, senha: string): Promise<boolean> => {
