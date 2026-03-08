@@ -1,16 +1,42 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import KanbanBoard from "@/components/KanbanBoard";
 import { agendamentos as agendamentosInit, profissionais } from "@/data/mockData";
 import { ChevronLeft, ChevronRight, X, GripVertical } from "lucide-react";
 import { toast } from "sonner";
+import { startOfWeek, addDays, addWeeks, subWeeks, format, isToday } from "date-fns";
+import { pt } from "date-fns/locale";
 
-const diasSemana = [
-  { nome: "Seg", num: 3 },
-  { nome: "Ter", num: 4 },
-  { nome: "Qua", num: 5 },
-  { nome: "Qui", num: 6 },
-  { nome: "Sex", num: 7 },
-];
+const diasAbrev: Record<string, string> = {
+  "segunda-feira": "Seg",
+  "terça-feira": "Ter",
+  "quarta-feira": "Qua",
+  "quinta-feira": "Qui",
+  "sexta-feira": "Sex",
+};
+
+function getWeekDays(baseDate: Date) {
+  const monday = startOfWeek(baseDate, { weekStartsOn: 1 });
+  return Array.from({ length: 5 }, (_, i) => {
+    const date = addDays(monday, i);
+    const dayName = format(date, "EEEE", { locale: pt });
+    return {
+      nome: diasAbrev[dayName] || format(date, "EEE", { locale: pt }),
+      num: date.getDate(),
+      date,
+      isToday: isToday(date),
+    };
+  });
+}
+
+function formatWeekRange(days: ReturnType<typeof getWeekDays>) {
+  const first = days[0].date;
+  const last = days[days.length - 1].date;
+  const sameMonth = first.getMonth() === last.getMonth();
+  if (sameMonth) {
+    return `${first.getDate()} – ${format(last, "d MMM yyyy", { locale: pt })}`;
+  }
+  return `${format(first, "d MMM", { locale: pt })} – ${format(last, "d MMM yyyy", { locale: pt })}`;
+}
 const horarios = ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00"];
 const views = ["Dia", "Semana", "Mês"] as const;
 
