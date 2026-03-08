@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
@@ -11,14 +11,33 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [nome, setNome] = useState("");
+  const [nomeNegocio, setNomeNegocio] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [isSignup, setIsSignup] = useState(false);
   const [isForgot, setIsForgot] = useState(false);
+  const [estabelecimentoNome, setEstabelecimentoNome] = useState<string | null>(null);
   const { login, usuarioLogado, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
-  // Redirect if already logged in (e.g. after Google OAuth)
+  const slug = searchParams.get("salon");
+
+  // Load establishment name from slug
+  useEffect(() => {
+    if (!slug) return;
+    supabase
+      .from("estabelecimentos")
+      .select("nome")
+      .eq("slug", slug)
+      .eq("ativo", true)
+      .single()
+      .then(({ data }) => {
+        if (data) setEstabelecimentoNome(data.nome);
+      });
+  }, [slug]);
+
+  // Redirect if already logged in
   useEffect(() => {
     if (!authLoading && usuarioLogado) {
       navigate("/dashboard", { replace: true });
@@ -44,6 +63,12 @@ export default function Login() {
     }
 
     if (isSignup) {
+      if (!nomeNegocio.trim()) {
+        toast.error("Informe o nome do seu estabelecimento");
+        setLoading(false);
+        return;
+      }
+
       const { data, error } = await supabase.auth.signUp({
         email,
         password: senha,
@@ -51,17 +76,51 @@ export default function Login() {
       });
       if (error) {
         toast.error(error.message);
-      } else if (data.session) {
-        toast.success("Conta criada com sucesso!");
-        // Navigation handled by useEffect watching usuarioLogado
       } else if (data.user) {
-        toast.success("Conta criada! Verifique seu e-mail para confirmar.");
+        // Create the establishment
+        const slugValue = nomeNegocio
+          .toLowerCase()
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/(^-|-$)/g, "");
+
+        const { error: estabError } = await supabase
+          .from("estabelecimentos")
+          .insert({
+            nome: nomeNegocio,
+            slug: slugValue + "-" + Date.now().toString(36),
+            owner_user_id: data.user.id,
+          });
+
+        if (estabError) {
+          console.error("Erro ao criar estabelecimento:", estabError);
+        }
+
+        // Link profile to establishment
+        const { data: estabData } = await supabase
+          .from("estabelecimentos")
+          .select("id")
+          .eq("owner_user_id", data.user.id)
+          .single();
+
+        if (estabData) {
+          await supabase
+            .from("profiles")
+            .update({ estabelecimento_id: estabData.id })
+            .eq("user_id", data.user.id);
+        }
+
+        if (data.session) {
+          toast.success("Conta e estabelecimento criados com sucesso!");
+        } else {
+          toast.success("Conta criada! Verifique seu e-mail para confirmar.");
+        }
       }
     } else {
       const success = await login(email, senha);
       if (success) {
         toast.success("Login realizado com sucesso!");
-        // Navigation handled by useEffect watching usuarioLogado
       } else {
         toast.error("E-mail ou senha inválidos");
       }
@@ -71,9 +130,11 @@ export default function Login() {
 
   const getTitle = () => {
     if (isForgot) return "Recuperar Senha";
-    if (isSignup) return "Criar Conta Admin";
+    if (isSignup) return "Criar Conta & Estabelecimento";
     return "Entrar no Sistema";
   };
+
+  const displayName = estabelecimentoNome || "BeautyCRM";
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4 relative overflow-hidden">
@@ -85,9 +146,11 @@ export default function Login() {
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-2 mb-4">
             <span className="text-4xl text-primary">✦</span>
-            <h1 className="font-display text-3xl font-bold text-primary">BeautyCRM</h1>
+            <h1 className="font-display text-3xl font-bold text-primary">{displayName}</h1>
           </div>
-          <p className="text-sm uppercase tracking-[0.2em] text-text3">Gestão de Beleza</p>
+          <p className="text-sm uppercase tracking-[0.2em] text-text3">
+            {estabelecimentoNome ? "Área de Acesso" : "Gestão de Beleza"}
+          </p>
         </div>
 
         <div className="rounded-2xl border border-border bg-card p-8 shadow-lg" style={{ boxShadow: '0 4px 24px hsl(var(--shadow) / 0.1)' }}>
@@ -103,17 +166,30 @@ export default function Login() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {isSignup && !isForgot && (
-              <div>
-                <label className="mb-1.5 block text-sm font-medium text-text2">Nome completo</label>
-                <input
-                  type="text"
-                  value={nome}
-                  onChange={(e) => setNome(e.target.value)}
-                  placeholder="Seu nome"
-                  className="w-full rounded-lg border border-border bg-input px-4 py-3 text-sm text-foreground placeholder:text-text3 focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/20"
-                  required
-                />
-              </div>
+              <>
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-text2">Nome do Estabelecimento</label>
+                  <input
+                    type="text"
+                    value={nomeNegocio}
+                    onChange={(e) => setNomeNegocio(e.target.value)}
+                    placeholder="Ex: Luxe Beauty Salon"
+                    className="w-full rounded-lg border border-border bg-input px-4 py-3 text-sm text-foreground placeholder:text-text3 focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/20"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-text2">Seu nome completo</label>
+                  <input
+                    type="text"
+                    value={nome}
+                    onChange={(e) => setNome(e.target.value)}
+                    placeholder="Seu nome"
+                    className="w-full rounded-lg border border-border bg-input px-4 py-3 text-sm text-foreground placeholder:text-text3 focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/20"
+                    required
+                  />
+                </div>
+              </>
             )}
             <div>
               <label className="mb-1.5 block text-sm font-medium text-text2">E-mail</label>
@@ -169,7 +245,7 @@ export default function Login() {
             >
               {loading
                 ? (isForgot ? "Enviando..." : isSignup ? "Criando..." : "Entrando...")
-                : (isForgot ? "Enviar link de recuperação" : isSignup ? "Criar Conta" : "Entrar")}
+                : (isForgot ? "Enviar link de recuperação" : isSignup ? "Criar Conta & Estabelecimento" : "Entrar")}
             </button>
           </form>
 
@@ -218,7 +294,7 @@ export default function Login() {
                 onClick={() => setIsSignup(!isSignup)}
                 className="text-sm text-primary hover:underline"
               >
-                {isSignup ? "Já tenho conta → Entrar" : "Primeiro acesso? Criar conta admin"}
+                {isSignup ? "Já tenho conta → Entrar" : "Primeiro acesso? Criar meu salão"}
               </button>
             )}
           </div>
