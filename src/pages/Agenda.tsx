@@ -1,16 +1,42 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import KanbanBoard from "@/components/KanbanBoard";
 import { agendamentos as agendamentosInit, profissionais } from "@/data/mockData";
 import { ChevronLeft, ChevronRight, X, GripVertical } from "lucide-react";
 import { toast } from "sonner";
+import { startOfWeek, addDays, addWeeks, subWeeks, format, isToday } from "date-fns";
+import { pt } from "date-fns/locale";
 
-const diasSemana = [
-  { nome: "Seg", num: 3 },
-  { nome: "Ter", num: 4 },
-  { nome: "Qua", num: 5 },
-  { nome: "Qui", num: 6 },
-  { nome: "Sex", num: 7 },
-];
+const diasAbrev: Record<string, string> = {
+  "segunda-feira": "Seg",
+  "terça-feira": "Ter",
+  "quarta-feira": "Qua",
+  "quinta-feira": "Qui",
+  "sexta-feira": "Sex",
+};
+
+function getWeekDays(baseDate: Date) {
+  const monday = startOfWeek(baseDate, { weekStartsOn: 1 });
+  return Array.from({ length: 5 }, (_, i) => {
+    const date = addDays(monday, i);
+    const dayName = format(date, "EEEE", { locale: pt });
+    return {
+      nome: diasAbrev[dayName] || format(date, "EEE", { locale: pt }),
+      num: date.getDate(),
+      date,
+      isToday: isToday(date),
+    };
+  });
+}
+
+function formatWeekRange(days: ReturnType<typeof getWeekDays>) {
+  const first = days[0].date;
+  const last = days[days.length - 1].date;
+  const sameMonth = first.getMonth() === last.getMonth();
+  if (sameMonth) {
+    return `${first.getDate()} – ${format(last, "d MMM yyyy", { locale: pt })}`;
+  }
+  return `${format(first, "d MMM", { locale: pt })} – ${format(last, "d MMM yyyy", { locale: pt })}`;
+}
 const horarios = ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00"];
 const views = ["Dia", "Semana", "Mês"] as const;
 
@@ -34,6 +60,14 @@ export default function Agenda() {
   const [items, setItems] = useState([...agendamentosInit]);
   const [dragId, setDragId] = useState<number | null>(null);
   const [dropTarget, setDropTarget] = useState<{ dia: string; hora: string } | null>(null);
+  const [weekBase, setWeekBase] = useState(new Date());
+
+  const diasSemana = useMemo(() => getWeekDays(weekBase), [weekBase]);
+  const weekLabel = useMemo(() => formatWeekRange(diasSemana), [diasSemana]);
+
+  const goToPrevWeek = useCallback(() => setWeekBase(prev => subWeeks(prev, 1)), []);
+  const goToNextWeek = useCallback(() => setWeekBase(prev => addWeeks(prev, 1)), []);
+  const goToCurrentWeek = useCallback(() => setWeekBase(new Date()), []);
 
   const handleDragStart = useCallback((e: React.DragEvent, id: number) => {
     setDragId(id);
@@ -103,9 +137,11 @@ export default function Agenda() {
           ))}
         </div>
         <div className="flex items-center gap-3">
-          <button className="rounded-lg p-2 text-text3 hover:bg-surface2"><ChevronLeft className="h-4 w-4" /></button>
-          <span className="text-sm font-medium text-foreground">3 – 7 Mar 2025</span>
-          <button className="rounded-lg p-2 text-text3 hover:bg-surface2"><ChevronRight className="h-4 w-4" /></button>
+          <button onClick={goToPrevWeek} className="rounded-lg p-2 text-text3 hover:bg-surface2 transition-colors"><ChevronLeft className="h-4 w-4" /></button>
+          <button onClick={goToCurrentWeek} className="text-sm font-medium text-foreground hover:text-primary transition-colors min-w-[160px] text-center">
+            {weekLabel}
+          </button>
+          <button onClick={goToNextWeek} className="rounded-lg p-2 text-text3 hover:bg-surface2 transition-colors"><ChevronRight className="h-4 w-4" /></button>
         </div>
       </div>
 
@@ -124,14 +160,13 @@ export default function Agenda() {
         <div className="min-w-[700px]">
           <div className="grid" style={{ gridTemplateColumns: "70px repeat(5, 1fr)" }}>
             <div className="border-b border-border p-3" />
-            {diasSemana.map((d, i) => {
-              const isToday = i === 0;
+            {diasSemana.map((d) => {
               return (
-                <div key={d.nome} className={`border-b border-l border-border px-3 py-3 text-center ${isToday ? "bg-primary/8" : ""}`}>
-                  <span className={`block text-[11px] uppercase tracking-wider font-medium ${isToday ? "text-primary" : "text-text3"}`}>
+                <div key={d.nome} className={`border-b border-l border-border px-3 py-3 text-center ${d.isToday ? "bg-primary/8" : ""}`}>
+                  <span className={`block text-[11px] uppercase tracking-wider font-medium ${d.isToday ? "text-primary" : "text-text3"}`}>
                     {d.nome}
                   </span>
-                  <span className={`mt-1 inline-flex h-9 w-9 items-center justify-center rounded-full text-lg font-bold ${isToday ? "gold-gradient text-primary-foreground" : "text-foreground"}`}>
+                  <span className={`mt-1 inline-flex h-9 w-9 items-center justify-center rounded-full text-lg font-bold ${d.isToday ? "gold-gradient text-primary-foreground" : "text-foreground"}`}>
                     {d.num}
                   </span>
                 </div>
