@@ -1,5 +1,5 @@
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
-import { TrendingUp, Calendar, Users, Star, CheckCircle, Clock } from "lucide-react";
+import { TrendingUp, Calendar, Users, Star, CheckCircle, Clock, DollarSign, ArrowUpCircle, ArrowDownCircle, Receipt } from "lucide-react";
 import { agendamentos, clientes, profissionais, servicos, receitaSemanal, avaliacoes } from "@/data/mockData";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -356,8 +356,263 @@ function DashboardColaborador() {
   );
 }
 
+function DashboardFinanceiro() {
+  const { usuarioLogado } = useAuth();
+  const { format } = useCurrency();
+
+  const receitaMensal = 18420;
+  const despesasMensal = 9850;
+  const lucroLiquido = receitaMensal - despesasMensal;
+  const ticketMedio = 245;
+
+  const fluxoCaixa = [
+    { mes: "Out", entradas: 14200, saidas: 8100 },
+    { mes: "Nov", entradas: 15800, saidas: 8900 },
+    { mes: "Dez", entradas: 19500, saidas: 11200 },
+    { mes: "Jan", entradas: 16300, saidas: 9400 },
+    { mes: "Fev", entradas: 17100, saidas: 9200 },
+    { mes: "Mar", entradas: 18420, saidas: 9850 },
+  ];
+
+  const despesasCategoria = [
+    { categoria: "Salários", valor: 4200, pct: 42.6 },
+    { categoria: "Produtos", valor: 2100, pct: 21.3 },
+    { categoria: "Aluguel", valor: 1800, pct: 18.3 },
+    { categoria: "Energia/Água", valor: 650, pct: 6.6 },
+    { categoria: "Marketing", valor: 580, pct: 5.9 },
+    { categoria: "Outros", valor: 520, pct: 5.3 },
+  ];
+
+  const contasAReceber = [
+    { cliente: "Ana Paula Souza", valor: 360, vencimento: "10 Mar", status: "pendente" },
+    { cliente: "Mariana Ferreira", valor: 440, vencimento: "08 Mar", status: "atrasado" },
+    { cliente: "Fernanda Ribeiro", valor: 180, vencimento: "15 Mar", status: "pendente" },
+  ];
+
+  const contasAPagar = [
+    { fornecedor: "Distribuidora Beleza", valor: 1200, vencimento: "12 Mar", status: "pendente" },
+    { fornecedor: "Aluguel Sala", valor: 1800, vencimento: "05 Mar", status: "pago" },
+    { fornecedor: "Energia Elétrica", valor: 380, vencimento: "18 Mar", status: "pendente" },
+  ];
+
+  const comissoesProfissionais = profissionais.map(p => ({
+    nome: p.nome,
+    atendimentos: p.atendimentos,
+    receita: p.receita,
+    comissao: Math.round(p.receita * 0.35),
+    pago: p.id % 2 === 0,
+  }));
+
+  const kpis = [
+    { label: "Receita do Mês", value: format(receitaMensal), change: "+12,4%", positive: true, icon: TrendingUp, color: "text-green-custom" },
+    { label: "Despesas do Mês", value: format(despesasMensal), change: "+3,2%", positive: false, icon: ArrowDownCircle, color: "text-destructive" },
+    { label: "Lucro Líquido", value: format(lucroLiquido), change: "+18,7%", positive: true, icon: DollarSign, color: "text-primary" },
+    { label: "Ticket Médio", value: format(ticketMedio), change: "+5,1%", positive: true, icon: Receipt, color: "text-teal-custom" },
+  ];
+
+  return (
+    <div className="space-y-6">
+      {/* Welcome */}
+      <div className="rounded-xl border border-border bg-card p-6 card-hover">
+        <h2 className="font-display text-2xl font-bold text-foreground">
+          Painel Financeiro 💰
+        </h2>
+        <p className="text-text2 mt-1">Olá, {usuarioLogado?.nome.split(" ")[0]}! Aqui está o resumo financeiro do mês</p>
+      </div>
+
+      {/* KPIs */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {kpis.map((kpi, i) => (
+          <div
+            key={kpi.label}
+            className={`rounded-xl border border-border bg-card p-5 card-hover animate-fadeInUp stagger-${i + 1}`}
+            style={{ opacity: 0 }}
+          >
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-sm text-text2">{kpi.label}</p>
+                <p className="mt-1 font-display text-3xl font-bold text-foreground">{kpi.value}</p>
+                <p className={`mt-1 text-sm font-medium ${kpi.positive ? "text-green-custom" : "text-destructive"}`}>
+                  {kpi.change}
+                </p>
+              </div>
+              <div className={`rounded-lg bg-surface2 p-2.5 ${kpi.color}`}>
+                <kpi.icon className="h-5 w-5" />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Fluxo de Caixa Chart + Despesas */}
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+        <div className="col-span-1 xl:col-span-2 rounded-xl border border-border bg-card p-5 card-hover">
+          <h3 className="font-display text-lg font-semibold text-foreground mb-4">Fluxo de Caixa - 6 Meses</h3>
+          <ResponsiveContainer width="100%" height={240}>
+            <BarChart data={fluxoCaixa}>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(280 20% 90%)" />
+              <XAxis dataKey="mes" tick={{ fill: "hsl(280 15% 60%)", fontSize: 12 }} axisLine={false} />
+              <YAxis tick={{ fill: "hsl(280 15% 60%)", fontSize: 11 }} axisLine={false} />
+              <Tooltip contentStyle={{ backgroundColor: "hsl(0 0% 100%)", border: "1px solid hsl(280 20% 90%)", borderRadius: 8 }} />
+              <Bar dataKey="entradas" name="Entradas" fill="hsl(160 50% 42%)" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="saidas" name="Saídas" fill="hsl(0 70% 55%)" radius={[4, 4, 0, 0]} opacity={0.7} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+
+        <div className="rounded-xl border border-border bg-card p-5 card-hover">
+          <h3 className="font-display text-lg font-semibold text-foreground mb-4">Despesas por Categoria</h3>
+          <div className="space-y-3">
+            {despesasCategoria.map((d) => (
+              <div key={d.categoria}>
+                <div className="flex items-center justify-between text-sm mb-1">
+                  <span className="text-text2">{d.categoria}</span>
+                  <span className="text-foreground font-medium">{format(d.valor)} <span className="text-text3 text-xs">({d.pct}%)</span></span>
+                </div>
+                <div className="h-2 rounded-full bg-surface2">
+                  <div className="h-full rounded-full bg-primary/70" style={{ width: `${d.pct}%` }} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Contas a Receber + Contas a Pagar */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <div className="rounded-xl border border-border bg-card p-5 card-hover">
+          <h3 className="font-display text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+            <ArrowUpCircle className="h-5 w-5 text-green-custom" />
+            Contas a Receber
+          </h3>
+          <div className="space-y-3">
+            {contasAReceber.map((c, i) => (
+              <div key={i} className="flex items-center justify-between rounded-lg bg-surface2 p-3">
+                <div>
+                  <p className="text-sm font-medium text-foreground">{c.cliente}</p>
+                  <p className="text-xs text-text3">Venc: {c.vencimento}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm font-semibold text-foreground">{format(c.valor)}</p>
+                  <span className={`text-xs font-medium ${c.status === "atrasado" ? "text-destructive" : "text-primary"}`}>
+                    {c.status === "atrasado" ? "Atrasado" : "Pendente"}
+                  </span>
+                </div>
+              </div>
+            ))}
+            <p className="text-sm font-semibold text-green-custom text-right">
+              Total: {format(contasAReceber.reduce((s, c) => s + c.valor, 0))}
+            </p>
+          </div>
+        </div>
+
+        <div className="rounded-xl border border-border bg-card p-5 card-hover">
+          <h3 className="font-display text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+            <ArrowDownCircle className="h-5 w-5 text-destructive" />
+            Contas a Pagar
+          </h3>
+          <div className="space-y-3">
+            {contasAPagar.map((c, i) => (
+              <div key={i} className="flex items-center justify-between rounded-lg bg-surface2 p-3">
+                <div>
+                  <p className="text-sm font-medium text-foreground">{c.fornecedor}</p>
+                  <p className="text-xs text-text3">Venc: {c.vencimento}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm font-semibold text-foreground">{format(c.valor)}</p>
+                  <span className={`text-xs font-medium ${c.status === "pago" ? "text-green-custom" : "text-primary"}`}>
+                    {c.status === "pago" ? "Pago ✓" : "Pendente"}
+                  </span>
+                </div>
+              </div>
+            ))}
+            <p className="text-sm font-semibold text-destructive text-right">
+              Total: {format(contasAPagar.reduce((s, c) => s + c.valor, 0))}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Comissões */}
+      <div className="rounded-xl border border-border bg-card p-5 card-hover">
+        <h3 className="font-display text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+          <Users className="h-5 w-5 text-primary" />
+          Comissões dos Profissionais
+        </h3>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-border text-left text-text3">
+                <th className="pb-3 font-medium">Profissional</th>
+                <th className="pb-3 font-medium">Atendimentos</th>
+                <th className="pb-3 font-medium">Receita Gerada</th>
+                <th className="pb-3 font-medium">Comissão (35%)</th>
+                <th className="pb-3 font-medium">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {comissoesProfissionais.map((c) => (
+                <tr key={c.nome} className="border-b border-border/50">
+                  <td className="py-3 font-medium text-foreground">{c.nome}</td>
+                  <td className="py-3 text-text2">{c.atendimentos}</td>
+                  <td className="py-3 text-text2">{format(c.receita)}</td>
+                  <td className="py-3 font-semibold text-primary">{format(c.comissao)}</td>
+                  <td className="py-3">
+                    <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${c.pago ? "bg-green-custom/15 text-green-custom" : "bg-primary/15 text-primary"}`}>
+                      {c.pago ? "Pago" : "Pendente"}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Receita por Semana + Serviços Populares */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <div className="rounded-xl border border-border bg-card p-5 card-hover">
+          <h3 className="font-display text-base font-semibold text-foreground mb-4">Receita Semanal</h3>
+          <ResponsiveContainer width="100%" height={180}>
+            <BarChart data={receitaSemanal}>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(280 20% 90%)" />
+              <XAxis dataKey="semana" tick={{ fill: "hsl(280 15% 60%)", fontSize: 12 }} axisLine={false} />
+              <YAxis hide />
+              <Tooltip contentStyle={{ backgroundColor: "hsl(0 0% 100%)", border: "1px solid hsl(280 20% 90%)", borderRadius: 8 }} />
+              <Bar dataKey="valor" fill="hsl(35 50% 50%)" radius={[6, 6, 0, 0]} />
+              <Bar dataKey="meta" fill="hsl(183 50% 40%)" radius={[6, 6, 0, 0]} opacity={0.3} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+
+        <div className="rounded-xl border border-border bg-card p-5 card-hover">
+          <h3 className="font-display text-base font-semibold text-foreground mb-4">Serviços por Receita</h3>
+          <div className="space-y-3">
+            {servicos.slice(0, 6).map((s, i) => (
+              <div key={s.id}>
+                <div className="flex items-center justify-between text-sm mb-1">
+                  <span className="text-text2">{i + 1}. {s.nome}</span>
+                  <span className="text-foreground font-medium">{format(s.preco * s.contagem)}</span>
+                </div>
+                <div className="h-1.5 rounded-full bg-surface2">
+                  <div className="h-full rounded-full gold-gradient" style={{ width: `${(s.contagem / 142) * 100}%` }} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Kanban */}
+      <KanbanBoard />
+    </div>
+  );
+}
+
 export default function Dashboard() {
   const { perfil } = useAuth();
   
-  return perfil === "Colaborador" ? <DashboardColaborador /> : <DashboardCompleto />;
+  if (perfil === "Colaborador") return <DashboardColaborador />;
+  if (perfil === "Financeiro") return <DashboardFinanceiro />;
+  return <DashboardCompleto />;
 }
