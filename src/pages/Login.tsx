@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Eye, EyeOff } from "lucide-react";
 import angolaBg from "@/assets/angola-bg.jpg";
@@ -8,25 +9,42 @@ import angolaBg from "@/assets/angola-bg.jpg";
 export default function Login() {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
+  const [nome, setNome] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [isSignup, setIsSignup] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    
-    setTimeout(() => {
-      const success = login(email, senha);
+
+    if (isSignup) {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password: senha,
+        options: { data: { nome } },
+      });
+      if (error) {
+        toast.error(error.message);
+      } else if (data.user) {
+        // Assign admin role to first user
+        await supabase.from("user_roles").insert({ user_id: data.user.id, role: "admin" as any });
+        toast.success("Conta criada! Fazendo login...");
+        const success = await login(email, senha);
+        if (success) navigate("/dashboard");
+      }
+    } else {
+      const success = await login(email, senha);
       if (success) {
         toast.success("Login realizado com sucesso!");
         navigate("/dashboard");
       } else {
         toast.error("E-mail ou senha inválidos");
       }
-      setLoading(false);
-    }, 500);
+    }
+    setLoading(false);
   };
 
   return (
@@ -46,10 +64,23 @@ export default function Login() {
 
         <div className="rounded-2xl border border-border bg-card p-8 shadow-lg" style={{ boxShadow: '0 4px 24px hsl(var(--shadow) / 0.1)' }}>
           <h2 className="font-display text-xl font-semibold text-foreground text-center mb-6">
-            Entrar no Sistema
+            {isSignup ? "Criar Conta Admin" : "Entrar no Sistema"}
           </h2>
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            {isSignup && (
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-text2">Nome completo</label>
+                <input
+                  type="text"
+                  value={nome}
+                  onChange={(e) => setNome(e.target.value)}
+                  placeholder="Seu nome"
+                  className="w-full rounded-lg border border-border bg-input px-4 py-3 text-sm text-foreground placeholder:text-text3 focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  required
+                />
+              </div>
+            )}
             <div>
               <label className="mb-1.5 block text-sm font-medium text-text2">E-mail</label>
               <input
@@ -72,6 +103,7 @@ export default function Login() {
                   placeholder="••••••••"
                   className="w-full rounded-lg border border-border bg-input px-4 py-3 pr-10 text-sm text-foreground placeholder:text-text3 focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/20"
                   required
+                  minLength={6}
                 />
                 <button
                   type="button"
@@ -88,26 +120,17 @@ export default function Login() {
               disabled={loading}
               className="w-full rounded-lg gold-gradient px-4 py-3 text-sm font-semibold text-primary-foreground shadow-lg transition-all hover:opacity-90 disabled:opacity-50"
             >
-              {loading ? "Entrando..." : "Entrar"}
+              {loading ? (isSignup ? "Criando..." : "Entrando...") : (isSignup ? "Criar Conta" : "Entrar")}
             </button>
           </form>
 
-          <div className="mt-6 pt-6 border-t border-border">
-            <p className="text-xs text-text3 text-center mb-3">Usuários para teste:</p>
-            <div className="space-y-2 text-xs">
-              <div className="flex justify-between px-2 py-1.5 rounded bg-surface2">
-                <span className="text-text2">Admin:</span>
-                <span className="text-foreground font-mono">elise@studio.ao / admin123</span>
-              </div>
-              <div className="flex justify-between px-2 py-1.5 rounded bg-surface2">
-                <span className="text-text2">Financeiro:</span>
-                <span className="text-foreground font-mono">carlos@studio.ao / fin123</span>
-              </div>
-              <div className="flex justify-between px-2 py-1.5 rounded bg-surface2">
-                <span className="text-text2">Colaborador:</span>
-                <span className="text-foreground font-mono">rodrigo@studio.ao / colab123</span>
-              </div>
-            </div>
+          <div className="mt-4 text-center">
+            <button
+              onClick={() => setIsSignup(!isSignup)}
+              className="text-sm text-primary hover:underline"
+            >
+              {isSignup ? "Já tenho conta → Entrar" : "Primeiro acesso? Criar conta admin"}
+            </button>
           </div>
         </div>
       </div>

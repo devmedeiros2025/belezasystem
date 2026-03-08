@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import KanbanBoard from "@/components/KanbanBoard";
 import { useAuth, Usuario, Perfil } from "@/contexts/AuthContext";
 import { profissionais } from "@/data/mockData";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Plus, Pencil, Trash2, Lock, Unlock, Check, X, RefreshCw, Clock } from "lucide-react";
 import {
@@ -36,25 +37,73 @@ const activityLog = [
   { time: "ontem 14:30", user: "Patrícia Nunes", action: "atualizou perfil de cliente Mariana Ferreira" },
 ];
 
+type AppRole = "admin" | "financeiro" | "colaborador";
+
+const perfilToRole: Record<Perfil, AppRole> = {
+  Administrador: "admin",
+  Financeiro: "financeiro",
+  Colaborador: "colaborador",
+};
+
 function generatePassword() {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
   return Array.from({ length: 8 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
 }
 
+interface AdminUser {
+  id: string;
+  nome: string;
+  email: string;
+  perfil: Perfil;
+  ativo: boolean;
+  profissionalId?: string;
+  criadoEm?: string;
+}
+
 export default function Admin() {
-  const { usuarioLogado, usuariosList, setUsuariosList } = useAuth();
+  const { usuarioLogado, criarUsuario } = useAuth();
+  const [usuariosList, setUsuariosList] = useState<AdminUser[]>([]);
   const [showModal, setShowModal] = useState(false);
-  const [editingUser, setEditingUser] = useState<Usuario | null>(null);
-  const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
+  const [editingUser, setEditingUser] = useState<AdminUser | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const [loadingUsers, setLoadingUsers] = useState(true);
 
   const [form, setForm] = useState({
     nome: "",
     email: "",
     senha: "",
     perfil: "Colaborador" as Perfil,
-    profissionalId: undefined as number | undefined,
+    profissionalId: undefined as string | undefined,
     ativo: true,
   });
+
+  // Fetch users from profiles + roles
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const fetchUsers = async () => {
+    setLoadingUsers(true);
+    const { data: profiles } = await supabase.from("profiles").select("*");
+    if (profiles) {
+      const users: AdminUser[] = [];
+      for (const p of profiles) {
+        const { data: roleData } = await supabase.rpc("get_user_role", { _user_id: p.user_id });
+        const roleMap: Record<string, Perfil> = { admin: "Administrador", financeiro: "Financeiro", colaborador: "Colaborador" };
+        users.push({
+          id: p.user_id,
+          nome: p.nome,
+          email: p.email || "",
+          perfil: roleMap[roleData as string] || "Colaborador",
+          ativo: p.ativo ?? true,
+          profissionalId: p.profissional_id || undefined,
+          criadoEm: new Date(p.created_at).toLocaleDateString("pt-BR", { month: "short", year: "numeric" }),
+        });
+      }
+      setUsuariosList(users);
+    }
+    setLoadingUsers(false);
+  };
 
   const openCreate = () => {
     setEditingUser(null);
@@ -62,7 +111,7 @@ export default function Admin() {
     setShowModal(true);
   };
 
-  const openEdit = (user: Usuario) => {
+  const openEdit = (user: AdminUser) => {
     setEditingUser(user);
     setForm({
       nome: user.nome,
@@ -75,53 +124,64 @@ export default function Admin() {
     setShowModal(true);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!form.nome || !form.email) {
       toast.error("Preencha todos os campos obrigatórios");
       return;
     }
 
     if (editingUser) {
-      // Cannot change own profile from Admin to another
       if (editingUser.id === usuarioLogado?.id && editingUser.perfil === "Administrador" && form.perfil !== "Administrador") {
         toast.error("Você não pode alterar seu próprio perfil de Administrador");
         return;
       }
 
-      setUsuariosList(prev => prev.map(u => 
-        u.id === editingUser.id 
-          ? { ...u, nome: form.nome, email: form.email, perfil: form.perfil, profissionalId: form.profissionalId, ativo: form.ativo, ...(form.senha ? { senha: form.senha } : {}) }
-          : u
-      ));
-      toast.success("Usuário atualizado com sucesso!");
-    } else {
-      const newUser: Usuario = {
-        id: Math.max(...usuariosList.map(u => u.id)) + 1,
+      // Update profile
+      await supabase.from("profiles").update({
         nome: form.nome,
-        email: form.email,
-        senha: form.senha,
-        perfil: form.perfil,
         ativo: form.ativo,
-        criadoEm: new Date().toLocaleDateString("pt-BR", { month: "short", year: "numeric" }),
-        profissionalId: form.profissionalId,
-      };
-      setUsuariosList(prev => [...prev, newUser]);
-      toast.success("Usuário criado com sucesso!");
+        profissional_id: form.profissionalId || null,
+      }).eq("user_id", editingUser.id);
+
+      // Update role
+      const { error: deleteError } = await supabase.from("user_roles").delete().eq("user_id", editingUser.id);
+      if (!deleteError) {
+        await supabase.from("user_roles").insert({
+          user_id: editingUser.id,
+          role: perfilToRole[form.perfil],
+        });
+      }
+
+      toast.success("Usuário atualizado com sucesso!");
+      fetchUsers();
+    } else {
+      if (!form.senha) {
+        toast.error("Senha é obrigatória para novo usuário");
+        return;
+      }
+      const success = await criarUsuario(form.email, form.senha, form.nome, perfilToRole[form.perfil]);
+      if (success) {
+        toast.success("Usuário criado com sucesso!");
+        fetchUsers();
+      } else {
+        toast.error("Erro ao criar usuário");
+      }
     }
     setShowModal(false);
   };
 
-  const toggleActive = (userId: number) => {
+  const toggleActive = async (userId: string) => {
     const user = usuariosList.find(u => u.id === userId);
     if (user?.id === usuarioLogado?.id) {
       toast.error("Você não pode desativar a si mesmo");
       return;
     }
-    setUsuariosList(prev => prev.map(u => u.id === userId ? { ...u, ativo: !u.ativo } : u));
+    await supabase.from("profiles").update({ ativo: !user?.ativo }).eq("user_id", userId);
     toast.success(user?.ativo ? "Usuário desativado" : "Usuário ativado");
+    fetchUsers();
   };
 
-  const handleDelete = (userId: number) => {
+  const handleDelete = (userId: string) => {
     const user = usuariosList.find(u => u.id === userId);
     if (user?.id === usuarioLogado?.id) {
       toast.error("Você não pode remover a si mesmo");
@@ -131,9 +191,9 @@ export default function Admin() {
       toast.error("Administradores só podem ser desativados, não removidos");
       return;
     }
-    setUsuariosList(prev => prev.filter(u => u.id !== userId));
+    // Note: actual user deletion requires service role - just deactivate for now
+    toggleActive(userId);
     setDeleteConfirm(null);
-    toast.success("Usuário removido");
   };
 
   const getPerfilBadge = (perfil: Perfil) => {
@@ -180,7 +240,9 @@ export default function Admin() {
               </tr>
             </thead>
             <tbody>
-              {usuariosList.map((user) => (
+              {loadingUsers ? (
+                <tr><td colSpan={6} className="p-8 text-center text-text3">Carregando...</td></tr>
+              ) : usuariosList.map((user) => (
                 <tr key={user.id} className="border-b border-border/50 hover:bg-surface2/30">
                   <td className="p-4">
                     <div className="flex items-center gap-3">
@@ -289,6 +351,9 @@ export default function Admin() {
         </div>
       </div>
 
+      {/* Kanban */}
+      <KanbanBoard />
+
       {/* Modal */}
       <Dialog open={showModal} onOpenChange={setShowModal}>
         <DialogContent className="bg-card border-border">
@@ -313,28 +378,29 @@ export default function Admin() {
                 value={form.email}
                 onChange={(e) => setForm(f => ({ ...f, email: e.target.value }))}
                 className="w-full rounded-lg border border-border bg-input px-3 py-2.5 text-sm text-foreground focus:border-primary/50 focus:outline-none"
+                disabled={!!editingUser}
               />
             </div>
-            <div>
-              <label className="mb-1.5 block text-sm font-medium text-text2">
-                {editingUser ? "Nova senha (deixe vazio para manter)" : "Senha temporária"}
-              </label>
-              <div className="flex gap-2">
-                <input
-                  value={form.senha}
-                  onChange={(e) => setForm(f => ({ ...f, senha: e.target.value }))}
-                  className="flex-1 rounded-lg border border-border bg-input px-3 py-2.5 text-sm text-foreground font-mono focus:border-primary/50 focus:outline-none"
-                />
-                <button
-                  type="button"
-                  onClick={() => setForm(f => ({ ...f, senha: generatePassword() }))}
-                  className="rounded-lg border border-border px-3 py-2.5 text-text3 hover:bg-surface2 hover:text-foreground transition-colors"
-                  title="Gerar senha"
-                >
-                  <RefreshCw className="h-4 w-4" />
-                </button>
+            {!editingUser && (
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-text2">Senha temporária</label>
+                <div className="flex gap-2">
+                  <input
+                    value={form.senha}
+                    onChange={(e) => setForm(f => ({ ...f, senha: e.target.value }))}
+                    className="flex-1 rounded-lg border border-border bg-input px-3 py-2.5 text-sm text-foreground font-mono focus:border-primary/50 focus:outline-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setForm(f => ({ ...f, senha: generatePassword() }))}
+                    className="rounded-lg border border-border px-3 py-2.5 text-text3 hover:bg-surface2 hover:text-foreground transition-colors"
+                    title="Gerar senha"
+                  >
+                    <RefreshCw className="h-4 w-4" />
+                  </button>
+                </div>
               </div>
-            </div>
+            )}
             <div>
               <label className="mb-1.5 block text-sm font-medium text-text2">Perfil</label>
               <select
@@ -351,7 +417,7 @@ export default function Admin() {
               <label className="mb-1.5 block text-sm font-medium text-text2">Vincular ao profissional (opcional)</label>
               <select
                 value={form.profissionalId || ""}
-                onChange={(e) => setForm(f => ({ ...f, profissionalId: e.target.value ? Number(e.target.value) : undefined }))}
+                onChange={(e) => setForm(f => ({ ...f, profissionalId: e.target.value || undefined }))}
                 className="w-full rounded-lg border border-border bg-input px-3 py-2.5 text-sm text-foreground focus:border-primary/50 focus:outline-none"
               >
                 <option value="">Nenhum</option>
@@ -362,8 +428,7 @@ export default function Admin() {
             </div>
             {editingUser && (
               <div className="text-xs text-text3 bg-surface2 rounded-lg p-3">
-                <p>Criado em: {editingUser.criadoEm}</p>
-                <p>Último acesso: {editingUser.ultimoAcesso || "Nunca"}</p>
+                <p>Criado em: {editingUser.criadoEm || "—"}</p>
               </div>
             )}
           </div>
@@ -376,14 +441,13 @@ export default function Admin() {
             </button>
             <button
               onClick={handleSave}
-              className="rounded-lg gold-gradient px-5 py-2.5 text-sm font-semibold text-primary-foreground"
+              className="rounded-lg gold-gradient px-4 py-2.5 text-sm font-semibold text-primary-foreground"
             >
-              {editingUser ? "Salvar Alterações" : "Criar Usuário"}
+              {editingUser ? "Salvar" : "Criar Usuário"}
             </button>
           </DialogFooter>
         </DialogContent>
-    </Dialog>
-    <KanbanBoard />
+      </Dialog>
     </div>
   );
 }

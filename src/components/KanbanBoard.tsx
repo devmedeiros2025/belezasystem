@@ -1,7 +1,15 @@
 import { useState, useRef, DragEvent } from "react";
 import { Plus, Clock, Eye, CheckCircle2, Loader2, ClipboardCheck, X, MessageSquare, CalendarDays, User, ListTodo } from "lucide-react";
 import { Tarefa, TarefaStatus, tarefasMock } from "@/data/tarefasData";
-import { useAuth, usuarios } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/AuthContext";
+
+// Temporary mock users for Kanban until fully migrated to Supabase
+const mockUsuarios = [
+  { id: "1", nome: "Élise Monteiro", perfil: "Administrador" as const, ativo: true },
+  { id: "2", nome: "Rodrigo Alves", perfil: "Colaborador" as const, ativo: true },
+  { id: "3", nome: "Patrícia Nunes", perfil: "Colaborador" as const, ativo: true },
+  { id: "4", nome: "Carlos Menezes", perfil: "Financeiro" as const, ativo: true },
+];
 import { profissionais } from "@/data/mockData";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -56,7 +64,7 @@ export default function KanbanBoard() {
 
   const saveTarefa = () => {
     if (!form.titulo.trim() || !form.responsavelId) return;
-    const responsavel = usuarios.find(u => u.id === form.responsavelId);
+    const responsavel = mockUsuarios.find(u => u.id === String(form.responsavelId));
     if (editingId) {
       setTarefas(prev => prev.map(t => t.id === editingId ? { ...t, ...form, responsavelNome: responsavel?.nome || "" } : t));
     } else {
@@ -64,7 +72,7 @@ export default function KanbanBoard() {
         ...form,
         id: Date.now(),
         responsavelNome: responsavel?.nome || "",
-        criadoPorId: usuarioLogado?.id || 1,
+        criadoPorId: Number(usuarioLogado?.id) || 1,
         criadoPorNome: usuarioLogado?.nome || "",
       };
       setTarefas(prev => [...prev, nova]);
@@ -90,7 +98,7 @@ export default function KanbanBoard() {
 
   // Filter tasks: collaborators see only their own tasks
   const visibleTarefas = perfil === "Colaborador"
-    ? tarefas.filter(t => t.responsavelId === usuarioLogado?.profissionalId || t.responsavelId === usuarioLogado?.id)
+    ? tarefas.filter(t => String(t.responsavelId) === usuarioLogado?.profissionalId || String(t.responsavelId) === usuarioLogado?.id)
     : tarefas;
 
   return (
@@ -292,8 +300,8 @@ export default function KanbanBoard() {
               <Select value={String(form.responsavelId || "")} onValueChange={v => setForm(p => ({ ...p, responsavelId: Number(v) }))}>
                 <SelectTrigger className="mt-1"><SelectValue placeholder="Selecione..." /></SelectTrigger>
                 <SelectContent>
-                  {usuarios.filter(u => u.ativo).map(u => (
-                    <SelectItem key={u.id} value={String(u.id)}>{u.nome} — {u.perfil}</SelectItem>
+                  {mockUsuarios.filter(u => u.ativo).map(u => (
+                    <SelectItem key={u.id} value={u.id}>{u.nome} — {u.perfil}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
