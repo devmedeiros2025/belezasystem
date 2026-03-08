@@ -348,9 +348,11 @@ function DashboardColaborador() {
           </div>
         </div>
       </div>
+
+      {/* Kanban */}
+      <KanbanBoard />
     </div>
   );
-}
 
 export default function Dashboard() {
   const { perfil } = useAuth();
