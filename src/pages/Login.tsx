@@ -15,8 +15,15 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [isSignup, setIsSignup] = useState(false);
   const [isForgot, setIsForgot] = useState(false);
-  const { login } = useAuth();
+  const { login, usuarioLogado, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+
+  // Redirect if already logged in (e.g. after Google OAuth)
+  useEffect(() => {
+    if (!authLoading && usuarioLogado) {
+      navigate("/dashboard", { replace: true });
+    }
+  }, [authLoading, usuarioLogado, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
