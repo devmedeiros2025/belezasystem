@@ -3,7 +3,11 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { CurrencyProvider } from "@/hooks/useCurrency";
 import Layout from "@/components/Layout";
+import ProtectedRoute from "@/components/ProtectedRoute";
+import Login from "@/pages/Login";
 import Dashboard from "@/pages/Dashboard";
 import Agenda from "@/pages/Agenda";
 import Clientes from "@/pages/Clientes";
@@ -16,34 +20,41 @@ import Estoque from "@/pages/Estoque";
 import Fidelidade from "@/pages/Fidelidade";
 import Avaliacoes from "@/pages/Avaliacoes";
 import Configuracoes from "@/pages/Configuracoes";
+import Admin from "@/pages/Admin";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
-          <Route path="/dashboard" element={<Layout><Dashboard /></Layout>} />
-          <Route path="/agenda" element={<Layout><Agenda /></Layout>} />
-          <Route path="/clientes" element={<Layout><Clientes /></Layout>} />
-          <Route path="/clientes/:id" element={<Layout><ClientePerfil /></Layout>} />
-          <Route path="/mensagens" element={<Layout><Mensagens /></Layout>} />
-          <Route path="/servicos" element={<Layout><Servicos /></Layout>} />
-          <Route path="/profissionais" element={<Layout><Profissionais /></Layout>} />
-          <Route path="/financeiro" element={<Layout><Financeiro /></Layout>} />
-          <Route path="/estoque" element={<Layout><Estoque /></Layout>} />
-          <Route path="/fidelidade" element={<Layout><Fidelidade /></Layout>} />
-          <Route path="/avaliacoes" element={<Layout><Avaliacoes /></Layout>} />
-          <Route path="/configuracoes" element={<Layout><Configuracoes /></Layout>} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
+    <AuthProvider>
+      <CurrencyProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/dashboard" element={<ProtectedRoute><Layout><Dashboard /></Layout></ProtectedRoute>} />
+              <Route path="/agenda" element={<ProtectedRoute><Layout><Agenda /></Layout></ProtectedRoute>} />
+              <Route path="/clientes" element={<ProtectedRoute><Layout><Clientes /></Layout></ProtectedRoute>} />
+              <Route path="/clientes/:id" element={<ProtectedRoute><Layout><ClientePerfil /></Layout></ProtectedRoute>} />
+              <Route path="/mensagens" element={<ProtectedRoute><Layout><Mensagens /></Layout></ProtectedRoute>} />
+              <Route path="/servicos" element={<ProtectedRoute><Layout><Servicos /></Layout></ProtectedRoute>} />
+              <Route path="/profissionais" element={<ProtectedRoute><Layout><Profissionais /></Layout></ProtectedRoute>} />
+              <Route path="/financeiro" element={<ProtectedRoute><Layout><Financeiro /></Layout></ProtectedRoute>} />
+              <Route path="/estoque" element={<ProtectedRoute><Layout><Estoque /></Layout></ProtectedRoute>} />
+              <Route path="/fidelidade" element={<ProtectedRoute><Layout><Fidelidade /></Layout></ProtectedRoute>} />
+              <Route path="/avaliacoes" element={<ProtectedRoute><Layout><Avaliacoes /></Layout></ProtectedRoute>} />
+              <Route path="/configuracoes" element={<ProtectedRoute allowedProfiles={["Administrador"]}><Layout><Configuracoes /></Layout></ProtectedRoute>} />
+              <Route path="/admin" element={<ProtectedRoute allowedProfiles={["Administrador"]}><Layout><Admin /></Layout></ProtectedRoute>} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </CurrencyProvider>
+    </AuthProvider>
   </QueryClientProvider>
 );
 

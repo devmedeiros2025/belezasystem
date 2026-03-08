@@ -2,14 +2,16 @@ import { estoque } from "@/data/mockData";
 import { AlertTriangle, Package, Plus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { useCurrency } from "@/hooks/useCurrency";
 
 const statusStyle: Record<string, string> = {
   Normal: "badge-active",
-  Baixo: "bg-primary/20 text-primary border border-primary/30",
+  Baixo: "bg-primary/12 text-primary border border-primary/20",
   "Crítico": "badge-risk",
 };
 
 export default function Estoque() {
+  const { format } = useCurrency();
   const criticos = estoque.filter(e => e.status === "Crítico");
   const baixos = estoque.filter(e => e.status === "Baixo");
   const [showModal, setShowModal] = useState(false);
@@ -49,7 +51,7 @@ export default function Estoque() {
                 <td className="p-4 text-text2 hidden md:table-cell">{e.categoria}</td>
                 <td className="p-4 text-foreground font-semibold">{e.estoqueAtual}</td>
                 <td className="p-4 text-text3 hidden md:table-cell">{e.minimo}</td>
-                <td className="p-4 text-text2 hidden lg:table-cell">R$ {e.custoUnit}</td>
+                <td className="p-4 text-text2 hidden lg:table-cell">{format(e.custoUnit)}</td>
                 <td className="p-4 text-text2 hidden lg:table-cell">{e.fornecedor}</td>
                 <td className="p-4"><span className={`inline-block rounded-full px-2.5 py-1 text-[11px] font-medium ${statusStyle[e.status]}`}>{e.status}</span></td>
               </tr>
@@ -59,19 +61,19 @@ export default function Estoque() {
       </div>
 
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/60 backdrop-blur-sm p-4" onClick={() => setShowModal(false)}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/20 backdrop-blur-sm p-4" onClick={() => setShowModal(false)}>
           <div className="w-full max-w-md rounded-2xl border border-border bg-card p-6" onClick={e => e.stopPropagation()}>
             <h3 className="font-display text-xl font-semibold text-foreground mb-5">Entrada de Estoque</h3>
             <div className="space-y-4">
-              <div><label className="mb-1.5 block text-sm text-text2">Produto</label><select className="w-full rounded-lg border border-border bg-surface2 px-3 py-2.5 text-sm text-foreground focus:outline-none">{estoque.map(e => <option key={e.id}>{e.produto}</option>)}</select></div>
+              <div><label className="mb-1.5 block text-sm text-text2">Produto</label><select className="w-full rounded-lg border border-border bg-input px-3 py-2.5 text-sm text-foreground focus:outline-none">{estoque.map(e => <option key={e.id}>{e.produto}</option>)}</select></div>
               <div className="grid grid-cols-2 gap-3">
-                <div><label className="mb-1.5 block text-sm text-text2">Quantidade</label><input type="number" defaultValue={10} className="w-full rounded-lg border border-border bg-surface2 px-3 py-2.5 text-sm text-foreground focus:outline-none" /></div>
-                <div><label className="mb-1.5 block text-sm text-text2">Custo Unit.</label><input type="number" defaultValue={45} className="w-full rounded-lg border border-border bg-surface2 px-3 py-2.5 text-sm text-foreground focus:outline-none" /></div>
+                <div><label className="mb-1.5 block text-sm text-text2">Quantidade</label><input type="number" defaultValue={10} className="w-full rounded-lg border border-border bg-input px-3 py-2.5 text-sm text-foreground focus:outline-none" /></div>
+                <div><label className="mb-1.5 block text-sm text-text2">Custo Unit.</label><input type="number" defaultValue={45} className="w-full rounded-lg border border-border bg-input px-3 py-2.5 text-sm text-foreground focus:outline-none" /></div>
               </div>
-              <div><label className="mb-1.5 block text-sm text-text2">Fornecedor</label><input className="w-full rounded-lg border border-border bg-surface2 px-3 py-2.5 text-sm text-foreground focus:outline-none" /></div>
+              <div><label className="mb-1.5 block text-sm text-text2">Fornecedor</label><input className="w-full rounded-lg border border-border bg-input px-3 py-2.5 text-sm text-foreground focus:outline-none" /></div>
               <div className="grid grid-cols-2 gap-3">
-                <div><label className="mb-1.5 block text-sm text-text2">Validade</label><input type="date" className="w-full rounded-lg border border-border bg-surface2 px-3 py-2.5 text-sm text-foreground focus:outline-none" /></div>
-                <div><label className="mb-1.5 block text-sm text-text2">Nº Nota Fiscal</label><input className="w-full rounded-lg border border-border bg-surface2 px-3 py-2.5 text-sm text-foreground focus:outline-none" /></div>
+                <div><label className="mb-1.5 block text-sm text-text2">Validade</label><input type="date" className="w-full rounded-lg border border-border bg-input px-3 py-2.5 text-sm text-foreground focus:outline-none" /></div>
+                <div><label className="mb-1.5 block text-sm text-text2">Nº Nota Fiscal</label><input className="w-full rounded-lg border border-border bg-input px-3 py-2.5 text-sm text-foreground focus:outline-none" /></div>
               </div>
             </div>
             <div className="mt-6 flex gap-3 justify-end">

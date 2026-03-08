@@ -6,57 +6,58 @@
 
 @layer base {
   :root {
-    --background: 270 18% 5%;
-    --foreground: 270 60% 95%;
+    --background: 30 20% 97%;
+    --foreground: 320 30% 10%;
 
-    --card: 270 18% 8%;
-    --card-foreground: 270 60% 95%;
+    --card: 0 0% 100%;
+    --card-foreground: 320 30% 10%;
 
-    --popover: 270 18% 8%;
-    --popover-foreground: 270 60% 95%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 320 30% 10%;
 
-    --primary: 38 50% 61%;
-    --primary-foreground: 270 18% 5%;
+    --primary: 35 50% 50%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 270 22% 12%;
-    --secondary-foreground: 270 60% 95%;
+    --secondary: 30 15% 94%;
+    --secondary-foreground: 320 30% 10%;
 
-    --muted: 270 22% 12%;
-    --muted-foreground: 270 20% 48%;
+    --muted: 30 15% 94%;
+    --muted-foreground: 280 15% 45%;
 
-    --accent: 270 22% 16%;
-    --accent-foreground: 270 60% 95%;
+    --accent: 30 15% 90%;
+    --accent-foreground: 320 30% 10%;
 
     --destructive: 0 84% 60%;
-    --destructive-foreground: 270 60% 95%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 270 22% 20%;
-    --input: 270 22% 16%;
-    --ring: 38 50% 61%;
+    --border: 280 20% 90%;
+    --input: 30 20% 97%;
+    --ring: 35 50% 50%;
 
     --radius: 0.75rem;
 
-    --sidebar-background: 270 18% 8%;
-    --sidebar-foreground: 270 60% 95%;
-    --sidebar-primary: 38 50% 61%;
-    --sidebar-primary-foreground: 270 18% 5%;
-    --sidebar-accent: 270 22% 16%;
-    --sidebar-accent-foreground: 270 60% 95%;
-    --sidebar-border: 270 22% 20%;
-    --sidebar-ring: 38 50% 61%;
+    --sidebar-background: 30 25% 98%;
+    --sidebar-foreground: 320 30% 10%;
+    --sidebar-primary: 35 50% 50%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 30 15% 94%;
+    --sidebar-accent-foreground: 320 30% 10%;
+    --sidebar-border: 280 20% 90%;
+    --sidebar-ring: 35 50% 50%;
 
-    /* Custom tokens */
-    --surface: 270 18% 8%;
-    --surface2: 270 22% 12%;
-    --surface3: 270 22% 16%;
-    --gold: 38 50% 61%;
-    --gold-light: 38 55% 75%;
-    --rose: 345 55% 65%;
-    --teal: 183 50% 60%;
-    --purple: 270 35% 66%;
-    --green: 150 40% 63%;
-    --text2: 270 20% 73%;
-    --text3: 270 20% 48%;
+    /* Custom tokens - Light theme */
+    --surface: 0 0% 100%;
+    --surface2: 30 15% 94%;
+    --surface3: 30 12% 90%;
+    --gold: 35 50% 50%;
+    --gold-light: 35 55% 62%;
+    --rose: 350 55% 57%;
+    --teal: 183 50% 40%;
+    --purple: 270 40% 55%;
+    --green: 150 50% 40%;
+    --text2: 280 20% 35%;
+    --text3: 280 15% 60%;
+    --shadow: 280 30% 50%;
 
     font-family: 'DM Sans', sans-serif;
   }
@@ -86,15 +87,16 @@
   }
 
   .glass-blur {
-    @apply backdrop-blur-xl bg-card/80;
+    @apply backdrop-blur-xl bg-white/90;
   }
 
   .card-hover {
-    @apply transition-all duration-300 hover:border-primary/40 hover:shadow-[0_0_20px_-5px_hsl(38_50%_61%/0.15)];
+    @apply transition-all duration-300 hover:border-primary/40 hover:shadow-lg;
+    box-shadow: 0 2px 12px hsl(var(--shadow) / 0.08);
   }
 
   .gold-gradient {
-    background: linear-gradient(135deg, hsl(38 50% 61%), hsl(38 55% 75%));
+    background: linear-gradient(135deg, hsl(35 50% 50%), hsl(35 55% 62%));
   }
 
   .gold-text {
@@ -102,11 +104,11 @@
   }
 
   .badge-vip {
-    @apply bg-primary/20 text-primary border border-primary/30;
+    @apply bg-primary/12 text-primary border border-primary/20;
   }
 
   .badge-active {
-    @apply bg-green-custom/20 text-green-custom border border-green-custom/30;
+    @apply bg-green-custom/12 text-green-custom border border-green-custom/20;
   }
 
   .badge-inactive {
@@ -114,7 +116,19 @@
   }
 
   .badge-risk {
-    @apply bg-rose-custom/20 text-rose-custom border border-rose-custom/30;
+    @apply bg-rose-custom/12 text-rose-custom border border-rose-custom/20;
+  }
+
+  .badge-admin {
+    @apply bg-primary/12 text-primary border border-primary/20;
+  }
+
+  .badge-financeiro {
+    @apply bg-green-custom/12 text-green-custom border border-green-custom/20;
+  }
+
+  .badge-colaborador {
+    @apply bg-purple-custom/12 text-purple-custom border border-purple-custom/20;
   }
 }
 

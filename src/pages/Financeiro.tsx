@@ -1,13 +1,7 @@
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, PieChart, Pie, Cell } from "recharts";
 import { receitaMensal, extrato } from "@/data/mockData";
 import { TrendingUp, TrendingDown, DollarSign } from "lucide-react";
-
-const kpis = [
-  { label: "Receita Bruta", value: "R$ 18.420", icon: TrendingUp, color: "text-green-custom" },
-  { label: "Despesas", value: "R$ 8.900", icon: TrendingDown, color: "text-destructive" },
-  { label: "Lucro Líquido", value: "R$ 9.520", icon: DollarSign, color: "text-primary" },
-  { label: "Ticket Médio", value: "R$ 147", icon: DollarSign, color: "text-teal-custom" },
-];
+import { useCurrency } from "@/hooks/useCurrency";
 
 const servicoBreakdown = [
   { name: "Coloração", value: 35 },
@@ -16,7 +10,7 @@ const servicoBreakdown = [
   { name: "Manicure", value: 12 },
   { name: "Outros", value: 10 },
 ];
-const COLORS = ["hsl(38 50% 61%)", "hsl(183 50% 60%)", "hsl(345 55% 65%)", "hsl(270 35% 66%)", "hsl(150 40% 63%)"];
+const COLORS = ["hsl(35 50% 50%)", "hsl(183 50% 40%)", "hsl(350 55% 57%)", "hsl(270 40% 55%)", "hsl(150 50% 40%)"];
 
 const pagamentos = [
   { tipo: "PIX", valor: 7200, pct: 39 },
@@ -26,6 +20,15 @@ const pagamentos = [
 ];
 
 export default function Financeiro() {
+  const { format } = useCurrency();
+
+  const kpis = [
+    { label: "Receita Bruta", value: format(18420), icon: TrendingUp, color: "text-green-custom" },
+    { label: "Despesas", value: format(8900), icon: TrendingDown, color: "text-destructive" },
+    { label: "Lucro Líquido", value: format(9520), icon: DollarSign, color: "text-primary" },
+    { label: "Ticket Médio", value: format(147), icon: DollarSign, color: "text-teal-custom" },
+  ];
+
   return (
     <div className="space-y-6">
       {/* KPIs */}
@@ -46,13 +49,13 @@ export default function Financeiro() {
           <h3 className="font-display text-base font-semibold text-foreground mb-4">Receita vs Despesas vs Lucro</h3>
           <ResponsiveContainer width="100%" height={250}>
             <BarChart data={receitaMensal}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(270 22% 20%)" />
-              <XAxis dataKey="mes" tick={{ fill: "hsl(270 20% 48%)", fontSize: 12 }} axisLine={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(280 20% 90%)" />
+              <XAxis dataKey="mes" tick={{ fill: "hsl(280 15% 60%)", fontSize: 12 }} axisLine={false} />
               <YAxis hide />
-              <Tooltip contentStyle={{ backgroundColor: "hsl(270 18% 8%)", border: "1px solid hsl(270 22% 20%)", borderRadius: 8, color: "hsl(270 60% 95%)" }} />
-              <Bar dataKey="receita" fill="hsl(38 50% 61%)" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="despesas" fill="hsl(345 55% 65%)" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="lucro" fill="hsl(150 40% 63%)" radius={[4, 4, 0, 0]} />
+              <Tooltip contentStyle={{ backgroundColor: "hsl(0 0% 100%)", border: "1px solid hsl(280 20% 90%)", borderRadius: 8, color: "hsl(320 30% 10%)" }} />
+              <Bar dataKey="receita" fill="hsl(35 50% 50%)" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="despesas" fill="hsl(350 55% 57%)" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="lucro" fill="hsl(150 50% 40%)" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -65,7 +68,7 @@ export default function Financeiro() {
                 <Pie data={servicoBreakdown} cx="50%" cy="50%" innerRadius={60} outerRadius={100} dataKey="value" paddingAngle={3}>
                   {servicoBreakdown.map((_, i) => <Cell key={i} fill={COLORS[i]} />)}
                 </Pie>
-                <Tooltip contentStyle={{ backgroundColor: "hsl(270 18% 8%)", border: "1px solid hsl(270 22% 20%)", borderRadius: 8, color: "hsl(270 60% 95%)" }} />
+                <Tooltip contentStyle={{ backgroundColor: "hsl(0 0% 100%)", border: "1px solid hsl(280 20% 90%)", borderRadius: 8, color: "hsl(320 30% 10%)" }} />
               </PieChart>
             </ResponsiveContainer>
           </div>
@@ -86,7 +89,7 @@ export default function Financeiro() {
           {pagamentos.map(p => (
             <div key={p.tipo} className="rounded-lg bg-surface2 p-4 text-center">
               <p className="text-sm text-text2">{p.tipo}</p>
-              <p className="font-display text-xl font-bold text-foreground mt-1">R$ {p.valor.toLocaleString()}</p>
+              <p className="font-display text-xl font-bold text-foreground mt-1">{format(p.valor)}</p>
               <p className="text-xs text-text3">{p.pct}%</p>
             </div>
           ))}
@@ -105,7 +108,7 @@ export default function Financeiro() {
                 <td className="p-4 text-foreground">{e.cliente}</td>
                 <td className="p-4 text-text2 hidden md:table-cell">{e.servico}</td>
                 <td className="p-4 text-text2 hidden md:table-cell">{e.profissional}</td>
-                <td className="p-4 font-semibold text-foreground">R$ {e.valor}</td>
+                <td className="p-4 font-semibold text-foreground">{format(e.valor)}</td>
                 <td className="p-4"><span className="rounded-full bg-surface2 px-2.5 py-1 text-[11px] text-text2">{e.pagamento}</span></td>
               </tr>
             ))}

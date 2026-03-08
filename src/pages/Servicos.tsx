@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { servicos, profissionais } from "@/data/mockData";
 import { Clock, DollarSign, Edit, Plus } from "lucide-react";
+import { useCurrency } from "@/hooks/useCurrency";
 
 const categorias = ["Cabelo", "Estética", "Unhas", "Barba", "Spa & Bem-estar"] as const;
 
 export default function Servicos() {
   const [cat, setCat] = useState<typeof categorias[number]>("Cabelo");
+  const { format } = useCurrency();
 
   const filtered = servicos.filter(s => s.categoria === cat);
 
@@ -33,7 +35,7 @@ export default function Servicos() {
             </div>
             <div className="flex items-center gap-4 text-sm text-text2 mb-4">
               <span className="flex items-center gap-1.5"><Clock className="h-4 w-4 text-text3" />{s.duracao} min</span>
-              <span className="flex items-center gap-1.5"><DollarSign className="h-4 w-4 text-text3" />R$ {s.preco}</span>
+              <span className="flex items-center gap-1.5"><DollarSign className="h-4 w-4 text-text3" />{format(s.preco)}</span>
             </div>
             <div className="flex items-center justify-between">
               <div className="flex -space-x-2">
