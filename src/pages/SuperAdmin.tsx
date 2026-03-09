@@ -7,10 +7,13 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { format, differenceInDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Building2, Users, TrendingUp, Crown, Power, PowerOff, Calendar, LogOut } from "lucide-react";
+import { Building2, Users, TrendingUp, Crown, Power, PowerOff, Calendar, LogOut, Plus } from "lucide-react";
 
 interface Estabelecimento {
   id: string;
@@ -38,6 +41,9 @@ export default function SuperAdmin() {
   const navigate = useNavigate();
   const [estabelecimentos, setEstabelecimentos] = useState<Estabelecimento[]>([]);
   const [loading, setLoading] = useState(true);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [newEstab, setNewEstab] = useState({ nome: "", slug: "", ownerEmail: "", plano: "basico" });
   const [metrics, setMetrics] = useState<Metrics>({
     totalEstabelecimentos: 0,
     ativos: 0,
@@ -144,6 +150,73 @@ export default function SuperAdmin() {
   const handleLogout = async () => {
     await logout();
     navigate("/");
+  };
+
+  const generateSlug = (nome: string) => {
+    return nome
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "");
+  };
+
+  const handleCreateEstabelecimento = async () => {
+    if (!newEstab.nome.trim() || !newEstab.ownerEmail.trim()) {
+      toast.error("Preencha o nome e e-mail do proprietário");
+      return;
+    }
+
+    setCreating(true);
+    try {
+      // Find user by email in profiles
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("user_id")
+        .eq("email", newEstab.ownerEmail.trim().toLowerCase())
+        .single();
+
+      if (!profile) {
+        toast.error("Usuário não encontrado. Verifique se o e-mail está cadastrado no sistema.");
+        setCreating(false);
+        return;
+      }
+
+      const slug = newEstab.slug.trim() || generateSlug(newEstab.nome);
+
+      const { error } = await supabase.from("estabelecimentos").insert({
+        nome: newEstab.nome.trim(),
+        slug,
+        plano: newEstab.plano,
+        owner_user_id: profile.user_id,
+      });
+
+      if (error) {
+        toast.error("Erro ao criar: " + error.message);
+      } else {
+        // Link profile to establishment
+        const { data: estab } = await supabase
+          .from("estabelecimentos")
+          .select("id")
+          .eq("slug", slug)
+          .single();
+
+        if (estab) {
+          await supabase
+            .from("profiles")
+            .update({ estabelecimento_id: estab.id })
+            .eq("user_id", profile.user_id);
+        }
+
+        toast.success("Estabelecimento criado com sucesso!");
+        setCreateOpen(false);
+        setNewEstab({ nome: "", slug: "", ownerEmail: "", plano: "basico" });
+        fetchEstabelecimentos();
+      }
+    } catch {
+      toast.error("Erro inesperado ao criar estabelecimento");
+    }
+    setCreating(false);
   };
 
   if (loading) {
@@ -255,9 +328,81 @@ export default function SuperAdmin() {
 
         {/* Estabelecimentos Table */}
         <Card>
-          <CardHeader>
-            <CardTitle>Estabelecimentos Cadastrados</CardTitle>
-            <CardDescription>Gerencie todos os salões, barbearias e clínicas</CardDescription>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle>Estabelecimentos Cadastrados</CardTitle>
+              <CardDescription>Gerencie todos os salões, barbearias e clínicas</CardDescription>
+            </div>
+            <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+              <DialogTrigger asChild>
+                <Button className="gold-gradient">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Novo Estabelecimento
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Criar Novo Estabelecimento</DialogTitle>
+                  <DialogDescription>
+                    Preencha os dados para criar um novo salão/barbearia no sistema.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="nome">Nome do Estabelecimento *</Label>
+                    <Input
+                      id="nome"
+                      placeholder="Ex: Beleza & Estilo"
+                      value={newEstab.nome}
+                      onChange={(e) => setNewEstab({ ...newEstab, nome: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="slug">Slug (URL)</Label>
+                    <Input
+                      id="slug"
+                      placeholder="beleza-estilo (gerado automaticamente)"
+                      value={newEstab.slug}
+                      onChange={(e) => setNewEstab({ ...newEstab, slug: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="ownerEmail">E-mail do Proprietário *</Label>
+                    <Input
+                      id="ownerEmail"
+                      type="email"
+                      placeholder="proprietario@email.com"
+                      value={newEstab.ownerEmail}
+                      onChange={(e) => setNewEstab({ ...newEstab, ownerEmail: e.target.value })}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      O proprietário deve estar cadastrado no sistema
+                    </p>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="plano">Plano</Label>
+                    <Select value={newEstab.plano} onValueChange={(v) => setNewEstab({ ...newEstab, plano: v })}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="basico">Básico (com trial)</SelectItem>
+                        <SelectItem value="pro">Pro</SelectItem>
+                        <SelectItem value="enterprise">Enterprise</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setCreateOpen(false)}>
+                    Cancelar
+                  </Button>
+                  <Button onClick={handleCreateEstabelecimento} disabled={creating}>
+                    {creating ? "Criando..." : "Criar Estabelecimento"}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </CardHeader>
           <CardContent>
             <Table>
