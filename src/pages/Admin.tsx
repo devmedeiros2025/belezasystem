@@ -37,9 +37,10 @@ const activityLog = [
   { time: "ontem 14:30", user: "Patrícia Nunes", action: "atualizou perfil de cliente Mariana Ferreira" },
 ];
 
-type AppRole = "admin" | "financeiro" | "colaborador";
+type AppRole = "admin" | "financeiro" | "colaborador" | "super_admin";
 
 const perfilToRole: Record<Perfil, AppRole> = {
+  SuperAdmin: "super_admin",
   Administrador: "admin",
   Financeiro: "financeiro",
   Colaborador: "colaborador",

@@ -25,6 +25,7 @@ import Configuracoes from "@/pages/Configuracoes";
 import Admin from "@/pages/Admin";
 import NotFound from "@/pages/NotFound";
 import LandingPage from "@/pages/LandingPage";
+import SuperAdmin from "@/pages/SuperAdmin";
 
 const queryClient = new QueryClient();
 
@@ -54,6 +55,7 @@ const App = () => (
                 <Route path="/avaliacoes" element={<ProtectedRoute><Layout><Avaliacoes /></Layout></ProtectedRoute>} />
                 <Route path="/configuracoes" element={<ProtectedRoute allowedProfiles={["Administrador"]}><Layout><Configuracoes /></Layout></ProtectedRoute>} />
                 <Route path="/admin" element={<ProtectedRoute allowedProfiles={["Administrador"]}><Layout><Admin /></Layout></ProtectedRoute>} />
+                <Route path="/superadmin" element={<ProtectedRoute allowedProfiles={["SuperAdmin"]}><SuperAdmin /></ProtectedRoute>} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </BrowserRouter>

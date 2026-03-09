@@ -2,14 +2,15 @@ import { createContext, useContext, useState, useEffect, ReactNode } from "react
 import { supabase } from "@/integrations/supabase/client";
 import type { Session, User } from "@supabase/supabase-js";
 
-export type Perfil = "Administrador" | "Financeiro" | "Colaborador";
+export type Perfil = "Administrador" | "Financeiro" | "Colaborador" | "SuperAdmin";
 
-type AppRole = "admin" | "financeiro" | "colaborador";
+type AppRole = "admin" | "financeiro" | "colaborador" | "super_admin";
 
 const roleToPerfilMap: Record<AppRole, Perfil> = {
   admin: "Administrador",
   financeiro: "Financeiro",
   colaborador: "Colaborador",
+  super_admin: "SuperAdmin",
 };
 
 export interface Usuario {
@@ -38,6 +39,11 @@ type Recurso =
   | "criar_usuarios";
 
 const permissoes: Record<Perfil, Recurso[]> = {
+  SuperAdmin: [
+    "dashboard_completo", "agenda_ver", "agenda_editar_todos", "clientes_ver", "clientes_editar",
+    "financeiro_completo", "comissoes", "estoque", "estoque_editar", "fidelidade", "avaliacoes",
+    "configuracoes", "admin", "criar_usuarios"
+  ],
   Administrador: [
     "dashboard_completo", "agenda_ver", "agenda_editar_todos", "clientes_ver", "clientes_editar",
     "financeiro_completo", "comissoes", "estoque", "estoque_editar", "fidelidade", "avaliacoes",
