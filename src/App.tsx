@@ -25,6 +25,7 @@ import Configuracoes from "@/pages/Configuracoes";
 import Admin from "@/pages/Admin";
 import NotFound from "@/pages/NotFound";
 import LandingPage from "@/pages/LandingPage";
+import SuperAdmin from "@/pages/SuperAdmin";
 
 const queryClient = new QueryClient();
 
