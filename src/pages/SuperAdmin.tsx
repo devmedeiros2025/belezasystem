@@ -41,6 +41,9 @@ export default function SuperAdmin() {
   const navigate = useNavigate();
   const [estabelecimentos, setEstabelecimentos] = useState<Estabelecimento[]>([]);
   const [loading, setLoading] = useState(true);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [newEstab, setNewEstab] = useState({ nome: "", slug: "", ownerEmail: "", plano: "basico" });
   const [metrics, setMetrics] = useState<Metrics>({
     totalEstabelecimentos: 0,
     ativos: 0,
