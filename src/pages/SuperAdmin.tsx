@@ -7,10 +7,13 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { format, differenceInDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Building2, Users, TrendingUp, Crown, Power, PowerOff, Calendar, LogOut } from "lucide-react";
+import { Building2, Users, TrendingUp, Crown, Power, PowerOff, Calendar, LogOut, Plus } from "lucide-react";
 
 interface Estabelecimento {
   id: string;
