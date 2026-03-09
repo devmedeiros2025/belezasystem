@@ -152,6 +152,73 @@ export default function SuperAdmin() {
     navigate("/");
   };
 
+  const generateSlug = (nome: string) => {
+    return nome
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "");
+  };
+
+  const handleCreateEstabelecimento = async () => {
+    if (!newEstab.nome.trim() || !newEstab.ownerEmail.trim()) {
+      toast.error("Preencha o nome e e-mail do proprietário");
+      return;
+    }
+
+    setCreating(true);
+    try {
+      // Find user by email in profiles
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("user_id")
+        .eq("email", newEstab.ownerEmail.trim().toLowerCase())
+        .single();
+
+      if (!profile) {
+        toast.error("Usuário não encontrado. Verifique se o e-mail está cadastrado no sistema.");
+        setCreating(false);
+        return;
+      }
+
+      const slug = newEstab.slug.trim() || generateSlug(newEstab.nome);
+
+      const { error } = await supabase.from("estabelecimentos").insert({
+        nome: newEstab.nome.trim(),
+        slug,
+        plano: newEstab.plano,
+        owner_user_id: profile.user_id,
+      });
+
+      if (error) {
+        toast.error("Erro ao criar: " + error.message);
+      } else {
+        // Link profile to establishment
+        const { data: estab } = await supabase
+          .from("estabelecimentos")
+          .select("id")
+          .eq("slug", slug)
+          .single();
+
+        if (estab) {
+          await supabase
+            .from("profiles")
+            .update({ estabelecimento_id: estab.id })
+            .eq("user_id", profile.user_id);
+        }
+
+        toast.success("Estabelecimento criado com sucesso!");
+        setCreateOpen(false);
+        setNewEstab({ nome: "", slug: "", ownerEmail: "", plano: "basico" });
+        fetchEstabelecimentos();
+      }
+    } catch {
+      toast.error("Erro inesperado ao criar estabelecimento");
+    }
+    setCreating(false);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
