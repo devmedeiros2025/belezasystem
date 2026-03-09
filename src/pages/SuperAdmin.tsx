@@ -328,9 +328,81 @@ export default function SuperAdmin() {
 
         {/* Estabelecimentos Table */}
         <Card>
-          <CardHeader>
-            <CardTitle>Estabelecimentos Cadastrados</CardTitle>
-            <CardDescription>Gerencie todos os salões, barbearias e clínicas</CardDescription>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle>Estabelecimentos Cadastrados</CardTitle>
+              <CardDescription>Gerencie todos os salões, barbearias e clínicas</CardDescription>
+            </div>
+            <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+              <DialogTrigger asChild>
+                <Button className="gold-gradient">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Novo Estabelecimento
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Criar Novo Estabelecimento</DialogTitle>
+                  <DialogDescription>
+                    Preencha os dados para criar um novo salão/barbearia no sistema.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="nome">Nome do Estabelecimento *</Label>
+                    <Input
+                      id="nome"
+                      placeholder="Ex: Beleza & Estilo"
+                      value={newEstab.nome}
+                      onChange={(e) => setNewEstab({ ...newEstab, nome: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="slug">Slug (URL)</Label>
+                    <Input
+                      id="slug"
+                      placeholder="beleza-estilo (gerado automaticamente)"
+                      value={newEstab.slug}
+                      onChange={(e) => setNewEstab({ ...newEstab, slug: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="ownerEmail">E-mail do Proprietário *</Label>
+                    <Input
+                      id="ownerEmail"
+                      type="email"
+                      placeholder="proprietario@email.com"
+                      value={newEstab.ownerEmail}
+                      onChange={(e) => setNewEstab({ ...newEstab, ownerEmail: e.target.value })}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      O proprietário deve estar cadastrado no sistema
+                    </p>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="plano">Plano</Label>
+                    <Select value={newEstab.plano} onValueChange={(v) => setNewEstab({ ...newEstab, plano: v })}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="basico">Básico (com trial)</SelectItem>
+                        <SelectItem value="pro">Pro</SelectItem>
+                        <SelectItem value="enterprise">Enterprise</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setCreateOpen(false)}>
+                    Cancelar
+                  </Button>
+                  <Button onClick={handleCreateEstabelecimento} disabled={creating}>
+                    {creating ? "Criando..." : "Criar Estabelecimento"}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </CardHeader>
           <CardContent>
             <Table>
