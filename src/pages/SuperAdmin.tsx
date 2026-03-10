@@ -10,10 +10,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { format, differenceInDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Building2, Users, TrendingUp, Crown, Power, PowerOff, Calendar, LogOut, Plus } from "lucide-react";
+import { Building2, Users, Crown, Power, PowerOff, Calendar, LogOut, Plus, Trash2, UserPlus } from "lucide-react";
 
 interface Estabelecimento {
   id: string;
@@ -24,6 +25,17 @@ interface Estabelecimento {
   trial_expires_at: string | null;
   created_at: string;
   owner_user_id: string;
+}
+
+interface UserProfile {
+  id: string;
+  user_id: string;
+  nome: string;
+  email: string | null;
+  ativo: boolean;
+  estabelecimento_id: string | null;
+  created_at: string;
+  role?: string;
 }
 
 interface Metrics {
@@ -40,22 +52,23 @@ export default function SuperAdmin() {
   const { usuarioLogado, logout } = useAuth();
   const navigate = useNavigate();
   const [estabelecimentos, setEstabelecimentos] = useState<Estabelecimento[]>([]);
+  const [users, setUsers] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [createOpen, setCreateOpen] = useState(false);
   const [creating, setCreating] = useState(false);
   const [newEstab, setNewEstab] = useState({ nome: "", slug: "", ownerEmail: "", plano: "basico" });
+  const [createUserOpen, setCreateUserOpen] = useState(false);
+  const [creatingUser, setCreatingUser] = useState(false);
+  const [newUser, setNewUser] = useState({ nome: "", email: "", senha: "", role: "colaborador" });
+  const [deleteUserId, setDeleteUserId] = useState<string | null>(null);
   const [metrics, setMetrics] = useState<Metrics>({
-    totalEstabelecimentos: 0,
-    ativos: 0,
-    inativos: 0,
-    emTrial: 0,
-    planoBasico: 0,
-    planoPro: 0,
-    planoEnterprise: 0,
+    totalEstabelecimentos: 0, ativos: 0, inativos: 0, emTrial: 0,
+    planoBasico: 0, planoPro: 0, planoEnterprise: 0,
   });
 
   useEffect(() => {
     fetchEstabelecimentos();
+    fetchUsers();
   }, []);
 
   const fetchEstabelecimentos = async () => {
@@ -67,12 +80,31 @@ export default function SuperAdmin() {
 
     if (error) {
       toast.error("Erro ao carregar estabelecimentos");
-      console.error(error);
     } else {
       setEstabelecimentos(data || []);
       calculateMetrics(data || []);
     }
     setLoading(false);
+  };
+
+  const fetchUsers = async () => {
+    const { data: profiles } = await supabase
+      .from("profiles")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    const { data: roles } = await supabase
+      .from("user_roles")
+      .select("*");
+
+    const rolesMap = new Map((roles || []).map((r) => [r.user_id, r.role]));
+    
+    setUsers(
+      (profiles || []).map((p) => ({
+        ...p,
+        role: rolesMap.get(p.user_id) || "colaborador",
+      }))
+    );
   };
 
   const calculateMetrics = (data: Estabelecimento[]) => {
@@ -122,7 +154,6 @@ export default function SuperAdmin() {
   const extendTrial = async (id: string, days: number) => {
     const newExpiry = new Date();
     newExpiry.setDate(newExpiry.getDate() + days);
-    
     const { error } = await supabase
       .from("estabelecimentos")
       .update({ trial_expires_at: newExpiry.toISOString() })
@@ -141,7 +172,6 @@ export default function SuperAdmin() {
     const expiresAt = new Date(est.trial_expires_at);
     const now = new Date();
     const daysLeft = differenceInDays(expiresAt, now);
-    
     if (daysLeft < 0) return { label: "Expirado", variant: "destructive" as const };
     if (daysLeft <= 1) return { label: `${daysLeft}d restante`, variant: "destructive" as const };
     return { label: `${daysLeft}d restantes`, variant: "secondary" as const };
@@ -153,12 +183,8 @@ export default function SuperAdmin() {
   };
 
   const generateSlug = (nome: string) => {
-    return nome
-      .toLowerCase()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-|-$/g, "");
+    return nome.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
   };
 
   const handleCreateEstabelecimento = async () => {
@@ -166,10 +192,8 @@ export default function SuperAdmin() {
       toast.error("Preencha o nome e e-mail do proprietário");
       return;
     }
-
     setCreating(true);
     try {
-      // Find user by email in profiles
       const { data: profile } = await supabase
         .from("profiles")
         .select("user_id")
@@ -177,37 +201,23 @@ export default function SuperAdmin() {
         .single();
 
       if (!profile) {
-        toast.error("Usuário não encontrado. Verifique se o e-mail está cadastrado no sistema.");
+        toast.error("Usuário não encontrado. Verifique se o e-mail está cadastrado.");
         setCreating(false);
         return;
       }
 
       const slug = newEstab.slug.trim() || generateSlug(newEstab.nome);
-
       const { error } = await supabase.from("estabelecimentos").insert({
-        nome: newEstab.nome.trim(),
-        slug,
-        plano: newEstab.plano,
-        owner_user_id: profile.user_id,
+        nome: newEstab.nome.trim(), slug, plano: newEstab.plano, owner_user_id: profile.user_id,
       });
 
       if (error) {
         toast.error("Erro ao criar: " + error.message);
       } else {
-        // Link profile to establishment
-        const { data: estab } = await supabase
-          .from("estabelecimentos")
-          .select("id")
-          .eq("slug", slug)
-          .single();
-
+        const { data: estab } = await supabase.from("estabelecimentos").select("id").eq("slug", slug).single();
         if (estab) {
-          await supabase
-            .from("profiles")
-            .update({ estabelecimento_id: estab.id })
-            .eq("user_id", profile.user_id);
+          await supabase.from("profiles").update({ estabelecimento_id: estab.id }).eq("user_id", profile.user_id);
         }
-
         toast.success("Estabelecimento criado com sucesso!");
         setCreateOpen(false);
         setNewEstab({ nome: "", slug: "", ownerEmail: "", plano: "basico" });
@@ -217,6 +227,75 @@ export default function SuperAdmin() {
       toast.error("Erro inesperado ao criar estabelecimento");
     }
     setCreating(false);
+  };
+
+  const handleCreateUser = async () => {
+    if (!newUser.nome.trim() || !newUser.email.trim() || !newUser.senha.trim()) {
+      toast.error("Preencha todos os campos obrigatórios");
+      return;
+    }
+    if (newUser.senha.length < 6) {
+      toast.error("A senha deve ter pelo menos 6 caracteres");
+      return;
+    }
+    setCreatingUser(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("admin-create-user", {
+        body: { email: newUser.email.trim(), password: newUser.senha, nome: newUser.nome.trim(), role: newUser.role },
+      });
+      if (error || data?.error) {
+        toast.error(data?.error || error?.message || "Erro ao criar usuário");
+      } else {
+        toast.success("Usuário criado com sucesso!");
+        setCreateUserOpen(false);
+        setNewUser({ nome: "", email: "", senha: "", role: "colaborador" });
+        fetchUsers();
+      }
+    } catch {
+      toast.error("Erro inesperado ao criar usuário");
+    }
+    setCreatingUser(false);
+  };
+
+  const handleDeleteUser = async (userId: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke("admin-delete-user", {
+        body: { userId },
+      });
+      if (error || data?.error) {
+        toast.error(data?.error || error?.message || "Erro ao excluir usuário");
+      } else {
+        toast.success("Usuário excluído com sucesso!");
+        setDeleteUserId(null);
+        fetchUsers();
+      }
+    } catch {
+      toast.error("Erro inesperado ao excluir usuário");
+    }
+  };
+
+  const handleUpdateRole = async (userId: string, newRole: string) => {
+    const { error } = await supabase
+      .from("user_roles")
+      .update({ role: newRole as any })
+      .eq("user_id", userId);
+
+    if (error) {
+      toast.error("Erro ao atualizar role");
+    } else {
+      toast.success("Role atualizada!");
+      fetchUsers();
+    }
+  };
+
+  const getRoleLabel = (role: string) => {
+    const map: Record<string, string> = {
+      super_admin: "Super Admin",
+      admin: "Administrador",
+      financeiro: "Financeiro",
+      colaborador: "Colaborador",
+    };
+    return map[role] || role;
   };
 
   if (loading) {
@@ -326,176 +405,263 @@ export default function SuperAdmin() {
           </Card>
         </div>
 
-        {/* Estabelecimentos Table */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle>Estabelecimentos Cadastrados</CardTitle>
-              <CardDescription>Gerencie todos os salões, barbearias e clínicas</CardDescription>
-            </div>
-            <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-              <DialogTrigger asChild>
-                <Button className="gold-gradient">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Novo Estabelecimento
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Criar Novo Estabelecimento</DialogTitle>
-                  <DialogDescription>
-                    Preencha os dados para criar um novo salão/barbearia no sistema.
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="space-y-4 py-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="nome">Nome do Estabelecimento *</Label>
-                    <Input
-                      id="nome"
-                      placeholder="Ex: Beleza & Estilo"
-                      value={newEstab.nome}
-                      onChange={(e) => setNewEstab({ ...newEstab, nome: e.target.value })}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="slug">Slug (URL)</Label>
-                    <Input
-                      id="slug"
-                      placeholder="beleza-estilo (gerado automaticamente)"
-                      value={newEstab.slug}
-                      onChange={(e) => setNewEstab({ ...newEstab, slug: e.target.value })}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="ownerEmail">E-mail do Proprietário *</Label>
-                    <Input
-                      id="ownerEmail"
-                      type="email"
-                      placeholder="proprietario@email.com"
-                      value={newEstab.ownerEmail}
-                      onChange={(e) => setNewEstab({ ...newEstab, ownerEmail: e.target.value })}
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      O proprietário deve estar cadastrado no sistema
-                    </p>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="plano">Plano</Label>
-                    <Select value={newEstab.plano} onValueChange={(v) => setNewEstab({ ...newEstab, plano: v })}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="basico">Básico (com trial)</SelectItem>
-                        <SelectItem value="pro">Pro</SelectItem>
-                        <SelectItem value="enterprise">Enterprise</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+        {/* Tabs */}
+        <Tabs defaultValue="estabelecimentos">
+          <TabsList>
+            <TabsTrigger value="estabelecimentos" className="gap-2">
+              <Building2 className="w-4 h-4" /> Estabelecimentos
+            </TabsTrigger>
+            <TabsTrigger value="usuarios" className="gap-2">
+              <Users className="w-4 h-4" /> Usuários ({users.length})
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Estabelecimentos Tab */}
+          <TabsContent value="estabelecimentos">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle>Estabelecimentos Cadastrados</CardTitle>
+                  <CardDescription>Gerencie todos os salões, barbearias e clínicas</CardDescription>
                 </div>
-                <DialogFooter>
-                  <Button variant="outline" onClick={() => setCreateOpen(false)}>
-                    Cancelar
-                  </Button>
-                  <Button onClick={handleCreateEstabelecimento} disabled={creating}>
-                    {creating ? "Criando..." : "Criar Estabelecimento"}
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nome</TableHead>
-                  <TableHead>Slug</TableHead>
-                  <TableHead>Plano</TableHead>
-                  <TableHead>Trial</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Cadastro</TableHead>
-                  <TableHead className="text-right">Ações</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {estabelecimentos.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={7} className="text-center py-12 text-muted-foreground">
-                      Nenhum estabelecimento cadastrado ainda
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  estabelecimentos.map((est) => {
-                    const trialStatus = getTrialStatus(est);
-                    return (
-                      <TableRow key={est.id}>
-                        <TableCell className="font-medium">{est.nome}</TableCell>
-                        <TableCell className="text-muted-foreground text-sm">{est.slug}</TableCell>
-                        <TableCell>
-                          <Select
-                            value={est.plano}
-                            onValueChange={(value) => updatePlano(est.id, value)}
-                          >
-                            <SelectTrigger className="w-28 h-8">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="basico">Básico</SelectItem>
-                              <SelectItem value="pro">Pro</SelectItem>
-                              <SelectItem value="enterprise">Enterprise</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </TableCell>
-                        <TableCell>
-                          {trialStatus ? (
-                            <div className="flex items-center gap-2">
-                              <Badge variant={trialStatus.variant}>{trialStatus.label}</Badge>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-6 text-xs"
-                                onClick={() => extendTrial(est.id, 7)}
-                              >
-                                +7d
-                              </Button>
-                            </div>
-                          ) : (
-                            <span className="text-muted-foreground text-sm">—</span>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant={est.ativo ? "default" : "secondary"}>
-                            {est.ativo ? "Ativo" : "Inativo"}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-muted-foreground text-sm">
-                          {format(new Date(est.created_at), "dd/MM/yyyy", { locale: ptBR })}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <Button
-                            variant={est.ativo ? "destructive" : "default"}
-                            size="sm"
-                            onClick={() => toggleAtivo(est.id, est.ativo)}
-                          >
-                            {est.ativo ? (
-                              <>
-                                <PowerOff className="w-4 h-4 mr-1" /> Desativar
-                              </>
-                            ) : (
-                              <>
-                                <Power className="w-4 h-4 mr-1" /> Ativar
-                              </>
-                            )}
-                          </Button>
+                <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+                  <DialogTrigger asChild>
+                    <Button className="gold-gradient">
+                      <Plus className="w-4 h-4 mr-2" />
+                      Novo Estabelecimento
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Criar Novo Estabelecimento</DialogTitle>
+                      <DialogDescription>Preencha os dados para criar um novo salão/barbearia.</DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                      <div className="space-y-2">
+                        <Label>Nome do Estabelecimento *</Label>
+                        <Input placeholder="Ex: Beleza & Estilo" value={newEstab.nome} onChange={(e) => setNewEstab({ ...newEstab, nome: e.target.value })} />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Slug (URL)</Label>
+                        <Input placeholder="beleza-estilo (gerado automaticamente)" value={newEstab.slug} onChange={(e) => setNewEstab({ ...newEstab, slug: e.target.value })} />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>E-mail do Proprietário *</Label>
+                        <Input type="email" placeholder="proprietario@email.com" value={newEstab.ownerEmail} onChange={(e) => setNewEstab({ ...newEstab, ownerEmail: e.target.value })} />
+                        <p className="text-xs text-muted-foreground">O proprietário deve estar cadastrado no sistema</p>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Plano</Label>
+                        <Select value={newEstab.plano} onValueChange={(v) => setNewEstab({ ...newEstab, plano: v })}>
+                          <SelectTrigger><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="basico">Básico (com trial)</SelectItem>
+                            <SelectItem value="pro">Pro</SelectItem>
+                            <SelectItem value="enterprise">Enterprise</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <Button variant="outline" onClick={() => setCreateOpen(false)}>Cancelar</Button>
+                      <Button onClick={handleCreateEstabelecimento} disabled={creating}>{creating ? "Criando..." : "Criar Estabelecimento"}</Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Nome</TableHead>
+                      <TableHead>Slug</TableHead>
+                      <TableHead>Plano</TableHead>
+                      <TableHead>Trial</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Cadastro</TableHead>
+                      <TableHead className="text-right">Ações</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {estabelecimentos.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={7} className="text-center py-12 text-muted-foreground">
+                          Nenhum estabelecimento cadastrado ainda
                         </TableCell>
                       </TableRow>
-                    );
-                  })
-                )}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
+                    ) : (
+                      estabelecimentos.map((est) => {
+                        const trialStatus = getTrialStatus(est);
+                        return (
+                          <TableRow key={est.id}>
+                            <TableCell className="font-medium">{est.nome}</TableCell>
+                            <TableCell className="text-muted-foreground text-sm">{est.slug}</TableCell>
+                            <TableCell>
+                              <Select value={est.plano} onValueChange={(value) => updatePlano(est.id, value)}>
+                                <SelectTrigger className="w-28 h-8"><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="basico">Básico</SelectItem>
+                                  <SelectItem value="pro">Pro</SelectItem>
+                                  <SelectItem value="enterprise">Enterprise</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </TableCell>
+                            <TableCell>
+                              {trialStatus ? (
+                                <div className="flex items-center gap-2">
+                                  <Badge variant={trialStatus.variant}>{trialStatus.label}</Badge>
+                                  <Button variant="ghost" size="sm" className="h-6 text-xs" onClick={() => extendTrial(est.id, 7)}>+7d</Button>
+                                </div>
+                              ) : (
+                                <span className="text-muted-foreground text-sm">—</span>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant={est.ativo ? "default" : "secondary"}>{est.ativo ? "Ativo" : "Inativo"}</Badge>
+                            </TableCell>
+                            <TableCell className="text-muted-foreground text-sm">
+                              {format(new Date(est.created_at), "dd/MM/yyyy", { locale: ptBR })}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <Button variant={est.ativo ? "destructive" : "default"} size="sm" onClick={() => toggleAtivo(est.id, est.ativo)}>
+                                {est.ativo ? (<><PowerOff className="w-4 h-4 mr-1" /> Desativar</>) : (<><Power className="w-4 h-4 mr-1" /> Ativar</>)}
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })
+                    )}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Usuários Tab */}
+          <TabsContent value="usuarios">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle>Usuários do Sistema</CardTitle>
+                  <CardDescription>Visualize, crie e gerencie todos os usuários cadastrados</CardDescription>
+                </div>
+                <Dialog open={createUserOpen} onOpenChange={setCreateUserOpen}>
+                  <DialogTrigger asChild>
+                    <Button className="gold-gradient">
+                      <UserPlus className="w-4 h-4 mr-2" />
+                      Novo Usuário
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Criar Novo Usuário</DialogTitle>
+                      <DialogDescription>O usuário será criado com e-mail já confirmado.</DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                      <div className="space-y-2">
+                        <Label>Nome *</Label>
+                        <Input placeholder="Nome completo" value={newUser.nome} onChange={(e) => setNewUser({ ...newUser, nome: e.target.value })} />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>E-mail *</Label>
+                        <Input type="email" placeholder="usuario@email.com" value={newUser.email} onChange={(e) => setNewUser({ ...newUser, email: e.target.value })} />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Senha *</Label>
+                        <Input type="password" placeholder="Mínimo 6 caracteres" value={newUser.senha} onChange={(e) => setNewUser({ ...newUser, senha: e.target.value })} />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Perfil</Label>
+                        <Select value={newUser.role} onValueChange={(v) => setNewUser({ ...newUser, role: v })}>
+                          <SelectTrigger><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="admin">Administrador</SelectItem>
+                            <SelectItem value="financeiro">Financeiro</SelectItem>
+                            <SelectItem value="colaborador">Colaborador</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <Button variant="outline" onClick={() => setCreateUserOpen(false)}>Cancelar</Button>
+                      <Button onClick={handleCreateUser} disabled={creatingUser}>{creatingUser ? "Criando..." : "Criar Usuário"}</Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Nome</TableHead>
+                      <TableHead>E-mail</TableHead>
+                      <TableHead>Perfil</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Cadastro</TableHead>
+                      <TableHead className="text-right">Ações</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {users.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">
+                          Nenhum usuário cadastrado
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      users.map((user) => (
+                        <TableRow key={user.id}>
+                          <TableCell className="font-medium">{user.nome}</TableCell>
+                          <TableCell className="text-muted-foreground text-sm">{user.email || "—"}</TableCell>
+                          <TableCell>
+                            <Select value={user.role || "colaborador"} onValueChange={(v) => handleUpdateRole(user.user_id, v)}>
+                              <SelectTrigger className="w-36 h-8"><SelectValue /></SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="super_admin">Super Admin</SelectItem>
+                                <SelectItem value="admin">Administrador</SelectItem>
+                                <SelectItem value="financeiro">Financeiro</SelectItem>
+                                <SelectItem value="colaborador">Colaborador</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant={user.ativo ? "default" : "secondary"}>
+                              {user.ativo ? "Ativo" : "Inativo"}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-muted-foreground text-sm">
+                            {format(new Date(user.created_at), "dd/MM/yyyy", { locale: ptBR })}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            {user.user_id !== usuarioLogado?.id && (
+                              <>
+                                {deleteUserId === user.user_id ? (
+                                  <div className="flex items-center justify-end gap-2">
+                                    <span className="text-xs text-destructive">Confirmar?</span>
+                                    <Button variant="destructive" size="sm" onClick={() => handleDeleteUser(user.user_id)}>
+                                      Sim
+                                    </Button>
+                                    <Button variant="outline" size="sm" onClick={() => setDeleteUserId(null)}>
+                                      Não
+                                    </Button>
+                                  </div>
+                                ) : (
+                                  <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => setDeleteUserId(user.user_id)}>
+                                    <Trash2 className="w-4 h-4" />
+                                  </Button>
+                                )}
+                              </>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </main>
     </div>
   );
