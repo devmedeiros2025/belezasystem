@@ -447,6 +447,9 @@ export default function SuperAdmin() {
             <TabsTrigger value="usuarios" className="gap-2">
               <Users className="w-4 h-4" /> Usuários ({users.length})
             </TabsTrigger>
+            <TabsTrigger value="auth-users" className="gap-2">
+              <Globe className="w-4 h-4" /> Cadastros Auth ({authUsers.length})
+            </TabsTrigger>
           </TabsList>
 
           {/* Estabelecimentos Tab */}
