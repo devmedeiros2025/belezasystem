@@ -39,6 +39,19 @@ interface UserProfile {
   role?: string;
 }
 
+interface AuthUser {
+  id: string;
+  email: string | null;
+  created_at: string;
+  last_sign_in_at: string | null;
+  email_confirmed_at: string | null;
+  provider: string;
+  providers: string[];
+  avatar_url: string | null;
+  full_name: string | null;
+  is_google: boolean;
+}
+
 interface Metrics {
   totalEstabelecimentos: number;
   ativos: number;
