@@ -86,7 +86,23 @@ export default function SuperAdmin() {
   useEffect(() => {
     fetchEstabelecimentos();
     fetchUsers();
+    fetchAuthUsers();
   }, []);
+
+  const fetchAuthUsers = async () => {
+    setAuthUsersLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("admin-list-users");
+      if (error || data?.error) {
+        toast.error("Erro ao carregar usuários auth");
+      } else {
+        setAuthUsers(data?.users || []);
+      }
+    } catch {
+      toast.error("Erro ao carregar usuários auth");
+    }
+    setAuthUsersLoading(false);
+  };
 
   const fetchEstabelecimentos = async () => {
     setLoading(true);
