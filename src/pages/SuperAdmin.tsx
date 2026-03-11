@@ -14,7 +14,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { format, differenceInDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Building2, Users, Crown, Power, PowerOff, Calendar, LogOut, Plus, Trash2, UserPlus } from "lucide-react";
+import { Building2, Users, Crown, Power, PowerOff, Calendar, LogOut, Plus, Trash2, UserPlus, Globe, Mail, Shield, ShieldCheck } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface Estabelecimento {
   id: string;
