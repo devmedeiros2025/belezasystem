@@ -44,7 +44,21 @@ Deno.serve(async (req) => {
 
     // Assign role if provided (override the default trigger)
     if (role && data.user) {
-      await adminClient.from("user_roles").update({ role }).eq("user_id", data.user.id);
+      // Wait briefly for the trigger to create the default role
+      await new Promise((r) => setTimeout(r, 500));
+      
+      // Try update first, then upsert if no row exists yet
+      const { data: existing } = await adminClient
+        .from("user_roles")
+        .select("id")
+        .eq("user_id", data.user.id)
+        .maybeSingle();
+
+      if (existing) {
+        await adminClient.from("user_roles").update({ role }).eq("user_id", data.user.id);
+      } else {
+        await adminClient.from("user_roles").insert({ user_id: data.user.id, role });
+      }
     }
 
     return new Response(JSON.stringify({ success: true, userId: data.user?.id }), {
