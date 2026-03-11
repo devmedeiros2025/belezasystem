@@ -697,6 +697,170 @@ export default function SuperAdmin() {
               </CardContent>
             </Card>
           </TabsContent>
+
+          {/* Auth Users Tab */}
+          <TabsContent value="auth-users">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle>Cadastros de Autenticação</CardTitle>
+                  <CardDescription>
+                    Todos os usuários registrados, incluindo cadastros via Google OAuth
+                  </CardDescription>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant={authFilter === "all" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setAuthFilter("all")}
+                  >
+                    Todos
+                  </Button>
+                  <Button
+                    variant={authFilter === "google" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setAuthFilter("google")}
+                    className="gap-1"
+                  >
+                    <Globe className="w-3 h-3" /> Google
+                  </Button>
+                  <Button
+                    variant={authFilter === "email" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setAuthFilter("email")}
+                    className="gap-1"
+                  >
+                    <Mail className="w-3 h-3" /> E-mail
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={fetchAuthUsers} disabled={authUsersLoading}>
+                    {authUsersLoading ? "Atualizando..." : "Atualizar"}
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {authUsersLoading ? (
+                  <div className="flex justify-center py-12">
+                    <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+                  </div>
+                ) : (
+                  <>
+                    <div className="flex gap-4 mb-4 text-sm text-muted-foreground">
+                      <span>Total: <strong className="text-foreground">{authUsers.length}</strong></span>
+                      <span>Google: <strong className="text-foreground">{authUsers.filter(u => u.is_google).length}</strong></span>
+                      <span>E-mail/Senha: <strong className="text-foreground">{authUsers.filter(u => !u.is_google).length}</strong></span>
+                    </div>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Usuário</TableHead>
+                          <TableHead>E-mail</TableHead>
+                          <TableHead>Provedor</TableHead>
+                          <TableHead>E-mail Confirmado</TableHead>
+                          <TableHead>Último Login</TableHead>
+                          <TableHead>Cadastro</TableHead>
+                          <TableHead className="text-right">Perfil no Sistema</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {authUsers
+                          .filter((u) => {
+                            if (authFilter === "google") return u.is_google;
+                            if (authFilter === "email") return !u.is_google;
+                            return true;
+                          })
+                          .length === 0 ? (
+                          <TableRow>
+                            <TableCell colSpan={7} className="text-center py-12 text-muted-foreground">
+                              Nenhum usuário encontrado com este filtro
+                            </TableCell>
+                          </TableRow>
+                        ) : (
+                          authUsers
+                            .filter((u) => {
+                              if (authFilter === "google") return u.is_google;
+                              if (authFilter === "email") return !u.is_google;
+                              return true;
+                            })
+                            .map((authUser) => {
+                              const matchedProfile = users.find(u => u.user_id === authUser.id);
+                              return (
+                                <TableRow key={authUser.id}>
+                                  <TableCell>
+                                    <div className="flex items-center gap-3">
+                                      <Avatar className="h-8 w-8">
+                                        {authUser.avatar_url && <AvatarImage src={authUser.avatar_url} alt={authUser.full_name || ""} />}
+                                        <AvatarFallback className="text-xs">
+                                          {(authUser.full_name || authUser.email || "?").slice(0, 2).toUpperCase()}
+                                        </AvatarFallback>
+                                      </Avatar>
+                                      <span className="font-medium text-sm">{authUser.full_name || "—"}</span>
+                                    </div>
+                                  </TableCell>
+                                  <TableCell className="text-sm text-muted-foreground">{authUser.email || "—"}</TableCell>
+                                  <TableCell>
+                                    {authUser.is_google ? (
+                                      <Badge variant="secondary" className="gap-1">
+                                        <Globe className="w-3 h-3" /> Google
+                                      </Badge>
+                                    ) : (
+                                      <Badge variant="outline" className="gap-1">
+                                        <Mail className="w-3 h-3" /> E-mail
+                                      </Badge>
+                                    )}
+                                    {authUser.providers.length > 1 && (
+                                      <Badge variant="outline" className="ml-1 text-xs">
+                                        +{authUser.providers.length - 1}
+                                      </Badge>
+                                    )}
+                                  </TableCell>
+                                  <TableCell>
+                                    {authUser.email_confirmed_at ? (
+                                      <Badge variant="default" className="gap-1">
+                                        <ShieldCheck className="w-3 h-3" /> Sim
+                                      </Badge>
+                                    ) : (
+                                      <Badge variant="destructive" className="gap-1">
+                                        <Shield className="w-3 h-3" /> Não
+                                      </Badge>
+                                    )}
+                                  </TableCell>
+                                  <TableCell className="text-sm text-muted-foreground">
+                                    {authUser.last_sign_in_at
+                                      ? format(new Date(authUser.last_sign_in_at), "dd/MM/yyyy HH:mm", { locale: ptBR })
+                                      : "Nunca"}
+                                  </TableCell>
+                                  <TableCell className="text-sm text-muted-foreground">
+                                    {format(new Date(authUser.created_at), "dd/MM/yyyy HH:mm", { locale: ptBR })}
+                                  </TableCell>
+                                  <TableCell className="text-right">
+                                    {matchedProfile ? (
+                                      <Select
+                                        value={matchedProfile.role || "colaborador"}
+                                        onValueChange={(v) => handleUpdateRole(matchedProfile.user_id, v)}
+                                      >
+                                        <SelectTrigger className="w-36 h-8"><SelectValue /></SelectTrigger>
+                                        <SelectContent>
+                                          <SelectItem value="super_admin">Super Admin</SelectItem>
+                                          <SelectItem value="admin">Administrador</SelectItem>
+                                          <SelectItem value="financeiro">Financeiro</SelectItem>
+                                          <SelectItem value="colaborador">Colaborador</SelectItem>
+                                        </SelectContent>
+                                      </Select>
+                                    ) : (
+                                      <span className="text-xs text-muted-foreground">Sem perfil</span>
+                                    )}
+                                  </TableCell>
+                                </TableRow>
+                              );
+                            })
+                        )}
+                      </TableBody>
+                    </Table>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
         </Tabs>
       </main>
     </div>
