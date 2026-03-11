@@ -75,6 +75,9 @@ export default function SuperAdmin() {
   const [creatingUser, setCreatingUser] = useState(false);
   const [newUser, setNewUser] = useState({ nome: "", email: "", senha: "", role: "colaborador" });
   const [deleteUserId, setDeleteUserId] = useState<string | null>(null);
+  const [authUsers, setAuthUsers] = useState<AuthUser[]>([]);
+  const [authUsersLoading, setAuthUsersLoading] = useState(false);
+  const [authFilter, setAuthFilter] = useState<"all" | "google" | "email">("all");
   const [metrics, setMetrics] = useState<Metrics>({
     totalEstabelecimentos: 0, ativos: 0, inativos: 0, emTrial: 0,
     planoBasico: 0, planoPro: 0, planoEnterprise: 0,
