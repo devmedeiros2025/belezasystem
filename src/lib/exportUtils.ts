@@ -1,7 +1,3 @@
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
-import * as XLSX from "xlsx";
-
 interface ExportColumn {
   header: string;
   key: string;
@@ -14,7 +10,12 @@ interface ExportOptions {
   fileName: string;
 }
 
-export function exportToPDF({ title, columns, data, fileName }: ExportOptions) {
+export async function exportToPDF({ title, columns, data, fileName }: ExportOptions) {
+  const [{ default: jsPDF }, { default: autoTable }] = await Promise.all([
+    import("jspdf"),
+    import("jspdf-autotable"),
+  ]);
+
   const doc = new jsPDF();
 
   // Header
@@ -40,7 +41,9 @@ export function exportToPDF({ title, columns, data, fileName }: ExportOptions) {
   doc.save(`${fileName}.pdf`);
 }
 
-export function exportToExcel({ title, columns, data, fileName }: ExportOptions) {
+export async function exportToExcel({ title, columns, data, fileName }: ExportOptions) {
+  const XLSX = await import("xlsx");
+
   const wsData = [
     [title],
     [`Gerado em: ${new Date().toLocaleDateString("pt-BR")} às ${new Date().toLocaleTimeString("pt-BR")}`],

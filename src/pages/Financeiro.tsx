@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCurrency } from "@/hooks/useCurrency";
@@ -98,19 +98,25 @@ export default function Financeiro() {
 
   const [periodoFluxo, setPeriodoFluxo] = useState<PeriodoFilter>("mes");
 
-  // ===== COMPUTED =====
-  const totalEntradas = movimentacoes.filter(m => m.tipo === "Entrada").reduce((a, m) => a + m.valor, 0);
-  const totalSaidas = movimentacoes.filter(m => m.tipo === "Saída").reduce((a, m) => a + m.valor, 0);
-  const lucroLiquido = totalEntradas - totalSaidas;
-  const saldoCaixa = lucroLiquido + 150000;
+  // ===== MEMOIZED KPIs =====
+  const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
+  const weekAhead = useMemo(() => new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10), []);
 
-  const contasVencidasCount = contasPagar.filter(c => c.status === "Vencida").length;
-  const today = new Date().toISOString().slice(0, 10);
-  const weekAhead = new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10);
-  const contasVenceBreve = contasPagar.filter(c => c.status === "Pendente" && c.vencimento <= weekAhead).length;
-  const comissoesPendentes = salariosConfig.filter(s => s.comissaoPct > 0).length;
-  const adiantNaoDescontado = adiantamentos.filter(a => a.status === "Aprovado — aguardando desconto").length;
-  const contasReceberVencidas = contasReceber.filter(c => c.status === "Vencido").length;
+  const { totalEntradas, totalSaidas, lucroLiquido, saldoCaixa } = useMemo(() => {
+    const totalEntradas = movimentacoes.filter(m => m.tipo === "Entrada").reduce((a, m) => a + m.valor, 0);
+    const totalSaidas = movimentacoes.filter(m => m.tipo === "Saída").reduce((a, m) => a + m.valor, 0);
+    const lucroLiquido = totalEntradas - totalSaidas;
+    return { totalEntradas, totalSaidas, lucroLiquido, saldoCaixa: lucroLiquido + 150000 };
+  }, [movimentacoes]);
+
+  const { contasVencidasCount, contasVenceBreve } = useMemo(() => ({
+    contasVencidasCount: contasPagar.filter(c => c.status === "Vencida").length,
+    contasVenceBreve: contasPagar.filter(c => c.status === "Pendente" && c.vencimento <= weekAhead).length,
+  }), [contasPagar, weekAhead]);
+
+  const comissoesPendentes = useMemo(() => salariosConfig.filter(s => s.comissaoPct > 0).length, [salariosConfig]);
+  const adiantNaoDescontado = useMemo(() => adiantamentos.filter(a => a.status === "Aprovado — aguardando desconto").length, [adiantamentos]);
+  const contasReceberVencidas = useMemo(() => contasReceber.filter(c => c.status === "Vencido").length, [contasReceber]);
 
   // Filtered data
   const movFiltered = useMemo(() => {
@@ -153,9 +159,9 @@ export default function Financeiro() {
   const dePag = usePagination(despFiltradas);
 
   // Helper
-  const saved = (msg: string) => toast({ title: msg });
+  const saved = useCallback((msg: string) => toast({ title: msg }), [toast]);
 
-  const handleDelete = async () => {
+  const handleDelete = useCallback(async () => {
     if (!confirmDelete) return;
     const { type, id } = confirmDelete;
     if (type === "mov") { await deleteMovimentacao(id); saved("Movimentação excluída"); }
@@ -163,14 +169,18 @@ export default function Financeiro() {
     if (type === "cr") { await deleteContaReceber(id); saved("Conta a receber excluída"); }
     if (type === "desp") { await deleteDespesa(id); saved("Despesa excluída"); }
     if (type === "forn") { await deleteFornecedor(id); saved("Fornecedor excluído"); }
-  };
+  }, [confirmDelete, deleteMovimentacao, deleteContaPagar, deleteContaReceber, deleteDespesa, deleteFornecedor, saved]);
 
-  // Export columns
-  const movExportCols = [{ header: "Data", key: "data" }, { header: "Hora", key: "hora" }, { header: "Descrição", key: "descricao" }, { header: "Tipo", key: "tipo" }, { header: "Categoria", key: "categoria" }, { header: "Valor", key: "valorFmt" }, { header: "Forma Pgto", key: "formaPgto" }];
-  const movExportData = movFiltered.map(m => ({ ...m, valorFmt: format(m.valor) }));
+  // Export columns (static — outside render cycle)
+  const movExportCols = useMemo(() => [
+    { header: "Data", key: "data" }, { header: "Hora", key: "hora" }, { header: "Descrição", key: "descricao" },
+    { header: "Tipo", key: "tipo" }, { header: "Categoria", key: "categoria" },
+    { header: "Valor", key: "valorFmt" }, { header: "Forma Pgto", key: "formaPgto" },
+  ], []);
+  const movExportData = useMemo(() => movFiltered.map(m => ({ ...m, valorFmt: format(m.valor) })), [movFiltered, format]);
 
   // Tabs config
-  const tabs: { key: TabKey; label: string; icon: any; badge?: number }[] = [
+  const tabs = useMemo<{ key: TabKey; label: string; icon: any; badge?: number }[]>(() => [
     { key: "visao-geral", label: "Visão Geral", icon: BarChart3 },
     { key: "fluxo-caixa", label: "Fluxo de Caixa", icon: TrendingUp },
     { key: "entradas-saidas", label: "Entradas & Saídas", icon: ArrowUpCircle },
@@ -182,40 +192,51 @@ export default function Financeiro() {
     { key: "fechamento", label: "Fechamento de Caixa", icon: ClipboardList },
     { key: "dre", label: "DRE", icon: FileText },
     { key: "produtos", label: "Produtos Vendidos", icon: Package },
-  ];
+  ], [contasVencidasCount, contasReceberVencidas]);
 
-  // Fechamento - use movimentacoes from today for the daily closing
-  const todayMov = movimentacoes.filter(m => m.data === today);
-  const fcAtendimentos = todayMov.filter(m => m.tipo === "Entrada");
-  const fcSaidas = todayMov.filter(m => m.tipo === "Saída");
-  const fcReceitaServicos = fcAtendimentos.reduce((a, m) => a + m.valor, 0);
-  const fcReceitaProdutos = fechamento.receitaProdutos;
-  const fcDescontos = fechamento.descontos;
-  const fcReceitaLiquida = fcReceitaServicos + fcReceitaProdutos - fcDescontos;
-  const fcDespesasDia = fcSaidas.reduce((a, m) => a + m.valor, 0);
-  const fcSaldoDia = fcReceitaLiquida - fcDespesasDia;
-  const fcDinheiro = fcAtendimentos.filter(a => a.formaPgto === "Dinheiro").reduce((a, m) => a + m.valor, 0);
-  const fcTransferencia = fcAtendimentos.filter(a => a.formaPgto === "Transferência").reduce((a, m) => a + m.valor, 0);
-  const fcTPA = fcAtendimentos.filter(a => a.formaPgto === "TPA").reduce((a, m) => a + m.valor, 0);
-  const fcTotal = fcDinheiro + fcTransferencia + fcTPA;
+  // Fechamento - memoized daily closing data
+  const {
+    fcAtendimentos, fcSaidas,
+    fcReceitaServicos, fcReceitaProdutos, fcDescontos, fcReceitaLiquida,
+    fcDespesasDia, fcSaldoDia, fcDinheiro, fcTransferencia, fcTPA, fcTotal,
+  } = useMemo(() => {
+    const todayMov = movimentacoes.filter(m => m.data === today);
+    const fcAtendimentos = todayMov.filter(m => m.tipo === "Entrada");
+    const fcSaidas = todayMov.filter(m => m.tipo === "Saída");
+    const fcReceitaServicos = fcAtendimentos.reduce((a, m) => a + m.valor, 0);
+    const fcReceitaProdutos = fechamento.receitaProdutos;
+    const fcDescontos = fechamento.descontos;
+    const fcReceitaLiquida = fcReceitaServicos + fcReceitaProdutos - fcDescontos;
+    const fcDespesasDia = fcSaidas.reduce((a, m) => a + m.valor, 0);
+    const fcSaldoDia = fcReceitaLiquida - fcDespesasDia;
+    const fcDinheiro = fcAtendimentos.filter(a => a.formaPgto === "Dinheiro").reduce((a, m) => a + m.valor, 0);
+    const fcTransferencia = fcAtendimentos.filter(a => a.formaPgto === "Transferência").reduce((a, m) => a + m.valor, 0);
+    const fcTPA = fcAtendimentos.filter(a => a.formaPgto === "TPA").reduce((a, m) => a + m.valor, 0);
+    return { fcAtendimentos, fcSaidas, fcReceitaServicos, fcReceitaProdutos, fcDescontos, fcReceitaLiquida, fcDespesasDia, fcSaldoDia, fcDinheiro, fcTransferencia, fcTPA, fcTotal: fcDinheiro + fcTransferencia + fcTPA };
+  }, [movimentacoes, today, fechamento.receitaProdutos, fechamento.descontos]);
 
-  // DRE computed
+  // DRE computed (memoized)
   const d = dreData;
-  const receitaBruta = d.servicosPrestados + d.vendaProdutos;
-  const receitaLiquida = receitaBruta - d.descontosConcedidos;
-  const totalDespOp = Object.values(d.despesasOperacionais).reduce((a, v) => a + v, 0);
-  const totalDespPessoal = Object.values(d.despesasPessoal).reduce((a, v) => a + v, 0);
-  const lucroOperacional = receitaLiquida - totalDespOp - totalDespPessoal - d.compraFornecedores;
-  const margemLiquida = ((lucroOperacional / receitaBruta) * 100).toFixed(1);
+  const { receitaBruta, receitaLiquida, totalDespOp, totalDespPessoal, lucroOperacional, margemLiquida } = useMemo(() => {
+    const receitaBruta = d.servicosPrestados + d.vendaProdutos;
+    const receitaLiquida = receitaBruta - d.descontosConcedidos;
+    const totalDespOp = Object.values(d.despesasOperacionais).reduce((a, v) => a + v, 0);
+    const totalDespPessoal = Object.values(d.despesasPessoal).reduce((a, v) => a + v, 0);
+    const lucroOperacional = receitaLiquida - totalDespOp - totalDespPessoal - d.compraFornecedores;
+    const margemLiquida = ((lucroOperacional / receitaBruta) * 100).toFixed(1);
+    return { receitaBruta, receitaLiquida, totalDespOp, totalDespPessoal, lucroOperacional, margemLiquida };
+  }, []);
 
-  // Produtos computed
-  const totalVendidoKz = produtosVendidos.reduce((a, p) => a + p.preco * p.unidades, 0);
-  const totalCustoKz = produtosVendidos.reduce((a, p) => a + p.custo * p.unidades, 0);
-  const totalUnidades = produtosVendidos.reduce((a, p) => a + p.unidades, 0);
-  const produtoMaisVendido = [...produtosVendidos].sort((a, b) => b.unidades - a.unidades)[0];
-  const margemMedia = produtosVendidos.length > 0
-    ? (produtosVendidos.reduce((a, p) => a + ((p.preco - p.custo) / p.preco) * 100, 0) / produtosVendidos.length).toFixed(1)
-    : "0";
+  // Produtos computed (memoized)
+  const { totalVendidoKz, totalCustoKz, totalUnidades, produtoMaisVendido, margemMedia } = useMemo(() => ({
+    totalVendidoKz: produtosVendidos.reduce((a, p) => a + p.preco * p.unidades, 0),
+    totalCustoKz: produtosVendidos.reduce((a, p) => a + p.custo * p.unidades, 0),
+    totalUnidades: produtosVendidos.reduce((a, p) => a + p.unidades, 0),
+    produtoMaisVendido: [...produtosVendidos].sort((a, b) => b.unidades - a.unidades)[0],
+    margemMedia: produtosVendidos.length > 0
+      ? (produtosVendidos.reduce((a, p) => a + ((p.preco - p.custo) / p.preco) * 100, 0) / produtosVendidos.length).toFixed(1)
+      : "0",
+  }), [produtosVendidos]);
 
   // Redirect non-authorized
   if (perfil === "Colaborador") return <Navigate to="/dashboard" replace />;

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface DashboardData {
@@ -273,20 +273,32 @@ export function useDashboardData(): DashboardData {
 
   useEffect(() => { fetchAll(); }, [fetchAll]);
 
-  // Realtime subscriptions - refetch on any change to key tables
+  // Debounced realtime refetch to avoid hammering Supabase
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const debouncedRefetch = useCallback(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      fetchAll();
+    }, 2000);
+  }, [fetchAll]);
+
   useEffect(() => {
     const channel = supabase
       .channel('dashboard-realtime')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'movimentacoes' }, () => fetchAll())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'agendamentos' }, () => fetchAll())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'clientes' }, () => fetchAll())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'despesas' }, () => fetchAll())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'contas_pagar' }, () => fetchAll())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'contas_receber' }, () => fetchAll())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'movimentacoes' }, debouncedRefetch)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'agendamentos' }, debouncedRefetch)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'clientes' }, debouncedRefetch)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'despesas' }, debouncedRefetch)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'contas_pagar' }, debouncedRefetch)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'contas_receber' }, debouncedRefetch)
       .subscribe();
 
-    return () => { supabase.removeChannel(channel); };
-  }, [fetchAll]);
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      supabase.removeChannel(channel);
+    };
+  }, [fetchAll, debouncedRefetch]);
 
   return data;
 }
+

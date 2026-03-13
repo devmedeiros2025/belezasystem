@@ -762,25 +762,20 @@ export default function SuperAdmin() {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {authUsers
-                          .filter((u) => {
+                        {(() => {
+                          const filteredAuthUsers = authUsers.filter((u) => {
                             if (authFilter === "google") return u.is_google;
                             if (authFilter === "email") return !u.is_google;
                             return true;
-                          })
-                          .length === 0 ? (
+                          });
+                          return filteredAuthUsers.length === 0 ? (
                           <TableRow>
                             <TableCell colSpan={7} className="text-center py-12 text-muted-foreground">
                               Nenhum usuário encontrado com este filtro
                             </TableCell>
                           </TableRow>
                         ) : (
-                          authUsers
-                            .filter((u) => {
-                              if (authFilter === "google") return u.is_google;
-                              if (authFilter === "email") return !u.is_google;
-                              return true;
-                            })
+                          filteredAuthUsers
                             .map((authUser) => {
                               const matchedProfile = users.find(u => u.user_id === authUser.id);
                               return (
@@ -853,7 +848,7 @@ export default function SuperAdmin() {
                                 </TableRow>
                               );
                             })
-                        )}
+                        )})()} 
                       </TableBody>
                     </Table>
                   </>
