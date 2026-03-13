@@ -319,7 +319,7 @@ export default function LandingPage() {
                     <span className={`text-sm ${isPremium ? "text-[hsl(270,20%,70%)]" : "text-[hsl(280,15%,45%)]"}`}> Kz{plan.period}</span>
                   </div>
 
-                  <ul className="space-y-3 mb-8">
+                  <ul className="space-y-3 mb-6">
                     {plan.features.map((feat, fi) => (
                       <li key={fi} className="flex items-start gap-2 text-sm">
                         <Check className={`w-4 h-4 mt-0.5 flex-shrink-0 ${isPremium ? "text-[hsl(270,60%,70%)]" : "text-primary"}`} />
@@ -327,6 +327,25 @@ export default function LandingPage() {
                       </li>
                     ))}
                   </ul>
+
+                  {/* Implementação — serviço extra opcional */}
+                  <div className={`rounded-xl border border-dashed ${
+                    isPremium ? "border-[hsl(270,30%,40%)] bg-[hsl(270,25%,16%)]" : "border-primary/30 bg-primary/5"
+                  } p-4 mb-8`}>
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <Sparkles className={`w-4 h-4 ${isPremium ? "text-[hsl(270,60%,70%)]" : "text-primary"}`} />
+                      <span className={`text-xs font-semibold uppercase tracking-wider ${isPremium ? "text-[hsl(270,40%,75%)]" : "text-primary"}`}>
+                        Serviço Extra
+                      </span>
+                    </div>
+                    <p className="font-display text-sm font-bold mb-0.5">Implementação Assistida</p>
+                    <p className={`text-xs leading-relaxed ${isPremium ? "text-[hsl(270,15%,65%)]" : "text-[hsl(280,15%,45%)]"}`}>
+                      Nossa equipa configura tudo para si — cadastro de serviços, profissionais, preços e formação da sua equipa.
+                    </p>
+                    <p className={`text-xs mt-2 font-semibold ${isPremium ? "text-[hsl(270,40%,75%)]" : "text-primary/80"}`}>
+                      Pagamento único · Consulte valores →
+                    </p>
+                  </div>
 
                   <button
                     onClick={() => navigate("/login")}
@@ -344,6 +363,22 @@ export default function LandingPage() {
               );
             })}
           </div>
+
+          {/* Nota sobre implementação */}
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={fadeUp}
+            custom={4}
+            className="mt-10 max-w-2xl mx-auto text-center"
+          >
+            <p className="text-sm text-[hsl(280,15%,45%)] leading-relaxed">
+              <strong className="text-foreground">Precisa de ajuda para começar?</strong>{" "}
+              O serviço de <span className="text-primary font-medium">Implementação Assistida</span> é opcional e cobrado à parte. A nossa equipa trata de toda a configuração inicial do sistema —
+              para que o seu salão comece a funcionar sem preocupações desde o primeiro dia.
+            </p>
+          </motion.div>
         </div>
       </section>
 
