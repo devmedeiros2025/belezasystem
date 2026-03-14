@@ -103,7 +103,7 @@ export function FormPagarConta({
   conta: ContaPagar; format: (v: number) => string; 
   onSave: (dataPgto: string, formaPgto: string) => void 
 }) {
-  const [f, setF] = useState({ dataPagamento: new Date().toISOString().slice(0, 10), formaPgto: "Transferência" });
+  const [f, setF] = useState({ dataPagamento: new Date().toISOString().slice(0, 10), formaPgto: "Transferência bancária" });
 
   return (
     <div className="space-y-4">
