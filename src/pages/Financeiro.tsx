@@ -39,10 +39,22 @@ type TabKey = "visao-geral" | "fluxo-caixa" | "entradas-saidas" | "contas-pagar"
 type SubTabSalario = "salarios" | "comissoes" | "adiantamentos";
 
 export default function Financeiro() {
-  const { perfil, usuarioLogado } = useAuth();
+  const { perfil, usuarioLogado, podeAcessar, loading: authLoading } = useAuth();
   const { format } = useCurrency();
   const { toast } = useToast();
-  const userName = usuarioLogado?.nome || "Usuário";
+  const userName = usuarioLogado?.nome || "Utilizador";
+
+  // MÓDULO 6 — Protecção RBAC
+  const navigate = useNavigate();
+  const temAcesso = podeAcessar("financeiro_completo");
+  
+  useEffect(() => {
+    if (!authLoading && !temAcesso) {
+      navigate("/dashboard", { replace: true });
+    }
+  }, [authLoading, temAcesso, navigate]);
+
+  if (!temAcesso) return null;
 
   const fin = useFinanceiroData();
   const {
