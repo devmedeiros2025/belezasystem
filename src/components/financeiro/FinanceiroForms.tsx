@@ -184,9 +184,7 @@ export function FormPagamentoFiado({ conta, format, onSave }: {
         </div>
       )}
       <InputField label="Valor recebido (Kz)" value={f.valor} onChange={v => setF(p => ({ ...p, valor: v }))} type="number" required />
-      <SelectField label="Forma de recebimento" value={f.formaPgto} onChange={v => setF(p => ({ ...p, formaPgto: v }))} options={[
-        { value: "Dinheiro", label: "Dinheiro" }, { value: "Transferência", label: "Transferência" }, { value: "TPA", label: "TPA (Cartão)" }
-      ]} />
+      <SelectField label="Forma de recebimento" value={f.formaPgto} onChange={v => setF(p => ({ ...p, formaPgto: v }))} options={FORMAS_PAGAMENTO_OPTIONS} />
       <button disabled={!isValid} onClick={() => onSave(Number(f.valor), f.formaPgto)}
         className="w-full rounded-lg gold-gradient px-4 py-2.5 text-sm font-semibold text-primary-foreground disabled:opacity-50 disabled:cursor-not-allowed">
         Registrar Pagamento
