@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Modal, InputField, SelectField, TextareaField } from "./FinanceiroUI";
 import { categoriasDespesa } from "@/data/financeiroData";
+import { FORMAS_PAGAMENTO_OPTIONS } from "@/lib/currency";
 import type { Movimentacao, ContaPagar, ContaReceber, Despesa, Fornecedor, Adiantamento } from "@/hooks/useFinanceiroData";
 
 // ===== FORM ENTRADA/SAÍDA =====
