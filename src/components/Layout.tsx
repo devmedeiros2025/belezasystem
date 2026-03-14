@@ -8,6 +8,8 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
+import CambioWidget from "@/components/CambioWidget";
+import { FORMAS_PAGAMENTO_OPTIONS } from "@/lib/currency";
 
 const pageNames: Record<string, string> = {
   "/dashboard": "Dashboard",
@@ -221,6 +223,7 @@ export default function Layout({ children }: LayoutProps) {
                   <LogOut className="h-4 w-4" />
                 </button>
               </div>
+              <p className="text-[10px] text-text3 text-center mt-2">v1.0.0</p>
             </div>
           )}
         </div>
@@ -266,6 +269,11 @@ export default function Layout({ children }: LayoutProps) {
             </button>
           </div>
         </header>
+
+        {/* Câmbio Widget */}
+        <div className="px-6 pt-4">
+          <CambioWidget />
+        </div>
 
         {/* Page content */}
         <main className="flex-1 p-6">

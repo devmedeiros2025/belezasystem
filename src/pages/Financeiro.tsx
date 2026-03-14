@@ -1,5 +1,5 @@
-import { useState, useMemo, useCallback } from "react";
-import { Navigate } from "react-router-dom";
+import { useState, useMemo, useCallback, useEffect } from "react";
+import { Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCurrency } from "@/hooks/useCurrency";
 import { useToast } from "@/hooks/use-toast";
@@ -39,10 +39,14 @@ type TabKey = "visao-geral" | "fluxo-caixa" | "entradas-saidas" | "contas-pagar"
 type SubTabSalario = "salarios" | "comissoes" | "adiantamentos";
 
 export default function Financeiro() {
-  const { perfil, usuarioLogado } = useAuth();
+  const { perfil, usuarioLogado, podeAcessar, loading: authLoading } = useAuth();
   const { format } = useCurrency();
   const { toast } = useToast();
-  const userName = usuarioLogado?.nome || "Usuário";
+  const userName = usuarioLogado?.nome || "Utilizador";
+
+  // MÓDULO 6 — Protecção RBAC (redirect handled after all hooks)
+  const navigate = useNavigate();
+  const temAcesso = podeAcessar("financeiro_completo");
 
   const fin = useFinanceiroData();
   const {
@@ -238,7 +242,15 @@ export default function Financeiro() {
       : "0",
   }), [produtosVendidos]);
 
+  // MÓDULO 6 — Protecção RBAC silenciosa
+  useEffect(() => {
+    if (!authLoading && !temAcesso) {
+      navigate("/dashboard", { replace: true });
+    }
+  }, [authLoading, temAcesso, navigate]);
+
   // Redirect non-authorized
+  if (!temAcesso) return null;
   if (perfil === "Colaborador") return <Navigate to="/dashboard" replace />;
 
   if (loading) {

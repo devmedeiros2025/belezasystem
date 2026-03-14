@@ -11,7 +11,7 @@ export interface Movimentacao {
   categoria: string;
   tipo: "Entrada" | "Saída";
   valor: number;
-  formaPgto: "Dinheiro" | "Transferência" | "TPA";
+  formaPgto: string;
   registradoPor: string;
   beneficiarioOrigem?: string;
   observacoes?: string;

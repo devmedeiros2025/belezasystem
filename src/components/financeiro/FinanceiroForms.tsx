@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Modal, InputField, SelectField, TextareaField } from "./FinanceiroUI";
 import { categoriasDespesa } from "@/data/financeiroData";
+import { FORMAS_PAGAMENTO_OPTIONS } from "@/lib/currency";
 import type { Movimentacao, ContaPagar, ContaReceber, Despesa, Fornecedor, Adiantamento } from "@/hooks/useFinanceiroData";
 
 // ===== FORM ENTRADA/SAÍDA =====
@@ -16,7 +17,7 @@ export function FormEntradaSaida({
   const [f, setF] = useState({ 
     descricao: "", valor: "", 
     categoria: tipo === "Entrada" ? "Serviço" : "Despesa Operacional", 
-    formaPgto: "Dinheiro" as const, beneficiario: "", obs: "" 
+    formaPgto: "Numerário", beneficiario: "", obs: "" 
   });
   
   const catEntrada = [
@@ -40,11 +41,7 @@ export function FormEntradaSaida({
       <InputField label="Descrição" value={f.descricao} onChange={v => setF(p => ({ ...p, descricao: v }))} required />
       <InputField label="Valor (Kz)" value={f.valor} onChange={v => setF(p => ({ ...p, valor: v }))} type="number" required />
       <SelectField label="Categoria" value={f.categoria} onChange={v => setF(p => ({ ...p, categoria: v }))} options={tipo === "Entrada" ? catEntrada : catSaida} />
-      <SelectField label="Forma de pagamento" value={f.formaPgto} onChange={v => setF(p => ({ ...p, formaPgto: v as any }))} options={[
-        { value: "Dinheiro", label: "Dinheiro" }, 
-        { value: "Transferência", label: "Transferência" }, 
-        { value: "TPA", label: "TPA (Cartão)" }
-      ]} />
+      <SelectField label="Forma de pagamento" value={f.formaPgto} onChange={v => setF(p => ({ ...p, formaPgto: v as any }))} options={FORMAS_PAGAMENTO_OPTIONS} />
       <InputField label="Beneficiário / Origem" value={f.beneficiario} onChange={v => setF(p => ({ ...p, beneficiario: v }))} />
       <TextareaField label="Observações" value={f.obs} onChange={v => setF(p => ({ ...p, obs: v }))} rows={2} />
       <button 
@@ -106,7 +103,7 @@ export function FormPagarConta({
   conta: ContaPagar; format: (v: number) => string; 
   onSave: (dataPgto: string, formaPgto: string) => void 
 }) {
-  const [f, setF] = useState({ dataPagamento: new Date().toISOString().slice(0, 10), formaPgto: "Transferência" });
+  const [f, setF] = useState({ dataPagamento: new Date().toISOString().slice(0, 10), formaPgto: "Transferência bancária" });
 
   return (
     <div className="space-y-4">
@@ -117,9 +114,7 @@ export function FormPagarConta({
         <div className="flex justify-between text-sm"><span className="text-text3">Vencimento:</span><span className={conta.status === "Vencida" ? "text-destructive font-medium" : "text-foreground"}>{conta.vencimento}</span></div>
       </div>
       <InputField label="Data do pagamento" value={f.dataPagamento} onChange={v => setF(p => ({ ...p, dataPagamento: v }))} type="date" required />
-      <SelectField label="Forma de pagamento" value={f.formaPgto} onChange={v => setF(p => ({ ...p, formaPgto: v }))} options={[
-        { value: "Dinheiro", label: "Dinheiro" }, { value: "Transferência", label: "Transferência" }, { value: "TPA", label: "TPA (Cartão)" }
-      ]} />
+      <SelectField label="Forma de pagamento" value={f.formaPgto} onChange={v => setF(p => ({ ...p, formaPgto: v }))} options={FORMAS_PAGAMENTO_OPTIONS} />
       <button onClick={() => onSave(f.dataPagamento, f.formaPgto)} className="w-full rounded-lg gold-gradient px-4 py-2.5 text-sm font-semibold text-primary-foreground">
         Confirmar Pagamento
       </button>
@@ -149,7 +144,7 @@ export function FormFiado({ onSave }: { onSave: (c: Omit<ContaReceber, "id">) =>
             valorPago: pago, vencimento: f.vencimento, 
             status: pago > 0 ? "Parcialmente pago" : "Em aberto", 
             dataServico: new Date().toISOString().slice(0, 10), observacoes: f.obs,
-            historicoPagamentos: pago > 0 ? [{ data: new Date().toISOString().slice(0, 10), valor: pago, forma: "Dinheiro" }] : [],
+            historicoPagamentos: pago > 0 ? [{ data: new Date().toISOString().slice(0, 10), valor: pago, forma: "Numerário" }] : [],
           }); 
         }}
         className="w-full rounded-lg gold-gradient px-4 py-2.5 text-sm font-semibold text-primary-foreground disabled:opacity-50 disabled:cursor-not-allowed"
@@ -165,7 +160,7 @@ export function FormPagamentoFiado({ conta, format, onSave }: {
   conta: ContaReceber; format: (v: number) => string; 
   onSave: (valor: number, formaPgto: string) => void 
 }) {
-  const [f, setF] = useState({ valor: "", formaPgto: "Dinheiro" });
+  const [f, setF] = useState({ valor: "", formaPgto: "Numerário" });
   const saldo = conta.valorTotal - conta.valorPago;
   const isValid = Number(f.valor) > 0;
 
@@ -189,9 +184,7 @@ export function FormPagamentoFiado({ conta, format, onSave }: {
         </div>
       )}
       <InputField label="Valor recebido (Kz)" value={f.valor} onChange={v => setF(p => ({ ...p, valor: v }))} type="number" required />
-      <SelectField label="Forma de recebimento" value={f.formaPgto} onChange={v => setF(p => ({ ...p, formaPgto: v }))} options={[
-        { value: "Dinheiro", label: "Dinheiro" }, { value: "Transferência", label: "Transferência" }, { value: "TPA", label: "TPA (Cartão)" }
-      ]} />
+      <SelectField label="Forma de recebimento" value={f.formaPgto} onChange={v => setF(p => ({ ...p, formaPgto: v }))} options={FORMAS_PAGAMENTO_OPTIONS} />
       <button disabled={!isValid} onClick={() => onSave(Number(f.valor), f.formaPgto)}
         className="w-full rounded-lg gold-gradient px-4 py-2.5 text-sm font-semibold text-primary-foreground disabled:opacity-50 disabled:cursor-not-allowed">
         Registrar Pagamento
@@ -204,7 +197,7 @@ export function FormPagamentoFiado({ conta, format, onSave }: {
 export function FormDespesa({ onSave, registradoPor }: { onSave: (d: Omit<Despesa, "id">) => void; registradoPor: string }) {
   const [f, setF] = useState({ 
     descricao: "", categoria: "Aluguel", fornecedor: "", valor: "", 
-    data: new Date().toISOString().slice(0, 10), formaPgto: "Dinheiro", nrFatura: "", recorrencia: "Única" as const 
+    data: new Date().toISOString().slice(0, 10), formaPgto: "Numerário", nrFatura: "", recorrencia: "Única" as const 
   });
   const isValid = f.descricao.trim() && Number(f.valor) > 0;
 
@@ -215,9 +208,7 @@ export function FormDespesa({ onSave, registradoPor }: { onSave: (d: Omit<Despes
       <InputField label="Fornecedor" value={f.fornecedor} onChange={v => setF(p => ({ ...p, fornecedor: v }))} />
       <InputField label="Valor (Kz)" value={f.valor} onChange={v => setF(p => ({ ...p, valor: v }))} type="number" required />
       <InputField label="Data" value={f.data} onChange={v => setF(p => ({ ...p, data: v }))} type="date" />
-      <SelectField label="Forma de pagamento" value={f.formaPgto} onChange={v => setF(p => ({ ...p, formaPgto: v }))} options={[
-        { value: "Dinheiro", label: "Dinheiro" }, { value: "Transferência", label: "Transferência" }, { value: "TPA", label: "TPA (Cartão)" }
-      ]} />
+      <SelectField label="Forma de pagamento" value={f.formaPgto} onChange={v => setF(p => ({ ...p, formaPgto: v }))} options={FORMAS_PAGAMENTO_OPTIONS} />
       <InputField label="Nº fatura/recibo" value={f.nrFatura} onChange={v => setF(p => ({ ...p, nrFatura: v }))} />
       <SelectField label="Recorrência" value={f.recorrencia} onChange={v => setF(p => ({ ...p, recorrencia: v as any }))} options={[
         { value: "Única", label: "Única" }, { value: "Mensal", label: "Mensal" }
@@ -271,7 +262,7 @@ export function FormCompraFornecedor({
 }) {
   const [f, setF] = useState({ 
     fornecedorId: fornecedores[0]?.id || "", descricao: "", 
-    valorTotal: "", valorPago: "", formaPgto: "Transferência", nrFatura: "" 
+    valorTotal: "", valorPago: "", formaPgto: "Transferência bancária", nrFatura: "" 
   });
   const saldoEmDivida = (Number(f.valorTotal) || 0) - (Number(f.valorPago) || 0);
   const isValid = f.fornecedorId && f.descricao.trim() && Number(f.valorTotal) > 0;
@@ -286,9 +277,7 @@ export function FormCompraFornecedor({
         <span className="text-text3">Saldo em dívida:</span>
         <span className={`font-bold ${saldoEmDivida > 0 ? "text-destructive" : "text-green-custom"}`}>{format(saldoEmDivida)}</span>
       </div>
-      <SelectField label="Forma de pagamento" value={f.formaPgto} onChange={v => setF(p => ({ ...p, formaPgto: v }))} options={[
-        { value: "Dinheiro", label: "Dinheiro" }, { value: "Transferência", label: "Transferência" }, { value: "TPA", label: "TPA (Cartão)" }
-      ]} />
+      <SelectField label="Forma de pagamento" value={f.formaPgto} onChange={v => setF(p => ({ ...p, formaPgto: v }))} options={FORMAS_PAGAMENTO_OPTIONS} />
       <InputField label="Nº da fatura" value={f.nrFatura} onChange={v => setF(p => ({ ...p, nrFatura: v }))} />
       <button disabled={!isValid} onClick={() => onSave(f.fornecedorId, f.descricao, Number(f.valorTotal), Number(f.valorPago) || 0)}
         className="w-full rounded-lg gold-gradient px-4 py-2.5 text-sm font-semibold text-primary-foreground disabled:opacity-50 disabled:cursor-not-allowed">
@@ -341,7 +330,7 @@ export function FormPagarSalario({
   profissional: string; fixo: number; comissao: number; adiantamentos: number; 
   format: (v: number) => string; onSave: () => void;
 }) {
-  const [f, setF] = useState({ dataPgto: new Date().toISOString().slice(0, 10), formaPgto: "Transferência", obs: "" });
+  const [f, setF] = useState({ dataPgto: new Date().toISOString().slice(0, 10), formaPgto: "Transferência bancária", obs: "" });
   const total = fixo + comissao - adiantamentos;
 
   return (
@@ -356,9 +345,7 @@ export function FormPagarSalario({
         <div className="border-t border-border pt-2 flex justify-between font-bold text-lg"><span>Total líquido:</span><span className="text-foreground">{format(total)}</span></div>
       </div>
       <InputField label="Data do pagamento" value={f.dataPgto} onChange={v => setF(p => ({ ...p, dataPgto: v }))} type="date" />
-      <SelectField label="Forma de pagamento" value={f.formaPgto} onChange={v => setF(p => ({ ...p, formaPgto: v }))} options={[
-        { value: "Transferência", label: "Transferência" }, { value: "Dinheiro", label: "Dinheiro" }
-      ]} />
+      <SelectField label="Forma de pagamento" value={f.formaPgto} onChange={v => setF(p => ({ ...p, formaPgto: v }))} options={FORMAS_PAGAMENTO_OPTIONS} />
       <TextareaField label="Observações" value={f.obs} onChange={v => setF(p => ({ ...p, obs: v }))} rows={2} />
       <button onClick={onSave} className="w-full rounded-lg gold-gradient px-4 py-2.5 text-sm font-semibold text-primary-foreground">
         Confirmar Pagamento
