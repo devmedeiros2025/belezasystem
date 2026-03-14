@@ -160,7 +160,7 @@ export function FormPagamentoFiado({ conta, format, onSave }: {
   conta: ContaReceber; format: (v: number) => string; 
   onSave: (valor: number, formaPgto: string) => void 
 }) {
-  const [f, setF] = useState({ valor: "", formaPgto: "Dinheiro" });
+  const [f, setF] = useState({ valor: "", formaPgto: "Numerário" });
   const saldo = conta.valorTotal - conta.valorPago;
   const isValid = Number(f.valor) > 0;
 
