@@ -330,7 +330,7 @@ export function FormPagarSalario({
   profissional: string; fixo: number; comissao: number; adiantamentos: number; 
   format: (v: number) => string; onSave: () => void;
 }) {
-  const [f, setF] = useState({ dataPgto: new Date().toISOString().slice(0, 10), formaPgto: "Transferência", obs: "" });
+  const [f, setF] = useState({ dataPgto: new Date().toISOString().slice(0, 10), formaPgto: "Transferência bancária", obs: "" });
   const total = fixo + comissao - adiantamentos;
 
   return (
