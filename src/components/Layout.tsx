@@ -270,6 +270,11 @@ export default function Layout({ children }: LayoutProps) {
           </div>
         </header>
 
+        {/* Câmbio Widget */}
+        <div className="px-6 pt-4">
+          <CambioWidget />
+        </div>
+
         {/* Page content */}
         <main className="flex-1 p-6">
           <motion.div

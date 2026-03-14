@@ -1,5 +1,5 @@
-import { useState, useMemo, useCallback } from "react";
-import { Navigate } from "react-router-dom";
+import { useState, useMemo, useCallback, useEffect } from "react";
+import { Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCurrency } from "@/hooks/useCurrency";
 import { useToast } from "@/hooks/use-toast";
