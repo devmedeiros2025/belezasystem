@@ -8,6 +8,8 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
+import CambioWidget from "@/components/CambioWidget";
+import { FORMAS_PAGAMENTO_OPTIONS } from "@/lib/currency";
 
 const pageNames: Record<string, string> = {
   "/dashboard": "Dashboard",
