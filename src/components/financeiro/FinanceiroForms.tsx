@@ -262,7 +262,7 @@ export function FormCompraFornecedor({
 }) {
   const [f, setF] = useState({ 
     fornecedorId: fornecedores[0]?.id || "", descricao: "", 
-    valorTotal: "", valorPago: "", formaPgto: "Transferência", nrFatura: "" 
+    valorTotal: "", valorPago: "", formaPgto: "Transferência bancária", nrFatura: "" 
   });
   const saldoEmDivida = (Number(f.valorTotal) || 0) - (Number(f.valorPago) || 0);
   const isValid = f.fornecedorId && f.descricao.trim() && Number(f.valorTotal) > 0;
