@@ -454,8 +454,77 @@ export default function Agenda() {
               <button onClick={() => handleUpdateStatus(selected.id, "Confirmado")} className="rounded-lg gold-gradient px-3 py-2.5 text-sm font-semibold text-primary-foreground">Confirmar</button>
               <button className="rounded-lg border border-border px-3 py-2.5 text-sm text-text2 hover:bg-surface2">Remarcar</button>
               <button onClick={() => handleCancelAgendamento(selected.id)} className="rounded-lg border border-destructive/30 px-3 py-2.5 text-sm text-destructive hover:bg-destructive/10">Cancelar</button>
-              <button onClick={() => handleUpdateStatus(selected.id, "Concluído")} className="rounded-lg bg-green-custom/20 px-3 py-2.5 text-sm font-medium text-green-custom hover:bg-green-custom/30">Checkout</button>
+              <button onClick={() => { setShowCheckout(true); }} className="rounded-lg bg-green-custom/20 px-3 py-2.5 text-sm font-medium text-green-custom hover:bg-green-custom/30 flex items-center justify-center gap-1">
+                <DollarSign className="h-3.5 w-3.5" /> Checkout
+              </button>
             </div>
+
+            {/* Checkout / Payment section */}
+            {showCheckout && (
+              <div className="mt-4 rounded-lg border border-primary/20 bg-primary/5 p-4 space-y-3">
+                <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                  <DollarSign className="h-4 w-4 text-primary" /> Pagamento do Serviço
+                </h4>
+                <div>
+                  <label className="text-xs text-text3 mb-1 block">Valor cobrado (Kz)</label>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium text-text3">Kz</span>
+                    <input
+                      type="text"
+                      value={checkoutValor}
+                      onChange={(e) => setCheckoutValor(e.target.value)}
+                      placeholder="0,00"
+                      className="flex-1 rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs text-text3 mb-1 block">Forma de pagamento</label>
+                  <select
+                    value={checkoutFormaPgto}
+                    onChange={(e) => setCheckoutFormaPgto(e.target.value)}
+                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                  >
+                    {FORMAS_PAGAMENTO.map((f) => (
+                      <option key={f} value={f}>{f}</option>
+                    ))}
+                  </select>
+                </div>
+                <button
+                  onClick={async () => {
+                    const valor = parseFloat(checkoutValor.replace(",", "."));
+                    if (isNaN(valor) || valor <= 0) {
+                      toast.error("Insira um valor válido");
+                      return;
+                    }
+                    // Create movimentacao (Entrada)
+                    const { error } = await supabase.from("movimentacoes").insert({
+                      data: selected.data,
+                      hora: selected.hora + ":00",
+                      descricao: `${selected.servico} — ${selected.cliente_nome}`,
+                      categoria: "Serviço",
+                      tipo: "Entrada",
+                      valor,
+                      forma_pgto: checkoutFormaPgto,
+                      registrado_por: "Sistema",
+                      beneficiario_origem: selected.cliente_nome,
+                      observacoes: `Profissional: ${selected.profissional_nome}`,
+                    });
+                    if (error) {
+                      toast.error("Erro ao registar pagamento");
+                      return;
+                    }
+                    await handleUpdateStatus(selected.id, "Concluído");
+                    setShowCheckout(false);
+                    setCheckoutValor("");
+                    toast.success(`Pagamento de ${formatKz(valor)} registado com sucesso!`);
+                  }}
+                  className="w-full rounded-lg gold-gradient px-4 py-2.5 text-sm font-semibold text-primary-foreground"
+                >
+                  Confirmar Pagamento
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}

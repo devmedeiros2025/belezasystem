@@ -182,21 +182,34 @@ export default function Configuracoes() {
       )}
 
       {tab === "usuarios" && (
-        <div className="rounded-xl border border-border bg-card overflow-x-auto max-w-3xl">
-          <table className="w-full text-sm">
-            <thead><tr className="border-b border-border text-xs text-text3"><th className="p-4 text-left">Nome</th><th className="p-4 text-left">Email</th><th className="p-4 text-left">Perfil</th></tr></thead>
-            <tbody>
-              {usuarios.map(u => (
-                <tr key={u.email} className="border-b border-border/50 hover:bg-surface2/50">
-                  <td className="p-4 font-medium text-foreground">{u.nome}</td>
-                  <td className="p-4 text-text2">{u.email}</td>
-                  <td className="p-4"><span className="rounded-full bg-surface2 px-2.5 py-1 text-[11px] text-text2">{u.perfil}</span></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="space-y-4">
+          <div className="flex justify-end">
+            <button
+              onClick={() => setChangelogOpen(true)}
+              className="flex items-center gap-2 rounded-lg bg-primary/10 px-4 py-2 text-sm font-medium text-primary hover:bg-primary/15 transition-colors"
+            >
+              <Sparkles className="h-4 w-4" />
+              Novidades do sistema
+            </button>
+          </div>
+          <div className="rounded-xl border border-border bg-card overflow-x-auto max-w-3xl">
+            <table className="w-full text-sm">
+              <thead><tr className="border-b border-border text-xs text-text3"><th className="p-4 text-left">Nome</th><th className="p-4 text-left">Email</th><th className="p-4 text-left">Perfil</th></tr></thead>
+              <tbody>
+                {usuarios.map(u => (
+                  <tr key={u.email} className="border-b border-border/50 hover:bg-surface2/50">
+                    <td className="p-4 font-medium text-foreground">{u.nome}</td>
+                    <td className="p-4 text-text2">{u.email}</td>
+                    <td className="p-4"><span className="rounded-full bg-surface2 px-2.5 py-1 text-[11px] text-text2">{u.perfil}</span></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
+
+      <ChangelogModal open={changelogOpen} onClose={() => setChangelogOpen(false)} />
     </div>
   );
 }
