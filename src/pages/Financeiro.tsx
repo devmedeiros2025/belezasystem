@@ -44,17 +44,9 @@ export default function Financeiro() {
   const { toast } = useToast();
   const userName = usuarioLogado?.nome || "Utilizador";
 
-  // MÓDULO 6 — Protecção RBAC
+  // MÓDULO 6 — Protecção RBAC (redirect handled after all hooks)
   const navigate = useNavigate();
   const temAcesso = podeAcessar("financeiro_completo");
-  
-  useEffect(() => {
-    if (!authLoading && !temAcesso) {
-      navigate("/dashboard", { replace: true });
-    }
-  }, [authLoading, temAcesso, navigate]);
-
-  if (!temAcesso) return null;
 
   const fin = useFinanceiroData();
   const {
