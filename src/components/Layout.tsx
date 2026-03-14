@@ -215,6 +215,8 @@ export default function Layout({ children }: LayoutProps) {
                   <p className="truncate text-sm font-medium text-foreground">{usuarioLogado.nome}</p>
                   <p className="text-[11px] text-text3">{perfil}</p>
                 </div>
+              </div>
+              <p className="text-[10px] text-text3 text-center mt-2">v1.0.0</p>
                 <button
                   onClick={handleLogout}
                   className="rounded-lg p-1.5 text-text3 hover:bg-surface3 hover:text-foreground transition-colors"
