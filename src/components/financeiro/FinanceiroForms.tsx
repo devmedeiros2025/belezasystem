@@ -345,9 +345,7 @@ export function FormPagarSalario({
         <div className="border-t border-border pt-2 flex justify-between font-bold text-lg"><span>Total líquido:</span><span className="text-foreground">{format(total)}</span></div>
       </div>
       <InputField label="Data do pagamento" value={f.dataPgto} onChange={v => setF(p => ({ ...p, dataPgto: v }))} type="date" />
-      <SelectField label="Forma de pagamento" value={f.formaPgto} onChange={v => setF(p => ({ ...p, formaPgto: v }))} options={[
-        { value: "Transferência", label: "Transferência" }, { value: "Dinheiro", label: "Dinheiro" }
-      ]} />
+      <SelectField label="Forma de pagamento" value={f.formaPgto} onChange={v => setF(p => ({ ...p, formaPgto: v }))} options={FORMAS_PAGAMENTO_OPTIONS} />
       <TextareaField label="Observações" value={f.obs} onChange={v => setF(p => ({ ...p, obs: v }))} rows={2} />
       <button onClick={onSave} className="w-full rounded-lg gold-gradient px-4 py-2.5 text-sm font-semibold text-primary-foreground">
         Confirmar Pagamento
