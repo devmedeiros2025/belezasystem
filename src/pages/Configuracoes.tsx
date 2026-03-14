@@ -1,13 +1,14 @@
 import { useState } from "react";
-import { Building2, Palette, Bell, Link as LinkIcon, Users, Globe } from "lucide-react";
+import { Building2, Palette, Bell, Link as LinkIcon, Users, Globe, Sparkles } from "lucide-react";
 import { useCurrency, moedas, MoedaCode, FormatoNumerico } from "@/hooks/useCurrency";
+import ChangelogModal from "@/components/ChangelogModal";
 
 const tabs = [
   { id: "negocio", label: "Meu Negócio", icon: Building2 },
   { id: "aparencia", label: "Aparência / Regional", icon: Palette },
   { id: "notificacoes", label: "Notificações", icon: Bell },
   { id: "integracoes", label: "Integrações", icon: LinkIcon },
-  { id: "usuarios", label: "Usuários", icon: Users },
+  { id: "usuarios", label: "Utilizadores", icon: Users },
 ] as const;
 
 const integracoes = [
