@@ -208,9 +208,7 @@ export function FormDespesa({ onSave, registradoPor }: { onSave: (d: Omit<Despes
       <InputField label="Fornecedor" value={f.fornecedor} onChange={v => setF(p => ({ ...p, fornecedor: v }))} />
       <InputField label="Valor (Kz)" value={f.valor} onChange={v => setF(p => ({ ...p, valor: v }))} type="number" required />
       <InputField label="Data" value={f.data} onChange={v => setF(p => ({ ...p, data: v }))} type="date" />
-      <SelectField label="Forma de pagamento" value={f.formaPgto} onChange={v => setF(p => ({ ...p, formaPgto: v }))} options={[
-        { value: "Dinheiro", label: "Dinheiro" }, { value: "Transferência", label: "Transferência" }, { value: "TPA", label: "TPA (Cartão)" }
-      ]} />
+      <SelectField label="Forma de pagamento" value={f.formaPgto} onChange={v => setF(p => ({ ...p, formaPgto: v }))} options={FORMAS_PAGAMENTO_OPTIONS} />
       <InputField label="Nº fatura/recibo" value={f.nrFatura} onChange={v => setF(p => ({ ...p, nrFatura: v }))} />
       <SelectField label="Recorrência" value={f.recorrencia} onChange={v => setF(p => ({ ...p, recorrencia: v as any }))} options={[
         { value: "Única", label: "Única" }, { value: "Mensal", label: "Mensal" }
