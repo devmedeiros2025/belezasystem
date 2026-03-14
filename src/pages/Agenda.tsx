@@ -95,6 +95,11 @@ export default function Agenda() {
   const [dragId, setDragId] = useState<string | null>(null);
   const [dropTarget, setDropTarget] = useState<{ dia: string; hora: string } | null>(null);
   const [weekBase, setWeekBase] = useState(new Date());
+  
+  // Payment checkout state
+  const [showCheckout, setShowCheckout] = useState(false);
+  const [checkoutValor, setCheckoutValor] = useState("");
+  const [checkoutFormaPgto, setCheckoutFormaPgto] = useState(FORMAS_PAGAMENTO[0]);
 
   const diasSemana = useMemo(() => getWeekDays(weekBase), [weekBase]);
   const weekLabel = useMemo(() => formatWeekRange(diasSemana), [diasSemana]);
