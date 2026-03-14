@@ -99,7 +99,7 @@ export default function Agenda() {
   // Payment checkout state
   const [showCheckout, setShowCheckout] = useState(false);
   const [checkoutValor, setCheckoutValor] = useState("");
-  const [checkoutFormaPgto, setCheckoutFormaPgto] = useState(FORMAS_PAGAMENTO[0]);
+  const [checkoutFormaPgto, setCheckoutFormaPgto] = useState<string>(FORMAS_PAGAMENTO[0]);
 
   const diasSemana = useMemo(() => getWeekDays(weekBase), [weekBase]);
   const weekLabel = useMemo(() => formatWeekRange(diasSemana), [diasSemana]);
