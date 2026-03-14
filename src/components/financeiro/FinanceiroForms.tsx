@@ -144,7 +144,7 @@ export function FormFiado({ onSave }: { onSave: (c: Omit<ContaReceber, "id">) =>
             valorPago: pago, vencimento: f.vencimento, 
             status: pago > 0 ? "Parcialmente pago" : "Em aberto", 
             dataServico: new Date().toISOString().slice(0, 10), observacoes: f.obs,
-            historicoPagamentos: pago > 0 ? [{ data: new Date().toISOString().slice(0, 10), valor: pago, forma: "Dinheiro" }] : [],
+            historicoPagamentos: pago > 0 ? [{ data: new Date().toISOString().slice(0, 10), valor: pago, forma: "Numerário" }] : [],
           }); 
         }}
         className="w-full rounded-lg gold-gradient px-4 py-2.5 text-sm font-semibold text-primary-foreground disabled:opacity-50 disabled:cursor-not-allowed"
