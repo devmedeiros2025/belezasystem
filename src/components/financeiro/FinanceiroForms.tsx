@@ -17,7 +17,7 @@ export function FormEntradaSaida({
   const [f, setF] = useState({ 
     descricao: "", valor: "", 
     categoria: tipo === "Entrada" ? "Serviço" : "Despesa Operacional", 
-    formaPgto: "Dinheiro" as const, beneficiario: "", obs: "" 
+    formaPgto: "Numerário", beneficiario: "", obs: "" 
   });
   
   const catEntrada = [
