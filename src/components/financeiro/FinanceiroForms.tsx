@@ -277,9 +277,7 @@ export function FormCompraFornecedor({
         <span className="text-text3">Saldo em dívida:</span>
         <span className={`font-bold ${saldoEmDivida > 0 ? "text-destructive" : "text-green-custom"}`}>{format(saldoEmDivida)}</span>
       </div>
-      <SelectField label="Forma de pagamento" value={f.formaPgto} onChange={v => setF(p => ({ ...p, formaPgto: v }))} options={[
-        { value: "Dinheiro", label: "Dinheiro" }, { value: "Transferência", label: "Transferência" }, { value: "TPA", label: "TPA (Cartão)" }
-      ]} />
+      <SelectField label="Forma de pagamento" value={f.formaPgto} onChange={v => setF(p => ({ ...p, formaPgto: v }))} options={FORMAS_PAGAMENTO_OPTIONS} />
       <InputField label="Nº da fatura" value={f.nrFatura} onChange={v => setF(p => ({ ...p, nrFatura: v }))} />
       <button disabled={!isValid} onClick={() => onSave(f.fornecedorId, f.descricao, Number(f.valorTotal), Number(f.valorPago) || 0)}
         className="w-full rounded-lg gold-gradient px-4 py-2.5 text-sm font-semibold text-primary-foreground disabled:opacity-50 disabled:cursor-not-allowed">
