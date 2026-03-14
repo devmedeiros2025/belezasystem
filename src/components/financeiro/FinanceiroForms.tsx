@@ -41,11 +41,7 @@ export function FormEntradaSaida({
       <InputField label="Descrição" value={f.descricao} onChange={v => setF(p => ({ ...p, descricao: v }))} required />
       <InputField label="Valor (Kz)" value={f.valor} onChange={v => setF(p => ({ ...p, valor: v }))} type="number" required />
       <SelectField label="Categoria" value={f.categoria} onChange={v => setF(p => ({ ...p, categoria: v }))} options={tipo === "Entrada" ? catEntrada : catSaida} />
-      <SelectField label="Forma de pagamento" value={f.formaPgto} onChange={v => setF(p => ({ ...p, formaPgto: v as any }))} options={[
-        { value: "Dinheiro", label: "Dinheiro" }, 
-        { value: "Transferência", label: "Transferência" }, 
-        { value: "TPA", label: "TPA (Cartão)" }
-      ]} />
+      <SelectField label="Forma de pagamento" value={f.formaPgto} onChange={v => setF(p => ({ ...p, formaPgto: v as any }))} options={FORMAS_PAGAMENTO_OPTIONS} />
       <InputField label="Beneficiário / Origem" value={f.beneficiario} onChange={v => setF(p => ({ ...p, beneficiario: v }))} />
       <TextareaField label="Observações" value={f.obs} onChange={v => setF(p => ({ ...p, obs: v }))} rows={2} />
       <button 
