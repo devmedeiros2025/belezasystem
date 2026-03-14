@@ -122,6 +122,128 @@ export type Database = {
           },
         ]
       }
+      assinaturas: {
+        Row: {
+          ciclo: string
+          created_at: string
+          data_expiracao: string | null
+          data_inicio: string
+          estabelecimento_id: string
+          gateway_id: string | null
+          id: string
+          plano_id: string | null
+          status: string
+          updated_at: string
+          valor_cobrado: number
+        }
+        Insert: {
+          ciclo?: string
+          created_at?: string
+          data_expiracao?: string | null
+          data_inicio?: string
+          estabelecimento_id: string
+          gateway_id?: string | null
+          id?: string
+          plano_id?: string | null
+          status?: string
+          updated_at?: string
+          valor_cobrado?: number
+        }
+        Update: {
+          ciclo?: string
+          created_at?: string
+          data_expiracao?: string | null
+          data_inicio?: string
+          estabelecimento_id?: string
+          gateway_id?: string | null
+          id?: string
+          plano_id?: string | null
+          status?: string
+          updated_at?: string
+          valor_cobrado?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assinaturas_estabelecimento_id_fkey"
+            columns: ["estabelecimento_id"]
+            isOneToOne: false
+            referencedRelation: "estabelecimentos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assinaturas_plano_id_fkey"
+            columns: ["plano_id"]
+            isOneToOne: false
+            referencedRelation: "planos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      changelog: {
+        Row: {
+          created_at: string
+          data_publicacao: string
+          id: string
+          publicado: boolean
+          resumo: string | null
+          titulo: string
+          versao: string
+        }
+        Insert: {
+          created_at?: string
+          data_publicacao?: string
+          id?: string
+          publicado?: boolean
+          resumo?: string | null
+          titulo: string
+          versao: string
+        }
+        Update: {
+          created_at?: string
+          data_publicacao?: string
+          id?: string
+          publicado?: boolean
+          resumo?: string | null
+          titulo?: string
+          versao?: string
+        }
+        Relationships: []
+      }
+      changelog_itens: {
+        Row: {
+          changelog_id: string
+          created_at: string
+          descricao: string
+          id: string
+          modulo_afetado: string | null
+          tipo: string
+        }
+        Insert: {
+          changelog_id: string
+          created_at?: string
+          descricao: string
+          id?: string
+          modulo_afetado?: string | null
+          tipo?: string
+        }
+        Update: {
+          changelog_id?: string
+          created_at?: string
+          descricao?: string
+          id?: string
+          modulo_afetado?: string | null
+          tipo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "changelog_itens_changelog_id_fkey"
+            columns: ["changelog_id"]
+            isOneToOne: false
+            referencedRelation: "changelog"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clientes: {
         Row: {
           bi: string | null
@@ -647,6 +769,48 @@ export type Database = {
         }
         Relationships: []
       }
+      planos: {
+        Row: {
+          ativo: boolean
+          created_at: string
+          id: string
+          max_profissionais: number
+          max_usuarios: number
+          modulos_ativos: Json
+          nome: string
+          preco_anual: number
+          preco_mensal: number
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          ativo?: boolean
+          created_at?: string
+          id?: string
+          max_profissionais?: number
+          max_usuarios?: number
+          modulos_ativos?: Json
+          nome: string
+          preco_anual?: number
+          preco_mensal?: number
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          ativo?: boolean
+          created_at?: string
+          id?: string
+          max_profissionais?: number
+          max_usuarios?: number
+          modulos_ativos?: Json
+          nome?: string
+          preco_anual?: number
+          preco_mensal?: number
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       produtos_vendidos: {
         Row: {
           categoria: string
@@ -849,6 +1013,91 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      ticket_mensagens: {
+        Row: {
+          autor_id: string
+          corpo: string
+          created_at: string
+          id: string
+          is_interno: boolean
+          is_superadmin: boolean
+          ticket_id: string
+        }
+        Insert: {
+          autor_id: string
+          corpo: string
+          created_at?: string
+          id?: string
+          is_interno?: boolean
+          is_superadmin?: boolean
+          ticket_id: string
+        }
+        Update: {
+          autor_id?: string
+          corpo?: string
+          created_at?: string
+          id?: string
+          is_interno?: boolean
+          is_superadmin?: boolean
+          ticket_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ticket_mensagens_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tickets: {
+        Row: {
+          atribuido_a: string | null
+          categoria: string
+          created_at: string
+          descricao: string
+          estabelecimento_id: string
+          id: string
+          prioridade: string
+          resolvido_at: string | null
+          status: string
+          titulo: string
+        }
+        Insert: {
+          atribuido_a?: string | null
+          categoria?: string
+          created_at?: string
+          descricao?: string
+          estabelecimento_id: string
+          id?: string
+          prioridade?: string
+          resolvido_at?: string | null
+          status?: string
+          titulo: string
+        }
+        Update: {
+          atribuido_a?: string | null
+          categoria?: string
+          created_at?: string
+          descricao?: string
+          estabelecimento_id?: string
+          id?: string
+          prioridade?: string
+          resolvido_at?: string | null
+          status?: string
+          titulo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tickets_estabelecimento_id_fkey"
+            columns: ["estabelecimento_id"]
+            isOneToOne: false
+            referencedRelation: "estabelecimentos"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
