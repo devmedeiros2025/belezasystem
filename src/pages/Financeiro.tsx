@@ -242,7 +242,15 @@ export default function Financeiro() {
       : "0",
   }), [produtosVendidos]);
 
+  // MÓDULO 6 — Protecção RBAC silenciosa
+  useEffect(() => {
+    if (!authLoading && !temAcesso) {
+      navigate("/dashboard", { replace: true });
+    }
+  }, [authLoading, temAcesso, navigate]);
+
   // Redirect non-authorized
+  if (!temAcesso) return null;
   if (perfil === "Colaborador") return <Navigate to="/dashboard" replace />;
 
   if (loading) {
