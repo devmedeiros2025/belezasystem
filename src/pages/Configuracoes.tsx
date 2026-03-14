@@ -28,6 +28,7 @@ const usuarios = [
 export default function Configuracoes() {
   const [tab, setTab] = useState<string>("negocio");
   const { moeda, formato, setMoeda, setFormato } = useCurrency();
+  const [changelogOpen, setChangelogOpen] = useState(false);
 
   return (
     <div className="space-y-6">
