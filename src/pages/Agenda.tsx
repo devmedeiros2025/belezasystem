@@ -1,10 +1,11 @@
 import { useState, useCallback, useMemo, useEffect } from "react";
 import KanbanBoard from "@/components/KanbanBoard";
-import { ChevronLeft, ChevronRight, X, GripVertical, Loader2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, X, GripVertical, Loader2, DollarSign } from "lucide-react";
 import { toast } from "sonner";
 import { startOfWeek, addDays, addWeeks, subWeeks, format, isToday, parseISO } from "date-fns";
 import { pt } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
+import { formatKz, FORMAS_PAGAMENTO } from "@/lib/currency";
 
 const diasAbrev: Record<string, string> = {
   "segunda-feira": "Seg",
