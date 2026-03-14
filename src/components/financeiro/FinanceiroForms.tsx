@@ -197,7 +197,7 @@ export function FormPagamentoFiado({ conta, format, onSave }: {
 export function FormDespesa({ onSave, registradoPor }: { onSave: (d: Omit<Despesa, "id">) => void; registradoPor: string }) {
   const [f, setF] = useState({ 
     descricao: "", categoria: "Aluguel", fornecedor: "", valor: "", 
-    data: new Date().toISOString().slice(0, 10), formaPgto: "Dinheiro", nrFatura: "", recorrencia: "Única" as const 
+    data: new Date().toISOString().slice(0, 10), formaPgto: "Numerário", nrFatura: "", recorrencia: "Única" as const 
   });
   const isValid = f.descricao.trim() && Number(f.valor) > 0;
 
