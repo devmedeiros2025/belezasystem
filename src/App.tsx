@@ -30,6 +30,7 @@ const Admin = lazy(() => import("@/pages/Admin"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 const LandingPage = lazy(() => import("@/pages/LandingPage"));
 const SuperAdmin = lazy(() => import("@/pages/SuperAdmin"));
+const SaasControl = lazy(() => import("@/pages/SaasControl"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -78,6 +79,7 @@ const App = () => (
                   <Route path="/configuracoes" element={<ProtectedRoute allowedProfiles={["Administrador"]}><Layout><Configuracoes /></Layout></ProtectedRoute>} />
                   <Route path="/admin" element={<ProtectedRoute allowedProfiles={["Administrador"]}><Layout><Admin /></Layout></ProtectedRoute>} />
                   <Route path="/superadmin" element={<ProtectedRoute allowedProfiles={["SuperAdmin"]}><SuperAdmin /></ProtectedRoute>} />
+                  <Route path="/saascontrol" element={<ProtectedRoute allowedProfiles={["SuperAdmin"]}><SaasControl /></ProtectedRoute>} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </Suspense>

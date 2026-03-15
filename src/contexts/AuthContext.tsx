@@ -133,16 +133,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     // Listen first to avoid missing OAuth/session restoration events
+    const logSession = async (userId: string, evento: "login" | "logout", email?: string, nome?: string) => {
+      try {
+        await supabase.from("user_sessions").insert({
+          user_id: userId,
+          evento,
+          email: email || null,
+          nome: nome || null,
+          user_agent: typeof navigator !== "undefined" ? navigator.userAgent : null,
+        });
+      } catch { /* silent */ }
+    };
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (!isMounted) return;
 
       if (event === "SIGNED_OUT") {
+        // Log logout for previous user
+        if (usuarioLogado) {
+          void logSession(usuarioLogado.id, "logout", usuarioLogado.email, usuarioLogado.nome);
+        }
         setUsuarioLogado(null);
         return;
       }
 
+      if (event === "SIGNED_IN" && session?.user) {
+        void logSession(
+          session.user.id,
+          "login",
+          session.user.email,
+          session.user.user_metadata?.nome || session.user.email
+        );
+      }
+
       if (session?.user) {
-        // Fire-and-forget to avoid blocking auth event processing
         setTimeout(() => {
           void syncUserFromSession(session);
         }, 0);
