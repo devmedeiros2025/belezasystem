@@ -264,8 +264,8 @@ export default function Login() {
                 type="button"
                 onClick={async () => {
                   const { error } = await lovable.auth.signInWithOAuth("google", {
-                    redirect_uri: `${window.location.origin}/dashboard`,
-                  });
+                     redirect_uri: window.location.origin,
+                   });
                   if (error) toast.error("Erro ao entrar com Google");
                 }}
                 className="w-full flex items-center justify-center gap-2 rounded-lg border border-border bg-card px-4 py-3 text-sm font-medium text-foreground hover:bg-muted transition-colors"
