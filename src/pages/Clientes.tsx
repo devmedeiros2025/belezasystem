@@ -37,8 +37,8 @@ export default function Clientes() {
   const [form, setForm] = useState(initialForm);
   const { format } = useCurrency();
 
-  // Somente Administrador e Colaborador veem esta página
-  if (perfil !== "Administrador" && perfil !== "Colaborador") {
+  // Verifica se o utilizador pode ver clientes
+  if (!podeAcessar("clientes_ver")) {
     return <Navigate to="/dashboard" replace />;
   }
 
