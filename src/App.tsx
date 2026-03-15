@@ -30,6 +30,7 @@ const Admin = lazy(() => import("@/pages/Admin"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 const LandingPage = lazy(() => import("@/pages/LandingPage"));
 const SuperAdmin = lazy(() => import("@/pages/SuperAdmin"));
+const SaasControl = lazy(() => import("@/pages/SaasControl"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
