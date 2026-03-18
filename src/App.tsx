@@ -76,7 +76,7 @@ const App = () => (
                   <Route path="/estoque" element={<ProtectedRoute><Layout><Estoque /></Layout></ProtectedRoute>} />
                   <Route path="/fidelidade" element={<ProtectedRoute><Layout><Fidelidade /></Layout></ProtectedRoute>} />
                   <Route path="/avaliacoes" element={<ProtectedRoute><Layout><Avaliacoes /></Layout></ProtectedRoute>} />
-                  <Route path="/configuracoes" element={<ProtectedRoute allowedProfiles={["Administrador"]}><Layout><Configuracoes /></Layout></ProtectedRoute>} />
+                  <Route path="/configuracoes" element={<ProtectedRoute allowedProfiles={["Administrador", "SuperAdmin"]}><Layout><Configuracoes /></Layout></ProtectedRoute>} />
                   <Route path="/admin" element={<ProtectedRoute allowedProfiles={["Administrador"]}><Layout><Admin /></Layout></ProtectedRoute>} />
                   <Route path="/superadmin" element={<ProtectedRoute allowedProfiles={["SuperAdmin"]}><SuperAdmin /></ProtectedRoute>} />
                   <Route path="/saascontrol" element={<ProtectedRoute allowedProfiles={["SuperAdmin"]}><SaasControl /></ProtectedRoute>} />

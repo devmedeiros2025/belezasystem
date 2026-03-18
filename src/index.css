@@ -139,7 +139,8 @@
   }
 
   .glass-blur {
-    @apply backdrop-blur-xl bg-white/90;
+    @apply backdrop-blur-xl;
+    background-color: hsl(var(--background) / 0.9);
   }
 
   .card-hover {
