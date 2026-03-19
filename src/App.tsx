@@ -55,7 +55,8 @@ function PageLoader() {
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
-      <CurrencyProvider>
+      <ThemeProvider>
+        <CurrencyProvider>
         <ClientesProvider>
           <TooltipProvider>
             <Toaster />
