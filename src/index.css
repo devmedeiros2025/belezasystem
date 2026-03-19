@@ -61,6 +61,58 @@
 
     font-family: 'DM Sans', sans-serif;
   }
+
+  .dark {
+    --background: 240 10% 8%;
+    --foreground: 0 0% 92%;
+
+    --card: 240 10% 11%;
+    --card-foreground: 0 0% 92%;
+
+    --popover: 240 10% 11%;
+    --popover-foreground: 0 0% 92%;
+
+    --primary: 35 50% 50%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 240 8% 16%;
+    --secondary-foreground: 0 0% 92%;
+
+    --muted: 240 8% 16%;
+    --muted-foreground: 240 10% 55%;
+
+    --accent: 240 8% 18%;
+    --accent-foreground: 0 0% 92%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 240 10% 18%;
+    --input: 240 10% 14%;
+    --ring: 35 50% 50%;
+
+    --sidebar-background: 240 10% 9%;
+    --sidebar-foreground: 0 0% 92%;
+    --sidebar-primary: 35 50% 50%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 8% 16%;
+    --sidebar-accent-foreground: 0 0% 92%;
+    --sidebar-border: 240 10% 18%;
+    --sidebar-ring: 35 50% 50%;
+
+    --surface: 240 10% 11%;
+    --surface2: 240 8% 16%;
+    --surface3: 240 8% 20%;
+    --gold: 35 50% 50%;
+    --gold-light: 35 55% 62%;
+    --rose: 350 55% 57%;
+    --teal: 183 50% 40%;
+    --purple: 270 40% 55%;
+    --green: 150 50% 40%;
+    --text2: 240 10% 65%;
+    --text3: 240 10% 45%;
+    --shadow: 0 0% 0%;
+  }
 }
 
 @layer base {
@@ -87,7 +139,8 @@
   }
 
   .glass-blur {
-    @apply backdrop-blur-xl bg-white/90;
+    @apply backdrop-blur-xl;
+    background-color: hsl(var(--background) / 0.9);
   }
 
   .card-hover {

@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { CurrencyProvider } from "@/hooks/useCurrency";
+import { ThemeProvider } from "@/hooks/useTheme";
 import { ClientesProvider } from "@/contexts/ClientesContext";
 import Layout from "@/components/Layout";
 import ProtectedRoute from "@/components/ProtectedRoute";
@@ -54,7 +55,8 @@ function PageLoader() {
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
-      <CurrencyProvider>
+      <ThemeProvider>
+        <CurrencyProvider>
         <ClientesProvider>
           <TooltipProvider>
             <Toaster />
@@ -76,7 +78,7 @@ const App = () => (
                   <Route path="/estoque" element={<ProtectedRoute><Layout><Estoque /></Layout></ProtectedRoute>} />
                   <Route path="/fidelidade" element={<ProtectedRoute><Layout><Fidelidade /></Layout></ProtectedRoute>} />
                   <Route path="/avaliacoes" element={<ProtectedRoute><Layout><Avaliacoes /></Layout></ProtectedRoute>} />
-                  <Route path="/configuracoes" element={<ProtectedRoute allowedProfiles={["Administrador"]}><Layout><Configuracoes /></Layout></ProtectedRoute>} />
+                  <Route path="/configuracoes" element={<ProtectedRoute allowedProfiles={["Administrador", "SuperAdmin"]}><Layout><Configuracoes /></Layout></ProtectedRoute>} />
                   <Route path="/admin" element={<ProtectedRoute allowedProfiles={["Administrador"]}><Layout><Admin /></Layout></ProtectedRoute>} />
                   <Route path="/superadmin" element={<ProtectedRoute allowedProfiles={["SuperAdmin"]}><SuperAdmin /></ProtectedRoute>} />
                   <Route path="/saascontrol" element={<ProtectedRoute allowedProfiles={["SuperAdmin"]}><SaasControl /></ProtectedRoute>} />
@@ -86,7 +88,8 @@ const App = () => (
             </BrowserRouter>
           </TooltipProvider>
         </ClientesProvider>
-      </CurrencyProvider>
+        </CurrencyProvider>
+      </ThemeProvider>
     </AuthProvider>
   </QueryClientProvider>
 );
